@@ -28,39 +28,64 @@ public protocol ThemeProtocol {
 public struct DefaultTheme: ThemeProtocol {
     public let id = "default"
     public let name = "Krypto Classic"
-    public let isPremium = false
     
-    public init() {}
-    
-    public var backgroundMain: Color { Color(red: 0.1, green: 0.1, blue: 0.12) } // Dark Neutral
-    public var backgroundSecondary: Color { Color(red: 0.15, green: 0.15, blue: 0.18) }
-    public var textPrimary: Color { Color.white }
-    public var textSecondary: Color { Color.gray }
-    public var accentColor: Color { Color.blue } // Neutral Blue
-    public var successColor: Color { Color.green }
-    public var errorColor: Color { Color.red }
-    public var warningColor: Color { Color.orange }
-    
-    public func font(style: Font.TextStyle, weight: Font.Weight = .regular) -> Font {
-        return Font.system(style).weight(weight)
-    }
-    
-    public var iconSend: String { "arrow.up.circle.fill" }
-    public var iconReceive: String { "arrow.down.circle.fill" }
-    public var iconSettings: String { "gearshape.fill" }
-    public var iconShield: String { "shield.fill" }
+    // Methods
+    func font(style: Font.TextStyle, weight: Font.Weight) -> Font
 }
 
-public class ThemeManager: ObservableObject {
-    @Published public var currentTheme: any ThemeProtocol
+// MARK: - Concrete Themes
+
+public struct ElectricCrayonTheme: ThemeProtocol {
+    public var backgroundMain: Color = KryptoColors.paperWhite
+    public var textPrimary: Color = KryptoColors.inkBlack
+    public var textSecondary: Color = KryptoColors.inkBlack.opacity(0.6)
+    public var accentColor: Color = KryptoColors.electricPurple
+    public var cardBackground: Color = .white
+    public var borderColor: Color = KryptoColors.inkBlack
     
-    public init(initialTheme: any ThemeProtocol = DefaultTheme()) {
-        self.currentTheme = initialTheme
+    public var iconSend: String = "paperplane.fill"
+    public var iconReceive: String = "arrow.down.circle.fill"
+    public var iconSettings: String = "gearshape.fill"
+    
+    public func font(style: Font.TextStyle, weight: Font.Weight) -> Font {
+        switch style {
+        case .largeTitle, .title, .title2, .title3:
+            return .system(style, design: .rounded).weight(weight)
+        case .headline, .subheadline:
+            return .system(style, design: .rounded).weight(weight)
+        default:
+            return .system(style, design: .default).weight(weight)
+        }
     }
+}
+
+public struct DarkModeTheme: ThemeProtocol {
+    public var backgroundMain: Color = KryptoColors.inkBlack
+    public var textPrimary: Color = .white
+    public var textSecondary: Color = .white.opacity(0.7)
+    public var accentColor: Color = KryptoColors.electricPurple
+    public var cardBackground: Color = Color(white: 0.1)
+    public var borderColor: Color = .white.opacity(0.2)
     
-    public func applyTheme(_ theme: any ThemeProtocol) {
-        // In V1.0, we just switch the state. 
-        // In a real app with monetization, we would check `if theme.isPremium && !userHasPurchased { return }`
+    public var iconSend: String = "paperplane.fill"
+    public var iconReceive: String = "arrow.down.circle.fill"
+    public var iconSettings: String = "gearshape.fill"
+    
+    public func font(style: Font.TextStyle, weight: Font.Weight) -> Font {
+        switch style {
+        case .largeTitle, .title, .title2, .title3:
+            return .system(style, design: .rounded).weight(weight)
+        case .headline, .subheadline:
+            return .system(style, design: .rounded).weight(weight)
+        default:
+            return .system(style, design: .default).weight(weight)
+        }
+    }
+}
+
+// MARK: - Theme Manager
+
+public class ThemeManager: ObservableObject {
         self.currentTheme = theme
     }
 }
