@@ -1,0 +1,397 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		06056521D43361872EC41FD0 /* BasicGasRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177CE96B1BA923279A43044A /* BasicGasRouter.swift */; };
+		1C09984C7CC261FE3FAD33ED /* LocalAuthenticationWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9243BE4D56B98A83C750F81 /* LocalAuthenticationWrapper.swift */; };
+		1D25C5232305D64C60848EF2 /* RecoveryStrategyProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220D1BC492C88A929DEC9761 /* RecoveryStrategyProtocol.swift */; };
+		33784AAB64682625A1EFC73C /* SendView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877AA3E78A0C2B367F48C7F6 /* SendView.swift */; };
+		33E4D8B6A706E78A9605BD5C /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CDF6059D210511EB135E8BF /* Logger.swift */; };
+		3D91D0241BFB5ABB687D302B /* KryptoClawApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 275681169002918C36E6B1CE /* KryptoClawApp.swift */; };
+		3EB6B9AA9D448320E9E400C7 /* WalletStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04DFF9C8DB92F74F2AF3C983 /* WalletStateManager.swift */; };
+		428E4361C0698CCEC48C67B0 /* RecoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C3F08AA331EE1A462BDCD2 /* RecoveryView.swift */; };
+		46C4153293A033EEC59C78EE /* ThemeEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4BCF23FD6AA9819BE44B8D1 /* ThemeEngine.swift */; };
+		4A5E5463956509676A19E91C /* BlockchainProviderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE793B921721A7FBADCC46FA /* BlockchainProviderProtocol.swift */; };
+		6AED45F5EB3DAE52E67A6F1F /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F180B448AA3758C1853DDA /* AppConfig.swift */; };
+		723272EB88F3FB1366672834 /* KeyStoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34AD532AF1BEFABCD8D07EA9 /* KeyStoreProtocol.swift */; };
+		88A19E0000861D9973E15DAB /* LocalSimulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72ADB971C3EA62A99B26C857 /* LocalSimulator.swift */; };
+		90CCD145B78A84ED0F7293C4 /* TransactionProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0AB3866E63076A37AD0755 /* TransactionProtocols.swift */; };
+		A2291CA3A49D33E2ECF69199 /* SimpleP2PSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7392E1485F8CEC5345458244 /* SimpleP2PSigner.swift */; };
+		A41C177946DA96766A3963FD /* UIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06F897DD9CA4BCFD6F442F66 /* UIComponents.swift */; };
+		BC9EC321547049EE028D1C08 /* BasicHeuristicAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E343A96BEDCD5D5C46BE69 /* BasicHeuristicAnalyzer.swift */; };
+		C26E7A7B45B6A61769C80EFC /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B0D59C3F46D29346EDC9646 /* KeychainHelper.swift */; };
+		C7666B0D18A0015FEFDEB6AB /* SecureEnclaveKeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F128C92AE3E6D94769AC8B66 /* SecureEnclaveKeyStore.swift */; };
+		DC4AB333C3EC584EFFD1051E /* ShamirHybridRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F7A9C4B01781B9037A56CF1 /* ShamirHybridRecovery.swift */; };
+		E63E9668BE26D198656EE523 /* SignerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224636D69A64F3F270A1B5A1 /* SignerProtocol.swift */; };
+		EEB1AB225B6F5AA19CB33204 /* ModularHTTPProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F049F78651C313D9DFF47D0 /* ModularHTTPProvider.swift */; };
+		F867CA2B3AA81F06E49C9EEE /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13464C81FA97BB23A3D6BE0B /* HomeView.swift */; };
+		FFBE3C7347EDCFE257649D3E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3FD58D2EFFF666F87C82F3 /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		04DFF9C8DB92F74F2AF3C983 /* WalletStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletStateManager.swift; sourceTree = "<group>"; };
+		06F897DD9CA4BCFD6F442F66 /* UIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIComponents.swift; sourceTree = "<group>"; };
+		0CDF6059D210511EB135E8BF /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		13464C81FA97BB23A3D6BE0B /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		14F180B448AA3758C1853DDA /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		177CE96B1BA923279A43044A /* BasicGasRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicGasRouter.swift; sourceTree = "<group>"; };
+		220D1BC492C88A929DEC9761 /* RecoveryStrategyProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryStrategyProtocol.swift; sourceTree = "<group>"; };
+		224636D69A64F3F270A1B5A1 /* SignerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerProtocol.swift; sourceTree = "<group>"; };
+		275681169002918C36E6B1CE /* KryptoClawApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KryptoClawApp.swift; sourceTree = "<group>"; };
+		2F049F78651C313D9DFF47D0 /* ModularHTTPProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModularHTTPProvider.swift; sourceTree = "<group>"; };
+		34AD532AF1BEFABCD8D07EA9 /* KeyStoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyStoreProtocol.swift; sourceTree = "<group>"; };
+		3B0D59C3F46D29346EDC9646 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		52E343A96BEDCD5D5C46BE69 /* BasicHeuristicAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicHeuristicAnalyzer.swift; sourceTree = "<group>"; };
+		72ADB971C3EA62A99B26C857 /* LocalSimulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSimulator.swift; sourceTree = "<group>"; };
+		7392E1485F8CEC5345458244 /* SimpleP2PSigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleP2PSigner.swift; sourceTree = "<group>"; };
+		7F3FD58D2EFFF666F87C82F3 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		85C3F08AA331EE1A462BDCD2 /* RecoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryView.swift; sourceTree = "<group>"; };
+		877AA3E78A0C2B367F48C7F6 /* SendView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendView.swift; sourceTree = "<group>"; };
+		93CD98B4DDE10D39E2871559 /* KryptoClaw */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KryptoClaw; path = .; sourceTree = SOURCE_ROOT; };
+		9F7A9C4B01781B9037A56CF1 /* ShamirHybridRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShamirHybridRecovery.swift; sourceTree = "<group>"; };
+		A03E9A2E8BDB08E54721F74C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B9243BE4D56B98A83C750F81 /* LocalAuthenticationWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAuthenticationWrapper.swift; sourceTree = "<group>"; };
+		C3B17570566BE8E97B1BFCEA /* KryptoClawApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = KryptoClawApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C4BCF23FD6AA9819BE44B8D1 /* ThemeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeEngine.swift; sourceTree = "<group>"; };
+		DE793B921721A7FBADCC46FA /* BlockchainProviderProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainProviderProtocol.swift; sourceTree = "<group>"; };
+		F128C92AE3E6D94769AC8B66 /* SecureEnclaveKeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureEnclaveKeyStore.swift; sourceTree = "<group>"; };
+		FA0AB3866E63076A37AD0755 /* TransactionProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionProtocols.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		061581136A7EF1B4EE79F7A2 /* KryptoClaw */ = {
+			isa = PBXGroup;
+			children = (
+				14F180B448AA3758C1853DDA /* AppConfig.swift */,
+				177CE96B1BA923279A43044A /* BasicGasRouter.swift */,
+				52E343A96BEDCD5D5C46BE69 /* BasicHeuristicAnalyzer.swift */,
+				DE793B921721A7FBADCC46FA /* BlockchainProviderProtocol.swift */,
+				13464C81FA97BB23A3D6BE0B /* HomeView.swift */,
+				A03E9A2E8BDB08E54721F74C /* Info.plist */,
+				3B0D59C3F46D29346EDC9646 /* KeychainHelper.swift */,
+				34AD532AF1BEFABCD8D07EA9 /* KeyStoreProtocol.swift */,
+				B9243BE4D56B98A83C750F81 /* LocalAuthenticationWrapper.swift */,
+				72ADB971C3EA62A99B26C857 /* LocalSimulator.swift */,
+				0CDF6059D210511EB135E8BF /* Logger.swift */,
+				2F049F78651C313D9DFF47D0 /* ModularHTTPProvider.swift */,
+				275681169002918C36E6B1CE /* KryptoClawApp.swift */,
+				220D1BC492C88A929DEC9761 /* RecoveryStrategyProtocol.swift */,
+				85C3F08AA331EE1A462BDCD2 /* RecoveryView.swift */,
+				F128C92AE3E6D94769AC8B66 /* SecureEnclaveKeyStore.swift */,
+				877AA3E78A0C2B367F48C7F6 /* SendView.swift */,
+				7F3FD58D2EFFF666F87C82F3 /* SettingsView.swift */,
+				9F7A9C4B01781B9037A56CF1 /* ShamirHybridRecovery.swift */,
+				224636D69A64F3F270A1B5A1 /* SignerProtocol.swift */,
+				7392E1485F8CEC5345458244 /* SimpleP2PSigner.swift */,
+				C4BCF23FD6AA9819BE44B8D1 /* ThemeEngine.swift */,
+				FA0AB3866E63076A37AD0755 /* TransactionProtocols.swift */,
+				06F897DD9CA4BCFD6F442F66 /* UIComponents.swift */,
+				04DFF9C8DB92F74F2AF3C983 /* WalletStateManager.swift */,
+			);
+			name = KryptoClaw;
+			path = Sources/KryptoClaw;
+			sourceTree = "<group>";
+		};
+		56FC96BCA47B830A9E4293F5 = {
+			isa = PBXGroup;
+			children = (
+				061581136A7EF1B4EE79F7A2 /* KryptoClaw */,
+				D434F3FA13085B48149A89A7 /* Packages */,
+				CD3450CA53DF7988426ABC63 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CD3450CA53DF7988426ABC63 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C3B17570566BE8E97B1BFCEA /* KryptoClawApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D434F3FA13085B48149A89A7 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				93CD98B4DDE10D39E2871559 /* KryptoClaw */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		63D421DFC15A67F5D4DC1F96 /* KryptoClawApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 295AD276F0E7B111304B1BA7 /* Build configuration list for PBXNativeTarget "KryptoClawApp" */;
+			buildPhases = (
+				9E9BD8F7BED03FCAEAA6AFB8 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KryptoClawApp;
+			packageProductDependencies = (
+			);
+			productName = KryptoClawApp;
+			productReference = C3B17570566BE8E97B1BFCEA /* KryptoClawApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2B54F7E4C9B2D13C197815EB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = CB9D68636CF668825EF0F2BD /* Build configuration list for PBXProject "KryptoClaw" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 56FC96BCA47B830A9E4293F5;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				78BA48634962068976C4A778 /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				63D421DFC15A67F5D4DC1F96 /* KryptoClawApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9E9BD8F7BED03FCAEAA6AFB8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6AED45F5EB3DAE52E67A6F1F /* AppConfig.swift in Sources */,
+				06056521D43361872EC41FD0 /* BasicGasRouter.swift in Sources */,
+				BC9EC321547049EE028D1C08 /* BasicHeuristicAnalyzer.swift in Sources */,
+				4A5E5463956509676A19E91C /* BlockchainProviderProtocol.swift in Sources */,
+				F867CA2B3AA81F06E49C9EEE /* HomeView.swift in Sources */,
+				723272EB88F3FB1366672834 /* KeyStoreProtocol.swift in Sources */,
+				C26E7A7B45B6A61769C80EFC /* KeychainHelper.swift in Sources */,
+				1C09984C7CC261FE3FAD33ED /* LocalAuthenticationWrapper.swift in Sources */,
+				88A19E0000861D9973E15DAB /* LocalSimulator.swift in Sources */,
+				33E4D8B6A706E78A9605BD5C /* Logger.swift in Sources */,
+				EEB1AB225B6F5AA19CB33204 /* ModularHTTPProvider.swift in Sources */,
+				3D91D0241BFB5ABB687D302B /* KryptoClawApp.swift in Sources */,
+				1D25C5232305D64C60848EF2 /* RecoveryStrategyProtocol.swift in Sources */,
+				428E4361C0698CCEC48C67B0 /* RecoveryView.swift in Sources */,
+				C7666B0D18A0015FEFDEB6AB /* SecureEnclaveKeyStore.swift in Sources */,
+				33784AAB64682625A1EFC73C /* SendView.swift in Sources */,
+				FFBE3C7347EDCFE257649D3E /* SettingsView.swift in Sources */,
+				DC4AB333C3EC584EFFD1051E /* ShamirHybridRecovery.swift in Sources */,
+				E63E9668BE26D198656EE523 /* SignerProtocol.swift in Sources */,
+				A2291CA3A49D33E2ECF69199 /* SimpleP2PSigner.swift in Sources */,
+				46C4153293A033EEC59C78EE /* ThemeEngine.swift in Sources */,
+				90CCD145B78A84ED0F7293C4 /* TransactionProtocols.swift in Sources */,
+				A41C177946DA96766A3963FD /* UIComponents.swift in Sources */,
+				3EB6B9AA9D448320E9E400C7 /* WalletStateManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		203454D7522C134132621BE1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		83872F44FCC19050706A1C11 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Sources/KryptoClaw/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.monsterwallet.app;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A68799B104ACDA8B026F4E5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		F6EAC9B1DD76591BF0089741 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Sources/KryptoClaw/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.monsterwallet.app;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		295AD276F0E7B111304B1BA7 /* Build configuration list for PBXNativeTarget "KryptoClawApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F6EAC9B1DD76591BF0089741 /* Debug */,
+				83872F44FCC19050706A1C11 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CB9D68636CF668825EF0F2BD /* Build configuration list for PBXProject "KryptoClaw" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				203454D7522C134132621BE1 /* Debug */,
+				A68799B104ACDA8B026F4E5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		78BA48634962068976C4A778 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+	};
+	rootObject = 2B54F7E4C9B2D13C197815EB /* Project object */;
+}

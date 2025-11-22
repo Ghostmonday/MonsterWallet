@@ -1,6 +1,33 @@
+# macOS / Finder
 .DS_Store
-.build/
-.swiftpm/
-*.xcodeproj
-xcuserdata/
+
+# Xcode / Swift
+*.xcworkspace
+*.xcuserdata
 DerivedData/
+.build/
+*.ipa
+*.app
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# Swift Package Manager
+.swiftpm/
+.package.resolved
+
+# CocoaPods (if ever added)
+Pods/
+Podfile.lock
+
+# Fastlane
+fastlane/report.xml
+fastlane/screenshots/
+
+# Logs / temporary files
+*.log
+*.tmp
+
+# Other generated artefacts
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

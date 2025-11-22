@@ -39,5 +39,7 @@
 	</array>
 	<key>NSFaceIDUsageDescription</key>
 	<string>KryptoClaw uses Face ID to securely authenticate transactions and access your private keys.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
