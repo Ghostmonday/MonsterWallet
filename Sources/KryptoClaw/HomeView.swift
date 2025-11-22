@@ -17,9 +17,19 @@ struct HomeView: View {
                 VStack(spacing: 24) {
                     // Header
                     HStack {
+                        Image("AppIcon") // Uses the AppIcon from Assets
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(themeManager.currentTheme.borderColor, lineWidth: 2)
+                            )
+                        
                         Text("KryptoClaw")
                             .font(themeManager.currentTheme.font(style: .title2, weight: .bold))
                             .foregroundColor(themeManager.currentTheme.textPrimary)
+                        
                         Spacer()
                         Button(action: { showingSettings = true }) {
                             Image(systemName: themeManager.currentTheme.iconSettings)
