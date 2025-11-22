@@ -35,9 +35,10 @@ struct HomeView: View {
                                 .font(themeManager.currentTheme.font(style: .subheadline, weight: .medium))
                                 .foregroundColor(themeManager.currentTheme.textSecondary)
                             
-                            if case .loaded(let balance) = wsm.state {
-                                // Simple formatter for V1.0
-                                Text("\(balance.amount) \(balance.currency)")
+                            if case .loaded(let balances) = wsm.state {
+                                // For V1.0, we just show ETH as the primary display or a sum if we had prices
+                                let ethBalance = balances[.ethereum]?.amount ?? "0.00"
+                                Text("\(ethBalance) ETH")
                                     .font(themeManager.currentTheme.font(style: .largeTitle, weight: .bold))
                                     .foregroundColor(themeManager.currentTheme.textPrimary)
                             } else if case .loading = wsm.state {
@@ -59,35 +60,21 @@ struct HomeView: View {
                     }
                     .padding(.horizontal)
                     
-                    // Recent Transactions (Placeholder for V1.0 UI Template)
+                    // Assets List
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Recent Activity")
+                        Text("Assets")
                             .font(themeManager.currentTheme.font(style: .headline, weight: .bold))
                             .foregroundColor(themeManager.currentTheme.textPrimary)
                             .padding(.horizontal)
                         
                         ScrollView {
                             VStack(spacing: 12) {
-                                ForEach(wsm.history.transactions, id: \.hash) { tx in
-                                    KryptoCard {
-                                        HStack {
-                                            Image(systemName: "arrow.up.right") // Simplified icon logic
-                                                .foregroundColor(themeManager.currentTheme.textSecondary)
-                                            VStack(alignment: .leading) {
-                                                Text(tx.to.prefix(6) + "..." + tx.to.suffix(4))
-                                                    .font(themeManager.currentTheme.font(style: .body, weight: .medium))
-                                                    .foregroundColor(themeManager.currentTheme.textPrimary)
-                                                Text(tx.timestamp.description)
-                                                    .font(themeManager.currentTheme.font(style: .caption, weight: .regular))
-                                                    .foregroundColor(themeManager.currentTheme.textSecondary)
-                                            }
-                                            Spacer()
-                                            Text(tx.value)
-                                                .font(themeManager.currentTheme.font(style: .body, weight: .bold))
-                                                .foregroundColor(themeManager.currentTheme.textPrimary)
+                                if case .loaded(let balances) = wsm.state {
+                                    ForEach(Chain.allCases, id: \.self) { chain in
+                                        if let balance = balances[chain] {
+                                            AssetRow(chain: chain, balance: balance)
                                         }
                                     }
-                                    .padding(.horizontal)
                                 }
                             }
                         }
@@ -106,11 +93,42 @@ struct HomeView: View {
                 SettingsView()
             }
         }
-        .onAppear {
-            Task {
-                // Hardcoded ID for V1.0 Demo
-                await wsm.loadAccount(id: "0x1234567890abcdef1234567890abcdef12345678")
+    }
+}
+
+struct AssetRow: View {
+    let chain: Chain
+    let balance: Balance
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    var body: some View {
+        KryptoCard {
+            HStack {
+                // Icon placeholder
+                Circle()
+                    .fill(chainColor(chain))
+                    .frame(width: 32, height: 32)
+                    .overlay(Text(chain.rawValue.prefix(1).uppercased()).font(.caption).bold().foregroundColor(.white))
+                
+                Text(chain.rawValue.capitalized)
+                    .font(themeManager.currentTheme.font(style: .body, weight: .medium))
+                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                
+                Spacer()
+                
+                Text("\(balance.amount) \(balance.currency)")
+                    .font(themeManager.currentTheme.font(style: .body, weight: .bold))
+                    .foregroundColor(themeManager.currentTheme.textPrimary)
             }
+        }
+        .padding(.horizontal)
+    }
+    
+    func chainColor(_ chain: Chain) -> Color {
+        switch chain {
+        case .ethereum: return .blue
+        case .solana: return .purple
+        case .bitcoin: return .orange
         }
     }
 }

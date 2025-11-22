@@ -31,6 +31,7 @@
 		EEB1AB225B6F5AA19CB33204 /* ModularHTTPProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F049F78651C313D9DFF47D0 /* ModularHTTPProvider.swift */; };
 		F867CA2B3AA81F06E49C9EEE /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13464C81FA97BB23A3D6BE0B /* HomeView.swift */; };
 		FFBE3C7347EDCFE257649D3E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3FD58D2EFFF666F87C82F3 /* SettingsView.swift */; };
+		E8A2B3C4D5F6E7A8B9C0D1E2 /* ErrorTranslator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7A8B9C0D1E2F /* ErrorTranslator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +62,7 @@
 		DE793B921721A7FBADCC46FA /* BlockchainProviderProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchainProviderProtocol.swift; sourceTree = "<group>"; };
 		F128C92AE3E6D94769AC8B66 /* SecureEnclaveKeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureEnclaveKeyStore.swift; sourceTree = "<group>"; };
 		FA0AB3866E63076A37AD0755 /* TransactionProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionProtocols.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F7A8B9C0D1E2F /* ErrorTranslator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorTranslator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -71,6 +73,7 @@
 				177CE96B1BA923279A43044A /* BasicGasRouter.swift */,
 				52E343A96BEDCD5D5C46BE69 /* BasicHeuristicAnalyzer.swift */,
 				DE793B921721A7FBADCC46FA /* BlockchainProviderProtocol.swift */,
+				1A2B3C4D5E6F7A8B9C0D1E2F /* ErrorTranslator.swift */,
 				13464C81FA97BB23A3D6BE0B /* HomeView.swift */,
 				A03E9A2E8BDB08E54721F74C /* Info.plist */,
 				3B0D59C3F46D29346EDC9646 /* KeychainHelper.swift */,
@@ -182,6 +185,7 @@
 				06056521D43361872EC41FD0 /* BasicGasRouter.swift in Sources */,
 				BC9EC321547049EE028D1C08 /* BasicHeuristicAnalyzer.swift in Sources */,
 				4A5E5463956509676A19E91C /* BlockchainProviderProtocol.swift in Sources */,
+				E8A2B3C4D5F6E7A8B9C0D1E2 /* ErrorTranslator.swift in Sources */,
 				F867CA2B3AA81F06E49C9EEE /* HomeView.swift in Sources */,
 				723272EB88F3FB1366672834 /* KeyStoreProtocol.swift in Sources */,
 				C26E7A7B45B6A61769C80EFC /* KeychainHelper.swift in Sources */,

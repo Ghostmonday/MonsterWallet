@@ -1,5 +1,6 @@
 import SwiftUI
 
+@main
 public struct KryptoClawApp: App {
     @StateObject var wsm: WalletStateManager
     @StateObject var themeManager = ThemeManager()
@@ -38,11 +39,21 @@ public struct KryptoClawApp: App {
         _wsm = StateObject(wrappedValue: stateManager)
     }
     
+    @AppStorage("hasOnboarded") var hasOnboarded: Bool = false
+    
     public var body: some Scene {
         WindowGroup {
-            HomeView()
+            if hasOnboarded {
+                HomeView()
+                    .environmentObject(wsm)
+                    .environmentObject(themeManager)
+            } else {
+                OnboardingView(onComplete: {
+                    hasOnboarded = true
+                })
                 .environmentObject(wsm)
                 .environmentObject(themeManager)
+            }
         }
     }
 }

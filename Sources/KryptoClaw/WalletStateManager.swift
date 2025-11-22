@@ -4,7 +4,7 @@ import Combine
 public enum AppState: Equatable {
     case idle
     case loading
-    case loaded(Balance)
+    case loaded([Chain: Balance])
     case error(String)
 }
 
@@ -57,10 +57,27 @@ public class WalletStateManager: ObservableObject {
         self.state = .loading
         
         do {
-            let balance = try await blockchainProvider.fetchBalance(address: address, chain: .ethereum)
+            var balances: [Chain: Balance] = [:]
+            
+            // Fetch all chains concurrently
+            try await withThrowingTaskGroup(of: (Chain, Balance).self) { group in
+                for chain in Chain.allCases {
+                    group.addTask {
+                        let balance = try await self.blockchainProvider.fetchBalance(address: address, chain: chain)
+                        return (chain, balance)
+                    }
+                }
+                
+                for try await (chain, balance) in group {
+                    balances[chain] = balance
+                }
+            }
+            
+            // For history, we just fetch ETH for now as the main history
+            // In a real app, we'd merge histories
             let history = try await blockchainProvider.fetchHistory(address: address, chain: .ethereum)
             
-            self.state = .loaded(balance)
+            self.state = .loaded(balances)
             self.history = history
         } catch {
             self.state = .error(ErrorTranslator.userFriendlyMessage(for: error))
