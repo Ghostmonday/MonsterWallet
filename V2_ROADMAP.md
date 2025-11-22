@@ -1,6 +1,6 @@
 # KryptoClaw V2.0 Roadmap & Execution Plan
 
-**Objective**: Evolve KryptoClaw from a single-currency V1.0 foundation into a feature-complete, multi-currency, themeable DeFi powerhouse.
+**Objective**: Evolve KryptoClaw from a single-currency V1.0 foundation into a feature-complete, multi-currency DeFi powerhouse.
 
 ---
 
@@ -63,7 +63,7 @@
 
 ## 📅 Phase 4: UI/UX Expansion (The Interface Layer)
 **Goal**: Expose the new features via a polished, tab-based interface.
-**Constraint**: Strictly follow the "Skin, Not Bones" theming philosophy.
+**Constraint**: Maintain separation between core logic and UI presentation.
 
 ### 4.1 Navigation Structure
 - [ ] Implement `TabBarView` with 5 tabs:
