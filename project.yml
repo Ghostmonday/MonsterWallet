@@ -1,0 +1,44 @@
+name: MonsterWallet
+options:
+  bundleIdPrefix: com.monsterwallet
+  deploymentTarget:
+    iOS: "17.0"
+packages:
+  MonsterWallet:
+    path: .
+    products:
+      - MonsterWallet
+targets:
+  MonsterWalletApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/MonsterWallet
+        excludes:
+          - "**/*Tests.swift"
+    dependencies: []
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.monsterwallet.app
+        INFOPLIST_FILE: Sources/MonsterWallet/Info.plist
+        SWIFT_VERSION: "5.9"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    info:
+      path: Sources/MonsterWallet/Info.plist
+      properties:
+        CFBundleName: MonsterWallet
+        CFBundleDisplayName: Monster Wallet
+        CFBundleIdentifier: com.monsterwallet.app
+        CFBundleVersion: "1.0"
+        CFBundleShortVersionString: "1.0"
+        UILaunchScreen: {}
+        UIRequiredDeviceCapabilities:
+          - armv7
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+
