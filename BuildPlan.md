@@ -1,4 +1,4 @@
-# Monster Wallet Build Plan
+# KryptoClaw Build Plan
 
 > **Adherence Protocol**: This plan strictly follows **Section 4 (Master Validation Rules)** of the `Spec.md`.
 > **Rule**: No cycle may be marked complete until ALL its Validation Gates are PASSED.
@@ -319,8 +319,8 @@ func testInvalidStateTransition() {
     - [ ] **Point G (Compliance)**: Verify no WebView/WKWebView dependencies added.
 
 - **Tasks**:
-    1.  Initialize Xcode Project (MonsterWallet).
-    2.  Setup Test Targets (`MonsterWalletTests`, `MonsterWalletUITests`).
+    1.  Initialize Xcode Project (KryptoClaw).
+    2.  Setup Test Targets (`KryptoClawTests`, `KryptoClawUITests`).
     3.  Create `Validation/` directory for mock protocols.
     4.  Implement `Logger` (Rule 4: Verbose Logging).
     5.  Verify "No Global State" pattern (Dependency Injection setup).

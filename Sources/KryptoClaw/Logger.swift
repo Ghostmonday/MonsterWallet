@@ -24,8 +24,8 @@ public protocol LoggerProtocol {
     func logError(module: String, error: Error)
 }
 
-public class MonsterLogger: LoggerProtocol {
-    public static let shared = MonsterLogger()
+public class KryptoLogger: LoggerProtocol {
+    public static let shared = KryptoLogger()
     
     private init() {}
     

@@ -1,5 +1,5 @@
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 class MockURLProtocol: URLProtocol {
     static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?

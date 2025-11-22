@@ -1,8 +1,8 @@
-# Monster Wallet Theme Artist Guide
+# KryptoClaw Theme Artist Guide
 
 ## 🎨 Philosophy: "The Skin, Not The Bones"
 
-Monster Wallet uses a **Strict Separation of Concerns**. The app logic (The Bones) is immutable and secure. The Theme (The Skin) is where you unleash creativity.
+KryptoClaw uses a **Strict Separation of Concerns**. The app logic (The Bones) is immutable and secure. The Theme (The Skin) is where you unleash creativity.
 
 As a Theme Artist, you are providing a **JSON-equivalent configuration** (via Swift structs) that completely transforms the user's emotional experience without touching a single line of business logic.
 

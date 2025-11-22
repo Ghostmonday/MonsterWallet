@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MonsterButton: View {
+struct KryptoButton: View {
     let title: String
     let icon: String?
     let action: () -> Void
@@ -26,7 +26,7 @@ struct MonsterButton: View {
     }
 }
 
-struct MonsterCard<Content: View>: View {
+struct KryptoCard<Content: View>: View {
     let content: Content
     @EnvironmentObject var themeManager: ThemeManager
     
@@ -42,7 +42,7 @@ struct MonsterCard<Content: View>: View {
     }
 }
 
-struct MonsterTextField: View {
+struct KryptoTextField: View {
     let placeholder: String
     @Binding var text: String
     @EnvironmentObject var themeManager: ThemeManager

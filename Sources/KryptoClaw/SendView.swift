@@ -31,14 +31,14 @@ struct SendView: View {
                 
                 // Inputs
                 VStack(spacing: 16) {
-                    MonsterTextField(placeholder: "Recipient Address (0x...)", text: $toAddress)
-                    MonsterTextField(placeholder: "Amount (ETH)", text: $amount)
+                    KryptoTextField(placeholder: "Recipient Address (0x...)", text: $toAddress)
+                    KryptoTextField(placeholder: "Amount (ETH)", text: $amount)
                 }
                 .padding(.horizontal)
                 
                 // Simulation Output
                 if let result = wsm.simulationResult {
-                    MonsterCard {
+                    KryptoCard {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
                                 Text("Simulation Result")
@@ -85,7 +85,7 @@ struct SendView: View {
                 // Actions
                 VStack(spacing: 12) {
                     if wsm.simulationResult == nil || wsm.simulationResult?.success == false {
-                        MonsterButton(title: isSimulating ? "Simulating..." : "Simulate Transaction", icon: "play.fill", action: {
+                        KryptoButton(title: isSimulating ? "Simulating..." : "Simulate Transaction", icon: "play.fill", action: {
                             Task {
                                 isSimulating = true
                                 await wsm.prepareTransaction(to: toAddress, value: amount)
@@ -93,7 +93,7 @@ struct SendView: View {
                             }
                         }, isPrimary: false)
                     } else {
-                        MonsterButton(title: "Confirm & Send", icon: themeManager.currentTheme.iconSend, action: {
+                        KryptoButton(title: "Confirm & Send", icon: themeManager.currentTheme.iconSend, action: {
                             Task {
                                 await wsm.confirmTransaction(to: toAddress, value: amount)
                                 presentationMode.wrappedValue.dismiss()

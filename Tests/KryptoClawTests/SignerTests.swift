@@ -1,5 +1,5 @@
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 @available(iOS 13.0, macOS 10.15, *)
 final class SignerTests: XCTestCase {

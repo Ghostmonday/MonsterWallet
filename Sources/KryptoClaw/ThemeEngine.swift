@@ -27,7 +27,7 @@ public protocol ThemeProtocol {
 
 public struct DefaultTheme: ThemeProtocol {
     public let id = "default"
-    public let name = "Monster Classic"
+    public let name = "Krypto Classic"
     public let isPremium = false
     
     public init() {}

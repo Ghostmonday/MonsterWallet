@@ -1,8 +1,8 @@
-# Monster Wallet
+# KryptoClaw
 
 **The "Coloring Book" Crypto Wallet.**
 
-Monster Wallet is a secure, non-custodial iOS wallet built with a strict "Skin, Not Bones" philosophy. The core logic (The Bones) is immutable, secure, and compliant, while the UI (The Skin) is fully themeable via a modular JSON-like architecture.
+KryptoClaw is a secure, non-custodial iOS wallet built with a strict "Skin, Not Bones" philosophy. The core logic (The Bones) is immutable, secure, and compliant, while the UI (The Skin) is fully themeable via a modular JSON-like architecture.
 
 ---
 
@@ -26,12 +26,12 @@ Monster Wallet is a secure, non-custodial iOS wallet built with a strict "Skin, 
 ### Directory Structure
 
 ```text
-MonsterWallet/
-├── Sources/MonsterWallet/
+KryptoClaw/
+├── Sources/KryptoClaw/
 │   ├── Core/           # KeyStore, Blockchain, Transaction Logic
 │   ├── UI/             # Views, Components, Theme Engine
 │   └── App/            # Entry Point, Config
-├── Tests/MonsterWalletTests/
+├── Tests/KryptoClawTests/
 │   ├── Unit/           # Logic Tests
 │   ├── Integration/    # Simulation Demo
 │   └── Compliance/     # Audit Scanner
@@ -45,7 +45,7 @@ MonsterWallet/
 
 ## 🎨 Theming
 
-Monster Wallet supports "Style Packs". Designers can create new themes by defining a Swift struct conforming to `ThemeProtocol`. See `ThemeArtistGuide.md` for details.
+KryptoClaw supports "Style Packs". Designers can create new themes by defining a Swift struct conforming to `ThemeProtocol`. See `ThemeArtistGuide.md` for details.
 
 ---
 

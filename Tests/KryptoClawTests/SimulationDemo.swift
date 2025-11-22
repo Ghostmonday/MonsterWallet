@@ -1,12 +1,12 @@
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 final class SimulationDemo: XCTestCase {
     
     @MainActor
     func testRunDemo() async {
         print("\n\n==================================================")
-        print("📱 MONSTER WALLET V1.0 - HEADLESS DEMO RUN")
+        print("📱 KRYPTOCLAW V1.0 - HEADLESS DEMO RUN")
         print("==================================================\n")
         
         // 1. App Launch

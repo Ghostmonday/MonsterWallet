@@ -1,6 +1,6 @@
 import XCTest
 import SwiftUI
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 final class ThemeEngineTests: XCTestCase {
     
@@ -15,7 +15,7 @@ final class ThemeEngineTests: XCTestCase {
         let theme = themeManager.currentTheme
         XCTAssertEqual(theme.id, "default")
         XCTAssertFalse(theme.isPremium)
-        XCTAssertEqual(theme.name, "Monster Classic")
+        XCTAssertEqual(theme.name, "Krypto Classic")
     }
     
     func testThemeSwitching() {

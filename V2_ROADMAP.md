@@ -1,6 +1,6 @@
-# Monster Wallet V2.0 Roadmap & Execution Plan
+# KryptoClaw V2.0 Roadmap & Execution Plan
 
-**Objective**: Evolve Monster Wallet from a single-currency V1.0 foundation into a feature-complete, multi-currency, themeable DeFi powerhouse.
+**Objective**: Evolve KryptoClaw from a single-currency V1.0 foundation into a feature-complete, multi-currency, themeable DeFi powerhouse.
 
 ---
 

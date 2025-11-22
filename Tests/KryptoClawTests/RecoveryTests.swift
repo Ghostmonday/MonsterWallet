@@ -1,5 +1,5 @@
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 final class RecoveryTests: XCTestCase {
     

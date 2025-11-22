@@ -26,6 +26,6 @@ public class BasicHeuristicAnalyzer: SecurityPolicyProtocol {
     }
     
     public func onBreach(alert: RiskAlert) {
-        MonsterLogger.shared.log(level: .warning, category: .boundary, message: "Security Breach: \(alert.description)")
+        KryptoLogger.shared.log(level: .warning, category: .boundary, message: "Security Breach: \(alert.description)")
     }
 }

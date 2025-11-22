@@ -1,5 +1,5 @@
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 class MockBlockchainProvider: BlockchainProviderProtocol {
     var balanceToReturn: Balance = Balance(amount: "0x100000000000000", currency: "ETH", decimals: 18) // Fits in UInt64

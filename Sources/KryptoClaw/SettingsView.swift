@@ -24,7 +24,7 @@ struct SettingsView: View {
                 .padding()
                 
                 // Theme Selector (Monetization Hook)
-                MonsterCard {
+                KryptoCard {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Themes")
                             .font(themeManager.currentTheme.font(style: .headline, weight: .bold))
@@ -45,7 +45,7 @@ struct SettingsView: View {
                 .padding(.horizontal)
                 
                 // Compliance Links
-                MonsterCard {
+                KryptoCard {
                     VStack(alignment: .leading, spacing: 16) {
                         Link(destination: AppConfig.privacyPolicyURL) {
                             HStack {

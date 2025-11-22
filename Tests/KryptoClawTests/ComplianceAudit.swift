@@ -1,5 +1,5 @@
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 final class ComplianceAudit: XCTestCase {
     
@@ -92,7 +92,7 @@ final class ComplianceAudit: XCTestCase {
     func testPrivacyPolicyInSettingsView() throws {
         let fileManager = FileManager.default
         let currentPath = fileManager.currentDirectoryPath
-        let settingsPath = currentPath + "/Sources/MonsterWallet/SettingsView.swift"
+        let settingsPath = currentPath + "/Sources/KryptoClaw/SettingsView.swift"
         
         guard fileManager.fileExists(atPath: settingsPath) else {
             XCTFail("SettingsView.swift not found")

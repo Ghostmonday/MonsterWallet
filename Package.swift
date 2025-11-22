@@ -2,21 +2,23 @@
 import PackageDescription
 
 let package = Package(
-    name: "MonsterWallet",
+    name: "KryptoClaw",
     platforms: [
         .iOS(.v17),
-        .macOS(.v12)
+        .macOS(.v14)
     ],
     products: [
         .library(
-            name: "MonsterWallet",
-            targets: ["MonsterWallet"]),
+            name: "KryptoClaw",
+            targets: ["KryptoClaw"]),
     ],
+    dependencies: [],
     targets: [
         .target(
-            name: "MonsterWallet"),
+            name: "KryptoClaw",
+            dependencies: []),
         .testTarget(
-            name: "MonsterWalletTests",
-            dependencies: ["MonsterWallet"]),
+            name: "KryptoClawTests",
+            dependencies: ["KryptoClaw"]),
     ]
 )

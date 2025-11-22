@@ -1,5 +1,5 @@
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 class MockKeychain: KeychainHelperProtocol {
     var store: [String: Data] = [:]

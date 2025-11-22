@@ -5,15 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Monster Wallet</string>
+	<string>KryptoClaw</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.monsterwallet.app</string>
+	<string>com.kryptoclaw.app</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>MonsterWallet</string>
+	<string>KryptoClaw</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -38,6 +38,6 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Monster Wallet uses Face ID to securely authenticate transactions and access your private keys.</string>
+	<string>KryptoClaw uses Face ID to securely authenticate transactions and access your private keys.</string>
 </dict>
 </plist>

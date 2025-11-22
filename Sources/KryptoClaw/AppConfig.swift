@@ -1,8 +1,8 @@
 import Foundation
 
 public struct AppConfig {
-    public static let privacyPolicyURL = URL(string: "https://monsterwallet.app/privacy")!
-    public static let supportURL = URL(string: "https://monsterwallet.app/support")!
+    public static let privacyPolicyURL = URL(string: "https://kryptoclaw.app/privacy")!
+    public static let supportURL = URL(string: "https://kryptoclaw.app/support")!
     
     // Feature Flags (V1.0 Compliance: All V2.0 features MUST be false)
     public struct Features {

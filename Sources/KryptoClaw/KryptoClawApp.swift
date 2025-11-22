@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct MonsterWalletApp: App {
+public struct KryptoClawApp: App {
     @StateObject var wsm: WalletStateManager
     @StateObject var themeManager = ThemeManager()
     

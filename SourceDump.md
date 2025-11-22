@@ -1,12 +1,12 @@
 # Source Code Dump
 
-## Sources/MonsterWallet/AppConfig.swift
+## Sources/KryptoClaw/AppConfig.swift
 ```swift
 import Foundation
 
 public struct AppConfig {
-    public static let privacyPolicyURL = URL(string: "https://monsterwallet.app/privacy")!
-    public static let supportURL = URL(string: "https://monsterwallet.app/support")!
+    public static let privacyPolicyURL = URL(string: "https://kryptoclaw.app/privacy")!
+    public static let supportURL = URL(string: "https://kryptoclaw.app/support")!
     
     // Feature Flags (V1.0 Compliance: All V2.0 features MUST be false)
     public struct Features {
@@ -20,7 +20,7 @@ public struct AppConfig {
 
 ```
 
-## Sources/MonsterWallet/BasicGasRouter.swift
+## Sources/KryptoClaw/BasicGasRouter.swift
 ```swift
 import Foundation
 
@@ -55,7 +55,7 @@ public class BasicGasRouter: RoutingProtocol {
 
 ```
 
-## Sources/MonsterWallet/BasicHeuristicAnalyzer.swift
+## Sources/KryptoClaw/BasicHeuristicAnalyzer.swift
 ```swift
 import Foundation
 
@@ -85,13 +85,13 @@ public class BasicHeuristicAnalyzer: SecurityPolicyProtocol {
     }
     
     public func onBreach(alert: RiskAlert) {
-        MonsterLogger.shared.log(level: .warning, category: .boundary, message: "Security Breach: \(alert.description)")
+        KryptoLogger.shared.log(level: .warning, category: .boundary, message: "Security Breach: \(alert.description)")
     }
 }
 
 ```
 
-## Sources/MonsterWallet/BlockchainProviderProtocol.swift
+## Sources/KryptoClaw/BlockchainProviderProtocol.swift
 ```swift
 import Foundation
 
@@ -153,7 +153,7 @@ public protocol BlockchainProviderProtocol {
 
 ```
 
-## Sources/MonsterWallet/HomeView.swift
+## Sources/KryptoClaw/HomeView.swift
 ```swift
 import SwiftUI
 
@@ -174,7 +174,7 @@ struct HomeView: View {
                 VStack(spacing: 24) {
                     // Header
                     HStack {
-                        Text("Monster Wallet")
+                        Text("KryptoClaw")
                             .font(themeManager.currentTheme.font(style: .title2, weight: .bold))
                             .foregroundColor(themeManager.currentTheme.textPrimary)
                         Spacer()
@@ -186,7 +186,7 @@ struct HomeView: View {
                     .padding(.horizontal)
                     
                     // Balance Card
-                    MonsterCard {
+                    KryptoCard {
                         VStack(spacing: 12) {
                             Text("Total Balance")
                                 .font(themeManager.currentTheme.font(style: .subheadline, weight: .medium))
@@ -211,8 +211,8 @@ struct HomeView: View {
                     
                     // Action Buttons
                     HStack(spacing: 16) {
-                        MonsterButton(title: "Send", icon: themeManager.currentTheme.iconSend, action: { showingSend = true }, isPrimary: true)
-                        MonsterButton(title: "Receive", icon: themeManager.currentTheme.iconReceive, action: { showingReceive = true }, isPrimary: false)
+                        KryptoButton(title: "Send", icon: themeManager.currentTheme.iconSend, action: { showingSend = true }, isPrimary: true)
+                        KryptoButton(title: "Receive", icon: themeManager.currentTheme.iconReceive, action: { showingReceive = true }, isPrimary: false)
                     }
                     .padding(.horizontal)
                     
@@ -226,7 +226,7 @@ struct HomeView: View {
                         ScrollView {
                             VStack(spacing: 12) {
                                 ForEach(wsm.history.transactions, id: \.hash) { tx in
-                                    MonsterCard {
+                                    KryptoCard {
                                         HStack {
                                             Image(systemName: "arrow.up.right") // Simplified icon logic
                                                 .foregroundColor(themeManager.currentTheme.textSecondary)
@@ -274,7 +274,7 @@ struct HomeView: View {
 
 ```
 
-## Sources/MonsterWallet/KeyStoreProtocol.swift
+## Sources/KryptoClaw/KeyStoreProtocol.swift
 ```swift
 import Foundation
 
@@ -300,7 +300,7 @@ public protocol KeyStoreProtocol {
 
 ```
 
-## Sources/MonsterWallet/KeychainHelper.swift
+## Sources/KryptoClaw/KeychainHelper.swift
 ```swift
 import Foundation
 import Security
@@ -326,7 +326,7 @@ public class SystemKeychain: KeychainHelperProtocol {
 
 ```
 
-## Sources/MonsterWallet/LocalAuthenticationWrapper.swift
+## Sources/KryptoClaw/LocalAuthenticationWrapper.swift
 ```swift
 import Foundation
 import LocalAuthentication
@@ -346,7 +346,7 @@ public class BiometricAuthenticator: LocalAuthenticationProtocol {
 
 ```
 
-## Sources/MonsterWallet/LocalSimulator.swift
+## Sources/KryptoClaw/LocalSimulator.swift
 ```swift
 import Foundation
 
@@ -408,7 +408,7 @@ public class LocalSimulator: TransactionSimulatorProtocol {
 
 ```
 
-## Sources/MonsterWallet/Logger.swift
+## Sources/KryptoClaw/Logger.swift
 ```swift
 import Foundation
 
@@ -436,8 +436,8 @@ public protocol LoggerProtocol {
     func logError(module: String, error: Error)
 }
 
-public class MonsterLogger: LoggerProtocol {
-    public static let shared = MonsterLogger()
+public class KryptoLogger: LoggerProtocol {
+    public static let shared = KryptoLogger()
     
     private init() {}
     
@@ -494,7 +494,7 @@ public class MonsterLogger: LoggerProtocol {
 
 ```
 
-## Sources/MonsterWallet/ModularHTTPProvider.swift
+## Sources/KryptoClaw/ModularHTTPProvider.swift
 ```swift
 import Foundation
 
@@ -623,12 +623,12 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
 
 ```
 
-## Sources/MonsterWallet/MonsterWalletApp.swift
+## Sources/KryptoClaw/KryptoClawApp.swift
 ```swift
 import SwiftUI
 
 @main
-public struct MonsterWalletApp: App {
+public struct KryptoClawApp: App {
     @StateObject var wsm: WalletStateManager
     @StateObject var themeManager = ThemeManager()
     
@@ -677,7 +677,7 @@ public struct MonsterWalletApp: App {
 
 ```
 
-## Sources/MonsterWallet/RecoveryStrategyProtocol.swift
+## Sources/KryptoClaw/RecoveryStrategyProtocol.swift
 ```swift
 import Foundation
 
@@ -700,7 +700,7 @@ public protocol RecoveryStrategyProtocol {
 
 ```
 
-## Sources/MonsterWallet/RecoveryView.swift
+## Sources/KryptoClaw/RecoveryView.swift
 ```swift
 import SwiftUI
 
@@ -736,7 +736,7 @@ struct RecoveryView: View {
                 .padding()
                 
                 // Warning Banner
-                MonsterCard {
+                KryptoCard {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: themeManager.currentTheme.iconShield)
                             .foregroundColor(themeManager.currentTheme.warningColor)
@@ -780,14 +780,14 @@ struct RecoveryView: View {
                 
                 // Actions
                 VStack(spacing: 16) {
-                    MonsterButton(title: isRevealed ? "Hide Phrase" : "Reveal Phrase", icon: isRevealed ? "eye.slash.fill" : "eye.fill", action: {
+                    KryptoButton(title: isRevealed ? "Hide Phrase" : "Reveal Phrase", icon: isRevealed ? "eye.slash.fill" : "eye.fill", action: {
                         withAnimation {
                             isRevealed.toggle()
                         }
                     }, isPrimary: false)
                     
                     if isRevealed {
-                        MonsterButton(title: "I Have Written It Down", icon: "checkmark.circle.fill", action: {
+                        KryptoButton(title: "I Have Written It Down", icon: "checkmark.circle.fill", action: {
                             presentationMode.wrappedValue.dismiss()
                         }, isPrimary: true)
                     }
@@ -800,7 +800,7 @@ struct RecoveryView: View {
 
 ```
 
-## Sources/MonsterWallet/SecureEnclaveKeyStore.swift
+## Sources/KryptoClaw/SecureEnclaveKeyStore.swift
 ```swift
 import Foundation
 import Security
@@ -889,7 +889,7 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
 
 ```
 
-## Sources/MonsterWallet/SendView.swift
+## Sources/KryptoClaw/SendView.swift
 ```swift
 import SwiftUI
 
@@ -924,14 +924,14 @@ struct SendView: View {
                 
                 // Inputs
                 VStack(spacing: 16) {
-                    MonsterTextField(placeholder: "Recipient Address (0x...)", text: $toAddress)
-                    MonsterTextField(placeholder: "Amount (ETH)", text: $amount)
+                    KryptoTextField(placeholder: "Recipient Address (0x...)", text: $toAddress)
+                    KryptoTextField(placeholder: "Amount (ETH)", text: $amount)
                 }
                 .padding(.horizontal)
                 
                 // Simulation Output
                 if let result = wsm.simulationResult {
-                    MonsterCard {
+                    KryptoCard {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
                                 Text("Simulation Result")
@@ -978,7 +978,7 @@ struct SendView: View {
                 // Actions
                 VStack(spacing: 12) {
                     if wsm.simulationResult == nil || wsm.simulationResult?.success == false {
-                        MonsterButton(title: isSimulating ? "Simulating..." : "Simulate Transaction", icon: "play.fill", action: {
+                        KryptoButton(title: isSimulating ? "Simulating..." : "Simulate Transaction", icon: "play.fill", action: {
                             Task {
                                 isSimulating = true
                                 await wsm.prepareTransaction(to: toAddress, value: amount)
@@ -986,7 +986,7 @@ struct SendView: View {
                             }
                         }, isPrimary: false)
                     } else {
-                        MonsterButton(title: "Confirm & Send", icon: themeManager.currentTheme.iconSend, action: {
+                        KryptoButton(title: "Confirm & Send", icon: themeManager.currentTheme.iconSend, action: {
                             Task {
                                 await wsm.confirmTransaction(to: toAddress, value: amount)
                                 presentationMode.wrappedValue.dismiss()
@@ -1002,7 +1002,7 @@ struct SendView: View {
 
 ```
 
-## Sources/MonsterWallet/SettingsView.swift
+## Sources/KryptoClaw/SettingsView.swift
 ```swift
 import SwiftUI
 
@@ -1030,7 +1030,7 @@ struct SettingsView: View {
                 .padding()
                 
                 // Theme Selector (Monetization Hook)
-                MonsterCard {
+                KryptoCard {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Themes")
                             .font(themeManager.currentTheme.font(style: .headline, weight: .bold))
@@ -1051,7 +1051,7 @@ struct SettingsView: View {
                 .padding(.horizontal)
                 
                 // Compliance Links
-                MonsterCard {
+                KryptoCard {
                     VStack(alignment: .leading, spacing: 16) {
                         Link(destination: AppConfig.privacyPolicyURL) {
                             HStack {
@@ -1092,7 +1092,7 @@ struct SettingsView: View {
 
 ```
 
-## Sources/MonsterWallet/ShamirHybridRecovery.swift
+## Sources/KryptoClaw/ShamirHybridRecovery.swift
 ```swift
 import Foundation
 
@@ -1192,7 +1192,7 @@ public class ShamirHybridRecovery: RecoveryStrategyProtocol {
 
 ```
 
-## Sources/MonsterWallet/SignerProtocol.swift
+## Sources/KryptoClaw/SignerProtocol.swift
 ```swift
 import Foundation
 
@@ -1215,7 +1215,7 @@ public protocol SignerProtocol {
 
 ```
 
-## Sources/MonsterWallet/SimpleP2PSigner.swift
+## Sources/KryptoClaw/SimpleP2PSigner.swift
 ```swift
 import Foundation
 import CryptoKit
@@ -1268,7 +1268,7 @@ public class SimpleP2PSigner: SignerProtocol {
 
 ```
 
-## Sources/MonsterWallet/ThemeEngine.swift
+## Sources/KryptoClaw/ThemeEngine.swift
 ```swift
 import SwiftUI
 
@@ -1299,7 +1299,7 @@ public protocol ThemeProtocol {
 
 public struct DefaultTheme: ThemeProtocol {
     public let id = "default"
-    public let name = "Monster Classic"
+    public let name = "Krypto Classic"
     public let isPremium = false
     
     public init() {}
@@ -1339,7 +1339,7 @@ public class ThemeManager: ObservableObject {
 
 ```
 
-## Sources/MonsterWallet/TransactionProtocols.swift
+## Sources/KryptoClaw/TransactionProtocols.swift
 ```swift
 import Foundation
 
@@ -1425,11 +1425,11 @@ public protocol SecurityPolicyProtocol {
 
 ```
 
-## Sources/MonsterWallet/UIComponents.swift
+## Sources/KryptoClaw/UIComponents.swift
 ```swift
 import SwiftUI
 
-struct MonsterButton: View {
+struct KryptoButton: View {
     let title: String
     let icon: String?
     let action: () -> Void
@@ -1455,7 +1455,7 @@ struct MonsterButton: View {
     }
 }
 
-struct MonsterCard<Content: View>: View {
+struct KryptoCard<Content: View>: View {
     let content: Content
     @EnvironmentObject var themeManager: ThemeManager
     
@@ -1471,7 +1471,7 @@ struct MonsterCard<Content: View>: View {
     }
 }
 
-struct MonsterTextField: View {
+struct KryptoTextField: View {
     let placeholder: String
     @Binding var text: String
     @EnvironmentObject var themeManager: ThemeManager
@@ -1491,7 +1491,7 @@ struct MonsterTextField: View {
 
 ```
 
-## Sources/MonsterWallet/WalletStateManager.swift
+## Sources/KryptoClaw/WalletStateManager.swift
 ```swift
 import Foundation
 import Combine
@@ -1638,10 +1638,10 @@ public class WalletStateManager: ObservableObject {
 
 ```
 
-## Tests/MonsterWalletTests/BlockchainProviderTests.swift
+## Tests/KryptoClawTests/BlockchainProviderTests.swift
 ```swift
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 class MockURLProtocol: URLProtocol {
     static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
@@ -1773,10 +1773,10 @@ final class BlockchainProviderTests: XCTestCase {
 
 ```
 
-## Tests/MonsterWalletTests/ComplianceAudit.swift
+## Tests/KryptoClawTests/ComplianceAudit.swift
 ```swift
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 final class ComplianceAudit: XCTestCase {
     
@@ -1869,10 +1869,10 @@ final class ComplianceAudit: XCTestCase {
 
 ```
 
-## Tests/MonsterWalletTests/KeyStoreTests.swift
+## Tests/KryptoClawTests/KeyStoreTests.swift
 ```swift
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 class MockKeychain: KeychainHelperProtocol {
     var store: [String: Data] = [:]
@@ -1997,10 +1997,10 @@ final class KeyStoreTests: XCTestCase {
 
 ```
 
-## Tests/MonsterWalletTests/RecoveryTests.swift
+## Tests/KryptoClawTests/RecoveryTests.swift
 ```swift
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 final class RecoveryTests: XCTestCase {
     
@@ -2057,10 +2057,10 @@ final class RecoveryTests: XCTestCase {
 
 ```
 
-## Tests/MonsterWalletTests/SignerTests.swift
+## Tests/KryptoClawTests/SignerTests.swift
 ```swift
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 @available(iOS 13.0, macOS 10.15, *)
 final class SignerTests: XCTestCase {
@@ -2103,17 +2103,17 @@ final class SignerTests: XCTestCase {
 
 ```
 
-## Tests/MonsterWalletTests/SimulationDemo.swift
+## Tests/KryptoClawTests/SimulationDemo.swift
 ```swift
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 final class SimulationDemo: XCTestCase {
     
     @MainActor
     func testRunDemo() async {
         print("\n\n==================================================")
-        print("📱 MONSTER WALLET V1.0 - HEADLESS DEMO RUN")
+        print("📱 KRYPTOCLAW V1.0 - HEADLESS DEMO RUN")
         print("==================================================\n")
         
         // 1. App Launch
@@ -2186,10 +2186,10 @@ final class SimulationDemo: XCTestCase {
 
 ```
 
-## Tests/MonsterWalletTests/StressTests.swift
+## Tests/KryptoClawTests/StressTests.swift
 ```swift
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 final class StressTests: XCTestCase {
     
@@ -2251,11 +2251,11 @@ final class StressTests: XCTestCase {
 
 ```
 
-## Tests/MonsterWalletTests/ThemeEngineTests.swift
+## Tests/KryptoClawTests/ThemeEngineTests.swift
 ```swift
 import XCTest
 import SwiftUI
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 final class ThemeEngineTests: XCTestCase {
     
@@ -2270,7 +2270,7 @@ final class ThemeEngineTests: XCTestCase {
         let theme = themeManager.currentTheme
         XCTAssertEqual(theme.id, "default")
         XCTAssertFalse(theme.isPremium)
-        XCTAssertEqual(theme.name, "Monster Classic")
+        XCTAssertEqual(theme.name, "Krypto Classic")
     }
     
     func testThemeSwitching() {
@@ -2306,10 +2306,10 @@ final class ThemeEngineTests: XCTestCase {
 
 ```
 
-## Tests/MonsterWalletTests/TransactionEngineTests.swift
+## Tests/KryptoClawTests/TransactionEngineTests.swift
 ```swift
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 class MockBlockchainProvider: BlockchainProviderProtocol {
     var balanceToReturn: Balance = Balance(amount: "0x100000000000000", currency: "ETH", decimals: 18) // Fits in UInt64
@@ -2407,10 +2407,10 @@ final class TransactionEngineTests: XCTestCase {
 
 ```
 
-## Tests/MonsterWalletTests/WalletStateManagerTests.swift
+## Tests/KryptoClawTests/WalletStateManagerTests.swift
 ```swift
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 class MockKeyStore: KeyStoreProtocol {
     func getPrivateKey(id: String) throws -> Data { return Data() }
@@ -2514,22 +2514,22 @@ final class WalletStateManagerTests: XCTestCase {
 import PackageDescription
 
 let package = Package(
-    name: "MonsterWallet",
+    name: "KryptoClaw",
     platforms: [
         .iOS(.v17),
         .macOS(.v12)
     ],
     products: [
         .library(
-            name: "MonsterWallet",
-            targets: ["MonsterWallet"]),
+            name: "KryptoClaw",
+            targets: ["KryptoClaw"]),
     ],
     targets: [
         .target(
-            name: "MonsterWallet"),
+            name: "KryptoClaw"),
         .testTarget(
-            name: "MonsterWalletTests",
-            dependencies: ["MonsterWallet"]),
+            name: "KryptoClawTests",
+            dependencies: ["KryptoClaw"]),
     ]
 )
 

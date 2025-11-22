@@ -1,5 +1,5 @@
 import XCTest
-@testable import MonsterWallet
+@testable import KryptoClaw
 
 class MockKeyStore: KeyStoreProtocol {
     func getPrivateKey(id: String) throws -> Data { return Data() }

@@ -17,7 +17,7 @@ struct HomeView: View {
                 VStack(spacing: 24) {
                     // Header
                     HStack {
-                        Text("Monster Wallet")
+                        Text("KryptoClaw")
                             .font(themeManager.currentTheme.font(style: .title2, weight: .bold))
                             .foregroundColor(themeManager.currentTheme.textPrimary)
                         Spacer()
@@ -29,7 +29,7 @@ struct HomeView: View {
                     .padding(.horizontal)
                     
                     // Balance Card
-                    MonsterCard {
+                    KryptoCard {
                         VStack(spacing: 12) {
                             Text("Total Balance")
                                 .font(themeManager.currentTheme.font(style: .subheadline, weight: .medium))
@@ -54,8 +54,8 @@ struct HomeView: View {
                     
                     // Action Buttons
                     HStack(spacing: 16) {
-                        MonsterButton(title: "Send", icon: themeManager.currentTheme.iconSend, action: { showingSend = true }, isPrimary: true)
-                        MonsterButton(title: "Receive", icon: themeManager.currentTheme.iconReceive, action: { showingReceive = true }, isPrimary: false)
+                        KryptoButton(title: "Send", icon: themeManager.currentTheme.iconSend, action: { showingSend = true }, isPrimary: true)
+                        KryptoButton(title: "Receive", icon: themeManager.currentTheme.iconReceive, action: { showingReceive = true }, isPrimary: false)
                     }
                     .padding(.horizontal)
                     
@@ -69,7 +69,7 @@ struct HomeView: View {
                         ScrollView {
                             VStack(spacing: 12) {
                                 ForEach(wsm.history.transactions, id: \.hash) { tx in
-                                    MonsterCard {
+                                    KryptoCard {
                                         HStack {
                                             Image(systemName: "arrow.up.right") // Simplified icon logic
                                                 .foregroundColor(themeManager.currentTheme.textSecondary)

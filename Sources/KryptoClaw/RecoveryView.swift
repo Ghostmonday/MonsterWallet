@@ -32,7 +32,7 @@ struct RecoveryView: View {
                 .padding()
                 
                 // Warning Banner
-                MonsterCard {
+                KryptoCard {
                     HStack(alignment: .top, spacing: 12) {
                         Image(systemName: themeManager.currentTheme.iconShield)
                             .foregroundColor(themeManager.currentTheme.warningColor)
@@ -76,14 +76,14 @@ struct RecoveryView: View {
                 
                 // Actions
                 VStack(spacing: 16) {
-                    MonsterButton(title: isRevealed ? "Hide Phrase" : "Reveal Phrase", icon: isRevealed ? "eye.slash.fill" : "eye.fill", action: {
+                    KryptoButton(title: isRevealed ? "Hide Phrase" : "Reveal Phrase", icon: isRevealed ? "eye.slash.fill" : "eye.fill", action: {
                         withAnimation {
                             isRevealed.toggle()
                         }
                     }, isPrimary: false)
                     
                     if isRevealed {
-                        MonsterButton(title: "I Have Written It Down", icon: "checkmark.circle.fill", action: {
+                        KryptoButton(title: "I Have Written It Down", icon: "checkmark.circle.fill", action: {
                             presentationMode.wrappedValue.dismiss()
                         }, isPrimary: true)
                     }
