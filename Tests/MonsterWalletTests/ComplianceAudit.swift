@@ -88,4 +88,19 @@ final class ComplianceAudit: XCTestCase {
         XCTAssertNotNil(AppConfig.privacyPolicyURL)
         XCTAssertTrue(AppConfig.privacyPolicyURL.absoluteString.contains("https://"), "Privacy Policy must be HTTPS")
     }
+    
+    func testPrivacyPolicyInSettingsView() throws {
+        let fileManager = FileManager.default
+        let currentPath = fileManager.currentDirectoryPath
+        let settingsPath = currentPath + "/Sources/MonsterWallet/SettingsView.swift"
+        
+        guard fileManager.fileExists(atPath: settingsPath) else {
+            XCTFail("SettingsView.swift not found")
+            return
+        }
+        
+        let content = try String(contentsOfFile: settingsPath, encoding: .utf8)
+        XCTAssertTrue(content.contains("AppConfig.privacyPolicyURL"), "SettingsView must link to Privacy Policy")
+        XCTAssertTrue(content.contains("Link(destination:"), "SettingsView must use a Link component")
+    }
 }

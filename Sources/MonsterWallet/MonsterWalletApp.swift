@@ -1,6 +1,5 @@
 import SwiftUI
 
-@main
 public struct MonsterWalletApp: App {
     @StateObject var wsm: WalletStateManager
     @StateObject var themeManager = ThemeManager()

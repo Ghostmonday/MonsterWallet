@@ -63,7 +63,7 @@ public class WalletStateManager: ObservableObject {
             self.state = .loaded(balance)
             self.history = history
         } catch {
-            self.state = .error(error.localizedDescription)
+            self.state = .error(ErrorTranslator.userFriendlyMessage(for: error))
         }
     }
     
@@ -92,7 +92,7 @@ public class WalletStateManager: ObservableObject {
             self.riskAlerts = alerts
             
         } catch {
-            self.state = .error("Simulation failed: \(error.localizedDescription)")
+            self.state = .error(ErrorTranslator.userFriendlyMessage(for: error))
         }
     }
     
@@ -136,7 +136,7 @@ public class WalletStateManager: ObservableObject {
             await refreshBalance()
             
         } catch {
-            self.state = .error("Transaction failed: \(error.localizedDescription)")
+            self.state = .error(ErrorTranslator.userFriendlyMessage(for: error))
         }
     }
 }
