@@ -113,10 +113,17 @@ public class WalletStateManager: ObservableObject {
 
         // 0. V2 Security Check: Address Poisoning
         if let detector = poisoningDetector, AppConfig.Features.isAddressPoisoningProtectionEnabled {
-             // In a real app, we'd pass the actual transaction history or a trusted contact list.
-             // Here we just pass a simple known list or empty for safety.
-             let safeHistory = contacts.map { $0.address }
-             let status = detector.analyze(targetAddress: to, safeHistory: safeHistory)
+             // Combine trusted sources: Contacts + History
+             var safeHistory = contacts.map { $0.address }
+
+             // Add historical recipients (if available in history)
+             let historicalRecipients = history.transactions.map { $0.to }
+             safeHistory.append(contentsOf: historicalRecipients)
+
+             // De-duplicate
+             let uniqueHistory = Array(Set(safeHistory))
+
+             let status = detector.analyze(targetAddress: to, safeHistory: uniqueHistory)
 
              if case .potentialPoison(let reason) = status {
                  self.riskAlerts.append(RiskAlert(level: .critical, message: reason))
@@ -232,5 +239,10 @@ public class WalletStateManager: ObservableObject {
     public func switchWallet(id: String) async {
         print("[WalletManagement] SwitchWallet: \(id)")
         await loadAccount(id: id)
+    }
+
+    public func copyCurrentAddress() {
+        guard let address = currentAddress else { return }
+        clipboardGuard?.protectClipboard(content: address, timeout: 60.0)
     }
 }

@@ -48,6 +48,35 @@ public struct HomeView: View {
                 }
                 .padding()
 
+                // Clipboard Guard Copy Trigger (Hidden or integrated)
+                // For now, we integrate it into the header for the current address if available
+                if let address = walletState.currentAddress {
+                    Button(action: {
+                        // Trigger Security Feature
+                        // Note: In a real app, we'd get this via DI or Environment.
+                        // Since ClipboardGuard is internal to WSM or App, we might need to expose a method on WSM or access it via a singleton if we didn't inject it into the View.
+                        // However, WSM doesn't expose 'copyAddress' helper.
+                        // Ideally, WSM should handle this "safe copy".
+                        // Let's assume we add a `copyAddressToClipboard` to WSM or just use UIPasteboard here for V1.
+                        // But to use the *Guard*, we need access to it.
+                        // Let's add `copyCurrentAddress()` to WalletStateManager to handle this securely.
+                        walletState.copyCurrentAddress()
+                    }) {
+                        HStack {
+                            Text(shorten(address))
+                                .font(theme.addressFont)
+                                .foregroundColor(theme.textSecondary)
+                            Image(systemName: "doc.on.doc")
+                                .font(.caption)
+                                .foregroundColor(theme.accentColor)
+                        }
+                        .padding(8)
+                        .background(theme.backgroundSecondary.opacity(0.5))
+                        .cornerRadius(8)
+                    }
+                    .padding(.bottom, 10)
+                }
+
                 ScrollView {
                     VStack(spacing: 20) {
 
@@ -149,6 +178,11 @@ public struct HomeView: View {
         formatter.numberStyle = .currency
         formatter.currencySymbol = "$"
         return formatter.string(from: total as NSNumber) ?? "$0.00"
+    }
+
+    private func shorten(_ addr: String) -> String {
+        guard addr.count > 10 else { return addr }
+        return "\(addr.prefix(6))...\(addr.suffix(4))"
     }
 }
 

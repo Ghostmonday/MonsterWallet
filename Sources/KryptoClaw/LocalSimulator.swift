@@ -22,18 +22,33 @@ public class LocalSimulator: TransactionSimulatorProtocol {
              }
         }
 
-        // 1. Fetch Balance
-        // Map chainId to Chain enum (Simplified for V1.0)
-        let chain: Chain = .ethereum 
-        
+        // 1. Determine Chain
+        let chain: Chain
+        if tx.chainId == 1 {
+            chain = .ethereum
+        } else {
+            // Simplified mapping for V1 mock: All non-1 IDs map to Bitcoin/Solana mock flow
+            // In a real app, we'd check specific IDs.
+            chain = .bitcoin // Default fallback for mock simulation
+        }
+
+        // 2. Fetch Balance
         let balance = try await provider.fetchBalance(address: tx.from, chain: chain)
         
-        // 2. Calculate Cost
+        // 3. Calculate Cost
         // Note: In production, use BigInt. Here we use UInt64 which is unsafe for real ETH values but ok for tests.
         
-        // Parse Balance (Hex)
-        let balanceClean = balance.amount.hasPrefix("0x") ? String(balance.amount.dropFirst(2)) : balance.amount
-        guard let balanceVal = UInt64(balanceClean, radix: 16) else {
+        // Parse Balance (Hex or Decimal based on chain)
+        var balanceVal: UInt64 = 0
+        if chain == .ethereum {
+            let balanceClean = balance.amount.hasPrefix("0x") ? String(balance.amount.dropFirst(2)) : balance.amount
+            balanceVal = UInt64(balanceClean, radix: 16) ?? 0
+        } else {
+            // Mock BTC/SOL balance is returned as decimal string in our mock provider
+            balanceVal = UInt64(Double(balance.amount) ?? 0)
+        }
+
+        if balanceVal == 0 && balance.amount != "0" {
              return SimulationResult(success: false, estimatedGasUsed: 0, balanceChanges: [:], error: "Invalid balance format")
         }
         
