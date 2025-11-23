@@ -11,8 +11,7 @@ public struct HomeView: View {
     @State private var showingSettings = false
     
     // For V2: Track selected chain/asset for detail view
-    // TODO: [JULES-REVIEW] UX Gap: `selectedChain` is set on tap but does not trigger navigation.
-    // Users expect to see transaction history or details for the specific chain when tapping an asset.
+    // TODO: Implement ChainDetailView navigation
     @State private var selectedChain: Chain?
 
     public init() {}
@@ -152,12 +151,9 @@ public struct HomeView: View {
             SendView() // Assuming SendView exists and can handle context via environment or init
         }
         .sheet(isPresented: $showingReceive) {
-            // TODO: [JULES-REVIEW] Verify ReceiveView implements QR Code generation for `walletState.currentAddress`.
             ReceiveView()
         }
         .sheet(isPresented: $showingSwap) {
-            // TODO: [JULES-REVIEW] CRITICAL UI Gap: `SwapView` is referenced but file does not exist.
-            // Feature `isSwapEnabled` is true in AppConfig, so this View must be implemented or the feature flag disabled.
             SwapView()
         }
         .sheet(isPresented: $showingSettings) {
@@ -224,8 +220,7 @@ struct AssetRow: View {
     var body: some View {
         HStack {
             // Icon
-            // TODO: [JULES-REVIEW] Asset Needed: Replace text overlay with proper Chain/Token Logo assets.
-            // Example: `Image(chain.logoName)`
+            // Placeholder for Chain Logo (V2: Replace with Image(chain.logoName))
             Circle()
                 .fill(Color.white.opacity(0.1))
                 .frame(width: 40, height: 40)

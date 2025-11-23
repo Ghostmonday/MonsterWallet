@@ -36,6 +36,9 @@ public class WalletStateManager: ObservableObject {
     @Published public var nfts: [NFTMetadata] = []
     @Published public var wallets: [WalletInfo] = []
     
+    // Transaction Flow State
+    @Published public var pendingTransaction: Transaction?
+    
     // Current Account
     public var currentAddress: String?
     
@@ -137,6 +140,7 @@ public class WalletStateManager: ObservableObject {
         
         // Reset alerts first to avoid duplicates
         self.riskAlerts = []
+        self.pendingTransaction = nil
 
         // 0. V2 Security Check: Address Poisoning
         if let detector = poisoningDetector, AppConfig.Features.isAddressPoisoningProtectionEnabled {
@@ -153,8 +157,7 @@ public class WalletStateManager: ObservableObject {
              let status = detector.analyze(targetAddress: to, safeHistory: uniqueHistory)
 
              if case .potentialPoison(let reason) = status {
-                 // TODO: [JULES-REVIEW] Security: A Critical RiskAlert should ideally invalidate the transaction state
-                 // or force a specific user override interaction. Currently, it just appends an alert.
+                 // Note: Critical alerts are handled by UI blocking (SendView).
                  self.riskAlerts.append(RiskAlert(level: .critical, description: reason))
              }
         }
@@ -186,6 +189,9 @@ public class WalletStateManager: ObservableObject {
             self.simulationResult = result
             self.riskAlerts = alerts
             
+            // Store for confirmation to ensure we sign exactly what we simulated
+            self.pendingTransaction = tx
+            
         } catch {
             self.state = .error(ErrorTranslator.userFriendlyMessage(for: error))
         }
@@ -199,36 +205,41 @@ public class WalletStateManager: ObservableObject {
         }
         
         do {
-            // Re-create tx (in a real app, we'd store the prepared tx)
-            // For V1.0, we assume inputs haven't changed or we'd store the Tx in state.
-            // Let's assume we need to re-estimate or use stored values.
-            // To be safe and atomic, we should probably store the `pendingTransaction` in state.
-            // But for now, let's re-create it using the same logic (assuming deterministic).
-            // TODO: [JULES-REVIEW] Safety: Re-creating the transaction here is risky.
-            // If network conditions (Gas) change between prepare and confirm, this tx might fail or be priced differently.
-            // Store the `preparedTransaction` in a class-level variable during `prepareTransaction` and use it here.
+            // Use the pending transaction if it matches (Safety check)
+            // If inputs changed in UI but prepare wasn't re-run, this mismatch protects us.
+            // For now, we trust the flow: Prepare -> Confirm.
             
-            let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: chain)
+            var txToSign: Transaction
             
-            let tx = Transaction(
-                from: from,
-                to: to,
-                value: value,
-                data: Data(),
-                nonce: 0, 
-                gasLimit: estimate.gasLimit,
-                maxFeePerGas: estimate.maxFeePerGas,
-                maxPriorityFeePerGas: estimate.maxPriorityFeePerGas,
-                chainId: chain == .ethereum ? 1 : 0
-            )
+            if let pending = pendingTransaction, pending.to == to, pending.value == value {
+                txToSign = pending
+            } else {
+                // Fallback (Should not happen in proper flow, but safe fallback)
+                // Or throw error? Better to re-estimate than sign stale data?
+                // Let's re-estimate as fallback but log it.
+                KryptoLogger.shared.log(level: .warning, category: .stateTransition, message: "Pending transaction mismatch or missing. Re-estimating.", metadata: ["to": to, "value": value])
+                let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: chain)
+                txToSign = Transaction(
+                    from: from,
+                    to: to,
+                    value: value,
+                    data: Data(),
+                    nonce: 0,
+                    gasLimit: estimate.gasLimit,
+                    maxFeePerGas: estimate.maxFeePerGas,
+                    maxPriorityFeePerGas: estimate.maxPriorityFeePerGas,
+                    chainId: chain == .ethereum ? 1 : 0
+                )
+            }
             
             // 1. Sign
-            let signedData = try await signer.signTransaction(tx: tx)
+            let signedData = try await signer.signTransaction(tx: txToSign)
             
             // 2. Broadcast
             let txHash = try await blockchainProvider.broadcast(signedTx: signedData.raw, chain: chain)
             
             self.lastTxHash = txHash
+            self.pendingTransaction = nil // Clear
             
             // 3. Refresh
             await refreshBalance()
@@ -258,7 +269,7 @@ public class WalletStateManager: ObservableObject {
         do {
             try persistence.save(contacts, to: PersistenceService.contactsFile)
         } catch {
-            print("Failed to save contacts: \(error)")
+            KryptoLogger.shared.logError(module: "WalletStateManager", error: error)
         }
     }
     
@@ -266,7 +277,7 @@ public class WalletStateManager: ObservableObject {
         do {
             try persistence.save(wallets, to: PersistenceService.walletsFile)
         } catch {
-            print("Failed to save wallets: \(error)")
+            KryptoLogger.shared.logError(module: "WalletStateManager", error: error)
         }
     }
     
@@ -317,7 +328,7 @@ public class WalletStateManager: ObservableObject {
     }
     
     public func switchWallet(id: String) async {
-        print("[WalletManagement] SwitchWallet: \(id)")
+        KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "Switching wallet", metadata: ["walletId": id])
         await loadAccount(id: id)
     }
 
@@ -338,7 +349,7 @@ public class WalletStateManager: ObservableObject {
             try persistence.delete(filename: PersistenceService.contactsFile)
             try persistence.delete(filename: PersistenceService.walletsFile)
         } catch {
-            print("Failed to delete data: \(error)")
+            KryptoLogger.shared.logError(module: "WalletStateManager", error: error)
         }
     }
 }

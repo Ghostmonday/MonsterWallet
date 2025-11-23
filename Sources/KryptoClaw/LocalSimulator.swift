@@ -4,9 +4,11 @@ import web3
 
 public class LocalSimulator: TransactionSimulatorProtocol {
     private let provider: BlockchainProviderProtocol
+    private let session: URLSession
     
-    public init(provider: BlockchainProviderProtocol) {
+    public init(provider: BlockchainProviderProtocol, session: URLSession = .shared) {
         self.provider = provider
+        self.session = session
     }
     
     public func simulate(tx: Transaction) async throws -> SimulationResult {
@@ -48,9 +50,29 @@ public class LocalSimulator: TransactionSimulatorProtocol {
              return SimulationResult(success: true, estimatedGasUsed: 21000, balanceChanges: [:])
         }
         
-        // TODO: [JULES-REVIEW] Critical Safety: ensure BigInt usage.
-        // Previous implementations used UInt64 which risks overflow.
-        // We rely on RPC `eth_call` here, but any local math must use BigInt.
+        // Safe Math: We use BigUInt to prevent overflow (Jules Mandate).
+        // Note: `balance.amount` comes as a decimal string or hex depending on provider.
+        // We should parse safely.
+        
+        let balanceBigInt: BigUInt
+        if balance.amount.hasPrefix("0x") {
+            balanceBigInt = BigUInt(balance.amount.dropFirst(2), radix: 16) ?? BigUInt(0)
+        } else {
+            balanceBigInt = BigUInt(balance.amount) ?? BigUInt(0)
+        }
+        
+        let txValue = BigUInt(tx.value) ?? BigUInt(0)
+        // Estimate cost = value + gas * gasPrice (rough check)
+        // For strict check we need gas price, but for now ensuring Value < Balance is a good start.
+        
+        if txValue > balanceBigInt {
+             return SimulationResult(
+                 success: false, 
+                 estimatedGasUsed: 0, 
+                 balanceChanges: [:], 
+                 error: "Insufficient Funds: Balance is lower than transaction value."
+             )
+        }
 
         let url = AppConfig.rpcURL
         
@@ -60,7 +82,7 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             "params": [[
                 "from": tx.from,
                 "to": tx.to,
-                "value": "0x" + (BigUInt(tx.value)?.toString(radix: 16) ?? "0"),
+                "value": "0x" + txValue.toString(radix: 16),
                 "data": "0x" + tx.data.toHexString()
             ], "latest"],
             "id": 1
@@ -71,8 +93,9 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             request.httpMethod = "POST"
             request.httpBody = try JSONSerialization.data(withJSONObject: payload)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.timeoutInterval = 30.0
 
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let (data, _) = try await session.data(for: request)
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                  if let error = json["error"] as? [String: Any] {
                       // Transaction would revert!
@@ -84,9 +107,6 @@ public class LocalSimulator: TransactionSimulatorProtocol {
                       )
                  }
             }
-
-            // If success, we just check balance locally for "Insufficient Funds" as a secondary check
-            // (Similar to previous logic but using BigInt)
 
             return SimulationResult(
                 success: true,

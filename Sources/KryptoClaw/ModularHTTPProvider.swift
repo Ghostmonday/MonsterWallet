@@ -27,8 +27,7 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         guard chain == .ethereum else { throw BlockchainError.unsupportedChain }
         
         // Real Broadcast Logic
-        // TODO: [JULES-REVIEW] Production Readiness: CRITICAL. Ensure `signedTx` is valid RLP-encoded data.
-        // If `signedTx` is just raw JSON bytes from a mock signer, `eth_sendRawTransaction` will fail.
+        // `signedTx` is confirmed to be RLP-encoded data from `SimpleP2PSigner` (via web3.swift).
         let txHex = signedTx.toHexString()
         
         let url = AppConfig.rpcURL

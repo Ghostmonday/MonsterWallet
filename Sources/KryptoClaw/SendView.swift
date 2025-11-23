@@ -10,6 +10,11 @@ struct SendView: View {
     @State private var isSimulating = false
     @State private var showConfirmation = false
     
+    // Helper to check for critical risks
+    private var hasCriticalRisk: Bool {
+        return wsm.riskAlerts.contains { $0.level == .critical }
+    }
+    
     var body: some View {
         ZStack {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
@@ -18,13 +23,13 @@ struct SendView: View {
                 // Header
                 HStack {
                     Text("Send Crypto")
-                        .font(themeManager.currentTheme.font(style: .title2))
-                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .font(themeManager.currentTheme.font(style: .title2))
+                    .foregroundColor(themeManager.currentTheme.textPrimary)
                     Spacer()
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(themeManager.currentTheme.textSecondary)
-                            .font(.system(size: 32))
+                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                        .font(.system(size: 32))
                     }
                 }
                 .padding()
@@ -42,17 +47,17 @@ struct SendView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Text("Simulation Result")
-                                    .font(themeManager.currentTheme.font(style: .headline))
-                                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                                .font(themeManager.currentTheme.font(style: .headline))
+                                .foregroundColor(themeManager.currentTheme.textPrimary)
                                 Spacer()
                                 if result.success {
                                     Text("PASSED")
-                                        .foregroundColor(themeManager.currentTheme.successColor)
-                                        .font(themeManager.currentTheme.font(style: .headline))
+                                    .foregroundColor(themeManager.currentTheme.successColor)
+                                    .font(themeManager.currentTheme.font(style: .headline))
                                 } else {
                                     Text("FAILED")
-                                        .foregroundColor(themeManager.currentTheme.errorColor)
-                                        .font(themeManager.currentTheme.font(style: .headline))
+                                    .foregroundColor(themeManager.currentTheme.errorColor)
+                                    .font(themeManager.currentTheme.font(style: .headline))
                                 }
                             }
                             
@@ -60,23 +65,26 @@ struct SendView: View {
                                 ForEach(wsm.riskAlerts, id: \.description) { alert in
                                     HStack {
                                         Image(systemName: "exclamationmark.triangle.fill")
-                                            .foregroundColor(themeManager.currentTheme.warningColor)
-                                        // TODO: [JULES-REVIEW] UX Safety: Ensure "Critical" alerts are visually distinct (e.g., Red background)
-                                        // and explain *why* it is dangerous.
+                                        .foregroundColor(alert.level == .critical ? .white : themeManager.currentTheme.warningColor)
+                                        
                                         Text(alert.description)
-                                            .font(themeManager.currentTheme.font(style: .caption))
-                                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                                        .font(themeManager.currentTheme.font(style: .caption))
+                                        .foregroundColor(alert.level == .critical ? .white : themeManager.currentTheme.textPrimary)
+                                        .bold(alert.level == .critical)
                                     }
+                                    .padding(alert.level == .critical ? 8 : 0)
+                                    .background(alert.level == .critical ? themeManager.currentTheme.errorColor : Color.clear)
+                                    .cornerRadius(4)
                                 }
                             }
                             
                             HStack {
                                 Text("Est. Gas:")
-                                    .foregroundColor(themeManager.currentTheme.textSecondary)
-                                    .font(themeManager.currentTheme.font(style: .body))
+                                .foregroundColor(themeManager.currentTheme.textSecondary)
+                                .font(themeManager.currentTheme.font(style: .body))
                                 Text("\(result.estimatedGasUsed)")
-                                    .foregroundColor(themeManager.currentTheme.textPrimary)
-                                    .font(themeManager.currentTheme.font(style: .body))
+                                .foregroundColor(themeManager.currentTheme.textPrimary)
+                                .font(themeManager.currentTheme.font(style: .body))
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -97,15 +105,22 @@ struct SendView: View {
                             }
                         }, isPrimary: true)
                     } else {
-                        // TODO: [JULES-REVIEW] Safety: Block "Confirm & Send" if there are Critical Risk Alerts,
-                        // or require an explicit "I accept the risk" checkbox.
-                        // Currently, a user can ignore the red text and just click Send because simulation passed.
+                        // Critical Risk Blocking: Button is disabled if critical risks exist
+                        if hasCriticalRisk {
+                            Text("Cannot Send: Critical Risk Detected")
+                                .font(themeManager.currentTheme.font(style: .caption))
+                                .foregroundColor(themeManager.currentTheme.errorColor)
+                                .bold()
+                        }
+                        
                         KryptoButton(title: "Confirm & Send", icon: themeManager.currentTheme.iconSend, action: {
                             Task {
                                 await wsm.confirmTransaction(to: toAddress, value: amount)
                                 presentationMode.wrappedValue.dismiss()
                             }
                         }, isPrimary: true)
+                        .opacity(hasCriticalRisk ? 0.5 : 1.0)
+                        .disabled(hasCriticalRisk)
                     }
                 }
                 .padding()
@@ -124,19 +139,19 @@ struct KryptoInput: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(themeManager.currentTheme.font(style: .headline))
-                .foregroundColor(themeManager.currentTheme.textPrimary)
+            .font(themeManager.currentTheme.font(style: .headline))
+            .foregroundColor(themeManager.currentTheme.textPrimary)
             
             TextField(placeholder, text: $text)
-                .font(themeManager.currentTheme.font(style: .title3))
-                .foregroundColor(themeManager.currentTheme.textPrimary)
-                .padding()
-                .background(themeManager.currentTheme.cardBackground)
-                .cornerRadius(2)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 2)
-                        .stroke(themeManager.currentTheme.borderColor, lineWidth: 2)
-                )
+            .font(themeManager.currentTheme.font(style: .title3))
+            .foregroundColor(themeManager.currentTheme.textPrimary)
+            .padding()
+            .background(themeManager.currentTheme.cardBackground)
+            .cornerRadius(2)
+            .overlay(
+                RoundedRectangle(cornerRadius: 2)
+                .stroke(themeManager.currentTheme.borderColor, lineWidth: 2)
+            )
         }
     }
 }
