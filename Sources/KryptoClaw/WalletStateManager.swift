@@ -91,10 +91,14 @@ public class WalletStateManager: ObservableObject {
             
             // For history, we just fetch ETH for now as the main history
             // In a real app, we'd merge histories
+            // TODO: [JULES-REVIEW] Production Readiness: Fetch history for all chains, not just Ethereum.
+            // Currently, this leaves a gap for Multi-Chain feature completeness.
+            // Implement concurrent history fetching similar to balances.
             let history = try await blockchainProvider.fetchHistory(address: address, chain: .ethereum)
             
             // Fetch NFTs
             // In a real app, this would be parallel
+            // TODO: [JULES-REVIEW] Production Readiness: Run NFT fetching in parallel with balances/history to improve startup time.
             let nfts = try await nftProvider.fetchNFTs(address: address)
             
             self.state = .loaded(balances)
@@ -127,6 +131,8 @@ public class WalletStateManager: ObservableObject {
 
              if case .potentialPoison(let reason) = status {
                  self.riskAlerts.append(RiskAlert(level: .critical, message: reason))
+                 // TODO: [JULES-REVIEW] Security: A Critical RiskAlert should ideally invalidate the transaction state
+                 // or force a specific user override interaction. Currently, it just appends an alert.
              }
         }
 
@@ -175,6 +181,9 @@ public class WalletStateManager: ObservableObject {
             // Let's assume we need to re-estimate or use stored values.
             // To be safe and atomic, we should probably store the `pendingTransaction` in state.
             // But for now, let's re-create it using the same logic (assuming deterministic).
+            // TODO: [JULES-REVIEW] Safety: Re-creating the transaction here is risky.
+            // If network conditions (Gas) change between prepare and confirm, this tx might fail or be priced differently.
+            // Store the `preparedTransaction` in a class-level variable during `prepareTransaction` and use it here.
             
             let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: chain)
             
@@ -230,6 +239,8 @@ public class WalletStateManager: ObservableObject {
         // 4. Update State
         
         // Simulation
+        // TODO: [JULES-REVIEW] Production Readiness: Replace this simulation with actual KeyStore interaction.
+        // Needs `BIP39` implementation to generate mnemonic, derive private key, and store securely in Keychain/SecureEnclave.
         let newId = UUID().uuidString
         let newWallet = WalletInfo(id: newId, name: name, colorTheme: "purple")
         wallets.append(newWallet)

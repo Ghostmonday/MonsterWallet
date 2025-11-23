@@ -38,6 +38,10 @@ public class LocalSimulator: TransactionSimulatorProtocol {
         // 3. Calculate Cost
         // Note: In production, use BigInt. Here we use UInt64 which is unsafe for real ETH values but ok for tests.
         
+        // TODO: [JULES-REVIEW] Critical Safety: UInt64 Overflow Risk.
+        // ETH values (18 decimals) often exceed UInt64 max. This logic will crash or behave unpredictably with real balances.
+        // MUST use `BigInt` or `NSDecimalNumber`.
+
         // Parse Balance (Hex or Decimal based on chain)
         var balanceVal: UInt64 = 0
         if chain == .ethereum {
