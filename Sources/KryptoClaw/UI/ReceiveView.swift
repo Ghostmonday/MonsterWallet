@@ -1,30 +1,94 @@
 import SwiftUI
+import CoreImage.CIFilterBuiltins
 
 struct ReceiveView: View {
     @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
+    @State private var copied: Bool = false
 
     var body: some View {
         ZStack {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
 
-            VStack {
-                Text("Receive")
-                    .font(themeManager.currentTheme.font(style: .largeTitle))
+            VStack(spacing: 30) {
+                // Header
+                Text("Receive Assets")
+                    .font(themeManager.currentTheme.font(style: .title2))
                     .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .padding(.top, 40)
 
-                // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-                // [MISSING FEATURE - CRITICAL]
-                // 1. Functionality: This view is entirely missing.
-                //    - Must generate a QR Code for the current address (`wsm.currentAddress`).
-                //    - "Copy to Clipboard" button (with the ClipboardGuard check).
-                //    - Share Sheet integration (iOS standard).
-                // 2. UI/UX:
-                //    - The QR code should be scannable but styled (e.g., custom colors if possible, or standard black/white for reliability).
-                //    - Should display the network clearly (e.g., "Send only ERC-20 tokens to this address").
-                Text("FEATURE NOT IMPLEMENTED")
-                    .foregroundColor(.red)
+                // QR Code
+                if let address = wsm.currentAddress {
+                    VStack(spacing: 20) {
+                        Image(uiImage: generateQRCode(from: address))
+                            .resizable()
+                            .interpolation(.none)
+                            .scaledToFit()
+                            .frame(width: 200, height: 200)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(12)
+
+                        Text("Scan to send ETH or ERC-20 tokens")
+                            .font(themeManager.currentTheme.font(style: .caption))
+                            .foregroundColor(themeManager.currentTheme.textSecondary)
+                    }
+
+                    // Address & Copy
+                    Button(action: {
+                        wsm.copyCurrentAddress()
+                        withAnimation {
+                            copied = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation { copied = false }
+                        }
+                    }) {
+                        HStack {
+                            Text(address)
+                                .font(themeManager.currentTheme.addressFont)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                                .foregroundColor(themeManager.currentTheme.textPrimary)
+
+                            Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                                .foregroundColor(copied ? .green : themeManager.currentTheme.accentColor)
+                        }
+                        .padding()
+                        .background(themeManager.currentTheme.backgroundSecondary)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
+                        )
+                    }
+                    .padding(.horizontal)
+
+                    // Share Sheet (Partial Implementation via ShareLink if iOS 16, or just Copy for now)
+                    ShareLink(item: address) {
+                        Label("Share Address", systemImage: "square.and.arrow.up")
+                    }
+                    .foregroundColor(themeManager.currentTheme.accentColor)
+                } else {
+                    Text("No Wallet Loaded")
+                        .foregroundColor(.red)
+                }
+
+                Spacer()
             }
         }
+    }
+
+    func generateQRCode(from string: String) -> UIImage {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+
+        if let outputImage = filter.outputImage {
+            if let cgimg = context.createCGImage(outputImage, from: outputImage.extent) {
+                return UIImage(cgImage: cgimg)
+            }
+        }
+        return UIImage(systemName: "xmark.circle") ?? UIImage()
     }
 }

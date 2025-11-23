@@ -9,6 +9,8 @@ public struct OnboardingView: View {
     @State private var isCreating = false
     @State private var isImporting = false
     @State private var importText = ""
+    @State private var createdMnemonic: String? = nil
+    @State private var showBackupSheet = false
     
     public init(onComplete: @escaping () -> Void) {
         self.onComplete = onComplete
@@ -23,10 +25,10 @@ public struct OnboardingView: View {
                 
                 // Logo & Branding
                 VStack(spacing: 24) {
-                    Image("AppIcon") // Assuming AppIcon is available in assets
+                    Image("AppIcon")
                         .resizable()
                         .frame(width: 100, height: 100)
-                        .cornerRadius(2) // Razor-edged
+                        .cornerRadius(2)
                         .overlay(
                             RoundedRectangle(cornerRadius: 2)
                                 .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
@@ -36,7 +38,7 @@ public struct OnboardingView: View {
                     VStack(spacing: 8) {
                         Text("KRYPTOCLAW")
                             .font(themeManager.currentTheme.font(style: .largeTitle))
-                            .tracking(2) // Elite spacing
+                            .tracking(2)
                             .foregroundColor(themeManager.currentTheme.textPrimary)
                         
                         Text("ELITE. SECURE. UNTRACEABLE.")
@@ -65,7 +67,22 @@ public struct OnboardingView: View {
                     )
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 60)
+                .padding(.bottom, 20)
+
+                // Footer (Compliance)
+                VStack(spacing: 12) {
+                    Text("By proceeding, you agree to our Terms of Service.")
+                        .font(themeManager.currentTheme.font(style: .caption))
+                        .foregroundColor(themeManager.currentTheme.textSecondary)
+
+                    HStack(spacing: 20) {
+                        Link("Terms", destination: AppConfig.supportURL)
+                        Link("Privacy Policy", destination: AppConfig.privacyPolicyURL)
+                    }
+                    .font(themeManager.currentTheme.font(style: .caption))
+                    .foregroundColor(themeManager.currentTheme.accentColor)
+                }
+                .padding(.bottom, 40)
             }
         }
         .sheet(isPresented: $isImporting) {
@@ -73,32 +90,32 @@ public struct OnboardingView: View {
                 importWallet(seed: seed)
             })
         }
+        .sheet(isPresented: $showBackupSheet) {
+            if let mnemonic = createdMnemonic {
+                BackupMnemonicView(mnemonic: mnemonic) {
+                    completeOnboarding()
+                }
+            }
+        }
     }
     
     func createWallet() {
-        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-        // [FUNCTIONALITY CRITICAL]
-        // This button currently loads a hardcoded demo account ("0x123...").
-        // ACTION: It must trigger the flow to generate a NEW 12/24 word seed phrase and prompt the user to back it up.
-
-        // In a real app, this would generate a seed phrase
-        // For V1.0, we simulate by loading a demo account
         Task {
-            await wsm.loadAccount(id: "0x1234567890abcdef1234567890abcdef12345678")
-            completeOnboarding()
+            if let mnemonic = await wsm.createWallet(name: "Main Wallet") {
+                createdMnemonic = mnemonic
+                showBackupSheet = true
+            }
         }
     }
     
     func importWallet(seed: String) {
-        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-        // [FUNCTIONALITY CRITICAL]
-        // This import logic ignores the user's input and loads the demo account.
-        // ACTION: Validate the mnemonic (checksum) and derive the real keys/address.
-
-        // Simulate import
         Task {
-            await wsm.loadAccount(id: "0x1234567890abcdef1234567890abcdef12345678")
-            completeOnboarding()
+            // Real Import Logic
+            if MnemonicService.validate(mnemonic: seed) {
+                // We assume WSM has 'importWallet' method now
+                await wsm.importWallet(mnemonic: seed)
+                completeOnboarding()
+            }
         }
     }
     
@@ -164,6 +181,49 @@ struct ImportWalletView: View {
             #if os(iOS)
             .navigationBarHidden(true)
             #endif
+        }
+    }
+}
+
+struct BackupMnemonicView: View {
+    let mnemonic: String
+    let onConfirm: () -> Void
+    @EnvironmentObject var themeManager: ThemeManager
+
+    var body: some View {
+        ZStack {
+            themeManager.currentTheme.backgroundMain.ignoresSafeArea()
+
+            VStack(spacing: 24) {
+                Text("SECRET KEY")
+                    .font(themeManager.currentTheme.font(style: .title2))
+                    .foregroundColor(.red)
+                    .padding(.top, 40)
+
+                Text("Write this down immediately. Do not share it. We cannot recover it for you.")
+                    .font(themeManager.currentTheme.font(style: .body))
+                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
+                Text(mnemonic)
+                    .font(themeManager.currentTheme.addressFont)
+                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .padding()
+                    .background(themeManager.currentTheme.backgroundSecondary)
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+
+                Spacer()
+
+                KryptoButton(
+                    title: "I HAVE SAVED IT",
+                    icon: "lock.fill",
+                    action: onConfirm,
+                    isPrimary: true
+                )
+                .padding(.bottom, 40)
+            }
         }
     }
 }

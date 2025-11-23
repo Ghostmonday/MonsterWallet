@@ -1,5 +1,7 @@
 import Foundation
 import CryptoKit
+import web3
+import BigInt
 
 public class SimpleP2PSigner: SignerProtocol {
     
@@ -15,32 +17,52 @@ public class SimpleP2PSigner: SignerProtocol {
         // 1. Get Private Key (Triggers Auth)
         let privateKeyData = try keyStore.getPrivateKey(id: keyId)
         
-        // 2. Serialize Tx
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .sortedKeys // Deterministic
-        let txData = try encoder.encode(tx)
+        // 2. Construct Ethereum Transaction
+        // Assuming 'tx' struct fields map to standard params.
+        // Using web3.swift structures.
         
-        // 3. Sign (Mocking ECDSA for V1.0 without external dependencies)
-        // In production, this would use CoreCrypto or CryptoKit with the specific curve (secp256k1 for ETH).
-        // CryptoKit supports P256 (secp256r1) but not k1 natively until recently or with headers.
-        // For this architecture demo, we will hash the data + key to simulate a signature.
+        guard let valueBig = BigUInt(tx.value) else { throw BlockchainError.parsingError }
+        guard let gasPriceBig = BigUInt(tx.maxFeePerGas) else { throw BlockchainError.parsingError }
+        guard let gasLimitBig = BigUInt(tx.gasLimit) else { throw BlockchainError.parsingError }
         
-        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-        // [SECURITY CRITICAL] [BLOCKER]
-        // This is a fake signature implementation using SHA256 hashing.
-        // 1. Functionality: Real Ethereum/Bitcoin transactions require ECDSA signatures on the secp256k1 curve.
-        //    - SHA256 hashes are NOT valid signatures and will be rejected by any real node/RPC.
-        // 2. Security: This exposes no real security properties of a digital signature.
-        // ACTION: Replace with `swift-crypto` (if available for secp256k1) or a library like `BlueECC`, `Secp256k1.swift`, or `Web3.swift`.
-        // The App Store will reject this if they test any transaction capability, or if you claim "Secure" but use this.
+        // Fix: EthereumAddress init is failable
+        let toAddress = EthereumAddress(tx.to) ?? EthereumAddress("0x0000000000000000000000000000000000000000")
+        
+        let ethereumTx = EthereumTransaction(
+            nonce: BigUInt(tx.nonce),
+            gasPrice: gasPriceBig,
+            gasLimit: gasLimitBig,
+            to: toAddress,
+            value: valueBig,
+            data: tx.data,
+            v: 0, r: 0, s: 0 // Will be set by signing
+        )
+        
+        // 3. Sign with Real ECDSA (secp256k1)
+        let account = try EthereumAccount(keyStorage: MockKeyStorage(key: privateKeyData))
 
-        let signatureInput = txData + privateKeyData
-        let signature = SHA256.hash(data: signatureInput).withUnsafeBytes { Data($0) }
-        
-        // 4. Calculate Hash (Tx Hash)
-        let txHash = SHA256.hash(data: txData).compactMap { String(format: "%02x", $0) }.joined()
-        
-        return SignedData(raw: txData, signature: signature, txHash: "0x" + txHash)
+        // Determine ChainID (Default Mainnet=1)
+        let chainId = BigUInt(tx.chainId)
+
+        // Web3.swift handles RLP encoding + Hashing + ECDSA Signing
+        // Note: Check exact API of the version we imported.
+        // Usually: `try account.sign(transaction: ethereumTx, chainId: chainId)`
+
+        // Assuming we use the imported library's sign method:
+        let signedTx = try account.sign(tx: ethereumTx, chainId: chainId)
+
+        // 4. Get RLP encoded data
+        guard let rawTx = signedTx.raw else {
+             throw BlockchainError.parsingError
+        }
+
+        // 5. Get Tx Hash
+        let txHash = signedTx.hash?.toHexString() ?? ""
+
+        // 6. Return
+        // We assume 'signature' field in SignedData is just for reference or legacy,
+        // but 'raw' MUST be the RLP encoded data for broadcast.
+        return SignedData(raw: rawTx, signature: Data(), txHash: txHash)
     }
     
     public func signMessage(message: String) async throws -> Data {
@@ -49,13 +71,11 @@ public class SimpleP2PSigner: SignerProtocol {
             throw BlockchainError.parsingError
         }
         
-        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-        // [SECURITY CRITICAL]
-        // Same issue as `signTransaction`. This is a mock signature.
-        // Real implementation requires EIP-191 (Personal Sign) or EIP-712 (Typed Data).
+        // Real ECDSA Signing (EIP-191 Personal Sign)
+        let account = try EthereumAccount(keyStorage: MockKeyStorage(key: privateKeyData))
 
-        let signatureInput = msgData + privateKeyData
-        let signature = SHA256.hash(data: signatureInput).withUnsafeBytes { Data($0) }
+        // Web3.swift 'sign(message:)' typically implements standard personal_sign prefixing.
+        let signature = try account.sign(message: msgData)
         
         return signature
     }

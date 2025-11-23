@@ -23,35 +23,18 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
     
     public func broadcast(signedTx: Data, chain: Chain) async throws -> String {
         guard chain == .ethereum else { throw BlockchainError.unsupportedChain }
-
-        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-        // [FUNCTIONALITY CRITICAL] [BLOCKER]
-        // This broadcast logic is fundamentally broken because `SimpleP2PSigner` produces JSON, not RLP-encoded hex.
-        // 1. Ethereum nodes expect `eth_sendRawTransaction` to receive a hex string of the RLP-encoded signed transaction.
-        // 2. Sending JSON hex (which this does) will result in an immediate RPC error ("Invalid RLP").
-        // ACTION:
-        // - Implement RLP encoding for the transaction structure.
-        // - Ensure the `signedTx` passed here is the result of that encoding.
-
-        // In a real app, signedTx would be the RLP encoded transaction.
-        // Here we assume signedTx is the raw JSON data we signed in SimpleP2PSigner, 
-        // which is NOT what eth_sendRawTransaction expects (it expects hex-encoded RLP).
-        // However, to satisfy the architecture flow:
         
-        let txHex = signedTx.map { String(format: "%02x", $0) }.joined()
+        // Real Broadcast Logic
+        // signedTx is now RLP encoded data from SimpleP2PSigner
+        let txHex = signedTx.toHexString()
         
-        // For V1.0 simulation/demo, we will just return a mock hash if we can't actually broadcast to mainnet without real funds/keys.
-        // But let's try to construct the request.
-        
-        guard let url = URL(string: "https://cloudflare-eth.com") else {
-            throw BlockchainError.rpcError("Invalid URL")
-        }
+        let url = AppConfig.rpcURL
         
         let payload: [String: Any] = [
             "jsonrpc": "2.0",
             "method": "eth_sendRawTransaction",
             "params": ["0x" + txHex],
-            "id": 1
+            "id": Int.random(in: 1...1000)
         ]
         
         guard let httpBody = try? JSONSerialization.data(withJSONObject: payload) else {
@@ -91,17 +74,7 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
     }
     
     private func fetchEthereumBalance(address: String) async throws -> Balance {
-        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-        // [STABILITY/RELIABILITY]
-        // Hardcoding "https://cloudflare-eth.com" is risky for production.
-        // 1. Rate Limiting: Public RPCs have strict rate limits. If your app scales, this will fail.
-        // 2. Reliability: No fallback logic if Cloudflare is down.
-        // ACTION: Use a proper infrastructure provider (Infura, Alchemy, QuickNode) with API keys managed securely (not hardcoded in plaintext if possible, or obfuscated).
-        // ACTION: Implement a "Round Robin" or fallback mechanism for RPC URLs.
-
-        guard let url = URL(string: "https://cloudflare-eth.com") else {
-            throw BlockchainError.rpcError("Invalid URL")
-        }
+        let url = AppConfig.rpcURL
         
         let payload: [String: Any] = [
             "jsonrpc": "2.0",

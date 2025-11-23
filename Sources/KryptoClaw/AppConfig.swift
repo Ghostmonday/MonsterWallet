@@ -4,6 +4,9 @@ public struct AppConfig {
     public static let privacyPolicyURL = URL(string: "https://kryptoclaw.app/privacy")!
     public static let supportURL = URL(string: "https://kryptoclaw.app/support")!
     
+    // Infrastructure
+    public static let rpcURL = URL(string: "https://eth.llamarpc.com")!
+
     // Feature Flags
     // V1.0 Compliance: Novel/Risky features DISABLED. Standard features ENABLED.
     public struct Features {

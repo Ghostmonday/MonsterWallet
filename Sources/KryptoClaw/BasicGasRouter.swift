@@ -1,4 +1,5 @@
 import Foundation
+import BigInt
 
 public class BasicGasRouter: RoutingProtocol {
     private let provider: BlockchainProviderProtocol
@@ -8,33 +9,62 @@ public class BasicGasRouter: RoutingProtocol {
     }
     
     public func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate {
-        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-        // [FUNCTIONALITY CRITICAL] [BLOCKER]
-        // Hardcoded gas estimation is unacceptable for a production wallet.
-        // 1. Gas Limit: 21,000 is only valid for simple ETH transfers. Token transfers (ERC-20) require ~65,000, and complex swaps can be 200k+.
-        //    - Transactions will fail "Out of Gas" or be rejected if data is present but limit is 21k.
-        // 2. Gas Price: 20 Gwei is static.
-        //    - If network congestion spikes (e.g. 100 Gwei), transactions will be stuck pending indefinitely.
-        //    - If network is cheap (e.g. 10 Gwei), users will overpay significantly.
-        // ACTION: Implement `eth_estimateGas` and `eth_maxPriorityFeePerGas` / `eth_gasPrice` RPC calls.
+        // Real Estimation Logic via RPC
+        // Note: In a cleaner architecture, the Provider should expose 'estimateGas' and 'getFeeData'.
+        // Here we are patching the Router to do it or call provider.
+        // Assuming provider is ModularHTTPProvider and we can't easily extend protocol in this patch without touching many files.
+        // We will do a direct RPC call here similar to Provider for expedience in this "Audit Fix".
+        
+        let url = AppConfig.rpcURL
+        
+        // 1. Estimate Gas Limit
+        let estimatePayload: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "eth_estimateGas",
+            "params": [[
+                "to": to,
+                "value": "0x" + (BigUInt(value)?.toString(radix: 16) ?? "0"),
+                "data": "0x" + data.toHexString()
+            ]],
+            "id": 1
+        ]
+        
+        let limit = try await rpcCall(url: url, payload: estimatePayload)
+        let gasLimit = UInt64(limit.dropFirst(2), radix: 16) ?? 21000
 
-        // In a real implementation, we would query the provider for current gas prices
-        // and simulate the tx to get gas limit.
-        // For V1.0 Cycle 4, we return standard defaults for a P2P transfer.
-        
-        // 21,000 gas is standard for ETH transfer
-        let gasLimit: UInt64 = 21000
-        
-        // 20 Gwei default (would be dynamic in production)
-        let maxFeePerGas = "20000000000"
-        
-        // 1 Gwei priority
-        let maxPriorityFeePerGas = "1000000000"
+        // 2. Get Gas Price (EIP-1559)
+        // For simplicity, we fallback to eth_gasPrice (legacy) or simple priority fee.
+        // Real app should use eth_maxPriorityFeePerGas.
+        let pricePayload: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "eth_gasPrice",
+            "params": [],
+            "id": 2
+        ]
+        let priceHex = try await rpcCall(url: url, payload: pricePayload)
+        let baseFee = BigUInt(priceHex.dropFirst(2), radix: 16) ?? BigUInt(20_000_000_000)
+
+        // Add tip
+        let priorityFee = BigUInt(2_000_000_000) // 2 Gwei tip
+        let maxFee = baseFee + priorityFee // Simplified for V1
         
         return GasEstimate(
             gasLimit: gasLimit,
-            maxFeePerGas: maxFeePerGas,
-            maxPriorityFeePerGas: maxPriorityFeePerGas
+            maxFeePerGas: String(maxFee),
+            maxPriorityFeePerGas: String(priorityFee)
         )
+    }
+
+    private func rpcCall(url: URL, payload: [String: Any]) async throws -> String {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw BlockchainError.parsingError }
+
+        if let err = json["error"] as? [String: Any] { throw BlockchainError.rpcError(err["message"] as? String ?? "RPC Error") }
+        return json["result"] as? String ?? "0x0"
     }
 }
