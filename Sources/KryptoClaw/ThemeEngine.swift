@@ -3,7 +3,6 @@ import SwiftUI
 public protocol ThemeProtocol {
     var id: String { get }
     var name: String { get }
-    var isPremium: Bool { get }
     
     // Colors
     var backgroundMain: Color { get }
@@ -14,78 +13,41 @@ public protocol ThemeProtocol {
     var successColor: Color { get }
     var errorColor: Color { get }
     var warningColor: Color { get }
+    var cardBackground: Color { get }
+    var borderColor: Color { get }
     
-    // Typography (Scalable)
-    func font(style: Font.TextStyle, weight: Font.Weight) -> Font
+    // Typography - Strict
+    var balanceFont: Font { get }
+    var addressFont: Font { get }
+    func font(style: Font.TextStyle) -> Font // Fallback for other text
     
-    // Assets (System Names for SF Symbols)
+    // Assets
     var iconSend: String { get }
     var iconReceive: String { get }
     var iconSettings: String { get }
     var iconShield: String { get }
 }
 
-public struct DefaultTheme: ThemeProtocol {
-    public let id = "default"
-    public let name = "Krypto Classic"
-    
-    // Methods
-    func font(style: Font.TextStyle, weight: Font.Weight) -> Font
-}
-
-// MARK: - Concrete Themes
-
-public struct ElectricCrayonTheme: ThemeProtocol {
-    public var backgroundMain: Color = KryptoColors.paperWhite
-    public var textPrimary: Color = KryptoColors.inkBlack
-    public var textSecondary: Color = KryptoColors.inkBlack.opacity(0.6)
-    public var accentColor: Color = KryptoColors.electricPurple
-    public var cardBackground: Color = .white
-    public var borderColor: Color = KryptoColors.inkBlack
-    
-    public var iconSend: String = "paperplane.fill"
-    public var iconReceive: String = "arrow.down.circle.fill"
-    public var iconSettings: String = "gearshape.fill"
-    
-    public func font(style: Font.TextStyle, weight: Font.Weight) -> Font {
-        switch style {
-        case .largeTitle, .title, .title2, .title3:
-            return .system(style, design: .rounded).weight(weight)
-        case .headline, .subheadline:
-            return .system(style, design: .rounded).weight(weight)
-        default:
-            return .system(style, design: .default).weight(weight)
-        }
-    }
-}
-
-public struct DarkModeTheme: ThemeProtocol {
-    public var backgroundMain: Color = KryptoColors.inkBlack
-    public var textPrimary: Color = .white
-    public var textSecondary: Color = .white.opacity(0.7)
-    public var accentColor: Color = KryptoColors.electricPurple
-    public var cardBackground: Color = Color(white: 0.1)
-    public var borderColor: Color = .white.opacity(0.2)
-    
-    public var iconSend: String = "paperplane.fill"
-    public var iconReceive: String = "arrow.down.circle.fill"
-    public var iconSettings: String = "gearshape.fill"
-    
-    public func font(style: Font.TextStyle, weight: Font.Weight) -> Font {
-        switch style {
-        case .largeTitle, .title, .title2, .title3:
-            return .system(style, design: .rounded).weight(weight)
-        case .headline, .subheadline:
-            return .system(style, design: .rounded).weight(weight)
-        default:
-            return .system(style, design: .default).weight(weight)
-        }
-    }
+// MARK: - Color Constants
+public enum KryptoColors {
+    public static let pitchBlack = Color.black
+    public static let weaponizedPurple = Color(red: 0.6, green: 0.0, blue: 1.0) // Sharp purple
+    public static let neonRed = Color(red: 1.0, green: 0.1, blue: 0.1)
+    public static let neonGreen = Color(red: 0.1, green: 1.0, blue: 0.1)
+    public static let bunkerGray = Color(white: 0.1)
+    public static let white = Color.white
 }
 
 // MARK: - Theme Manager
 
 public class ThemeManager: ObservableObject {
+    @Published public var currentTheme: ThemeProtocol
+    
+    public init(theme: ThemeProtocol = AppleDefaultTheme()) {
+        self.currentTheme = theme
+    }
+    
+    public func setTheme(_ theme: ThemeProtocol) {
         self.currentTheme = theme
     }
 }

@@ -1,60 +1,71 @@
 import SwiftUI
 
-struct OnboardingView: View {
+public struct OnboardingView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var wsm: WalletStateManager
+    
+    let onComplete: () -> Void
     
     @State private var isCreating = false
     @State private var isImporting = false
     @State private var importText = ""
     
-    // Callback to notify App that onboarding is done
-    var onComplete: () -> Void
+    public init(onComplete: @escaping () -> Void) {
+        self.onComplete = onComplete
+    }
     
-    var body: some View {
+    public var body: some View {
         ZStack {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
             
-            VStack(spacing: 32) {
+            VStack(spacing: 0) {
                 Spacer()
                 
                 // Logo & Branding
-                VStack(spacing: 16) {
+                VStack(spacing: 24) {
                     Image("AppIcon") // Assuming AppIcon is available in assets
                         .resizable()
-                        .frame(width: 120, height: 120)
-                        .cornerRadius(24)
-                        .shadow(radius: 10)
+                        .frame(width: 100, height: 100)
+                        .cornerRadius(2) // Razor-edged
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 2)
+                                .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
+                        )
+                        .shadow(color: themeManager.currentTheme.accentColor.opacity(0.3), radius: 20, x: 0, y: 0)
                     
-                    Text("KryptoClaw")
-                        .font(themeManager.currentTheme.font(style: .largeTitle, weight: .bold))
-                        .foregroundColor(themeManager.currentTheme.textPrimary)
-                    
-                    Text("The Coloring Book Crypto Wallet")
-                        .font(themeManager.currentTheme.font(style: .headline, weight: .medium))
-                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                    VStack(spacing: 8) {
+                        Text("KRYPTOCLAW")
+                            .font(themeManager.currentTheme.font(style: .largeTitle))
+                            .tracking(2) // Elite spacing
+                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                        
+                        Text("ELITE. SECURE. UNTRACEABLE.")
+                            .font(themeManager.currentTheme.font(style: .caption))
+                            .tracking(4)
+                            .foregroundColor(themeManager.currentTheme.accentColor)
+                    }
                 }
                 
                 Spacer()
                 
                 // Actions
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     KryptoButton(
-                        title: "Create New Wallet",
-                        icon: "plus.circle.fill",
+                        title: "INITIATE PROTOCOL",
+                        icon: "terminal.fill",
                         action: { createWallet() },
                         isPrimary: true
                     )
                     
                     KryptoButton(
-                        title: "Import Wallet",
+                        title: "RECOVER ASSETS",
                         icon: "arrow.down.doc.fill",
                         action: { isImporting = true },
                         isPrimary: false
                     )
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 48)
+                .padding(.bottom, 60)
             }
         }
         .sheet(isPresented: $isImporting) {
@@ -100,26 +111,34 @@ struct ImportWalletView: View {
             ZStack {
                 themeManager.currentTheme.backgroundMain.ignoresSafeArea()
                 
-                VStack(spacing: 24) {
-                    Text("Enter your Recovery Phrase")
-                        .font(themeManager.currentTheme.font(style: .title3, weight: .bold))
-                        .foregroundColor(themeManager.currentTheme.textPrimary)
-                        .padding(.top)
+                VStack(spacing: 32) {
+                    VStack(spacing: 8) {
+                        Text("RECOVERY SEQUENCE")
+                            .font(themeManager.currentTheme.font(style: .headline))
+                            .tracking(2)
+                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                        
+                        Text("Enter your 12 or 24 word phrase")
+                            .font(themeManager.currentTheme.font(style: .caption))
+                            .foregroundColor(themeManager.currentTheme.textSecondary)
+                    }
+                    .padding(.top, 32)
                     
                     TextEditor(text: $seedText)
-                        .frame(height: 150)
+                        .frame(height: 160)
                         .padding()
-                        .background(Color.white.opacity(0.1))
-                        .cornerRadius(12)
+                        .background(themeManager.currentTheme.backgroundSecondary)
+                        .cornerRadius(2) // Razor-edged
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(themeManager.currentTheme.accentColor, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 2)
+                                .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
                         )
                         .foregroundColor(themeManager.currentTheme.textPrimary)
+                        .font(themeManager.currentTheme.addressFont)
                         .padding(.horizontal)
                     
                     KryptoButton(
-                        title: "Import",
+                        title: "EXECUTE RECOVERY",
                         icon: "checkmark.circle.fill",
                         action: {
                             onImport(seedText)
@@ -132,13 +151,7 @@ struct ImportWalletView: View {
                     Spacer()
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { isPresented = false }
-                        .foregroundColor(themeManager.currentTheme.accentColor)
-                }
-            }
+            .navigationBarHidden(true)
         }
     }
 }

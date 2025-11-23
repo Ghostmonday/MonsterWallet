@@ -1,5 +1,9 @@
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+#endif
+
 public struct KryptoButton: View {
     let title: String
     let icon: String
@@ -7,25 +11,35 @@ public struct KryptoButton: View {
     let isPrimary: Bool
     
     @EnvironmentObject var themeManager: ThemeManager
+    @State private var isHovering = false
     
     public var body: some View {
-        Button(action: action) {
+        Button(action: {
+            #if os(iOS)
+            let generator = UIImpactFeedbackGenerator(style: .medium)
+            generator.impactOccurred()
+            #endif
+            action()
+        }) {
             HStack {
                 Image(systemName: icon)
                     .font(.system(size: 20, weight: .bold))
                 Text(title)
-                    .font(themeManager.currentTheme.font(style: .headline, weight: .bold))
+                    .font(themeManager.currentTheme.font(style: .headline))
             }
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(isPrimary ? themeManager.currentTheme.accentColor : Color.clear)
             .foregroundColor(isPrimary ? .white : themeManager.currentTheme.textPrimary)
-            .cornerRadius(16)
+            .cornerRadius(2) // Razor-edged
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(themeManager.currentTheme.borderColor, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 2)
+                    .stroke(themeManager.currentTheme.borderColor, lineWidth: isPrimary ? 0 : 2)
             )
-            .shadow(color: isPrimary ? themeManager.currentTheme.borderColor.opacity(0.2) : .clear, radius: 0, x: 4, y: 4)
+            .shadow(color: isHovering ? themeManager.currentTheme.accentColor.opacity(0.8) : .clear, radius: 10, x: 0, y: 0) // Glow on hover
+            .onHover { hovering in
+                isHovering = hovering
+            }
         }
         .buttonStyle(SquishButtonStyle())
     }
@@ -34,8 +48,8 @@ public struct KryptoButton: View {
 struct SquishButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0) // Subtle press
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
@@ -51,12 +65,11 @@ public struct KryptoCard<Content: View>: View {
         content
             .padding(20)
             .background(themeManager.currentTheme.cardBackground)
-            .cornerRadius(24)
+            .cornerRadius(2) // Razor-edged
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(themeManager.currentTheme.borderColor.opacity(0.1), lineWidth: 2)
+                RoundedRectangle(cornerRadius: 2)
+                    .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
     }
 }
 
@@ -68,12 +81,13 @@ struct KryptoTextField: View {
     var body: some View {
         TextField(placeholder, text: $text)
             .padding()
-            .background(Color.black.opacity(0.2))
-            .cornerRadius(8)
+            .background(themeManager.currentTheme.backgroundSecondary)
+            .cornerRadius(2)
             .foregroundColor(themeManager.currentTheme.textPrimary)
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(themeManager.currentTheme.textSecondary.opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 2)
+                    .stroke(themeManager.currentTheme.borderColor.opacity(0.5), lineWidth: 1)
             )
+            .font(themeManager.currentTheme.addressFont) // Monospace for input usually looks good in this style, or use body
     }
 }

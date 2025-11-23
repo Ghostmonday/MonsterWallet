@@ -20,14 +20,14 @@ struct HomeView: View {
                         Image("AppIcon") // Uses the AppIcon from Assets
                             .resizable()
                             .frame(width: 40, height: 40)
-                            .cornerRadius(8)
+                            .cornerRadius(2) // Razor-edged
                             .overlay(
-                                RoundedRectangle(cornerRadius: 8)
+                                RoundedRectangle(cornerRadius: 2)
                                     .stroke(themeManager.currentTheme.borderColor, lineWidth: 2)
                             )
                         
                         Text("KryptoClaw")
-                            .font(themeManager.currentTheme.font(style: .title2, weight: .bold))
+                            .font(themeManager.currentTheme.font(style: .title2))
                             .foregroundColor(themeManager.currentTheme.textPrimary)
                         
                         Spacer()
@@ -42,20 +42,20 @@ struct HomeView: View {
                     KryptoCard {
                         VStack(spacing: 12) {
                             Text("Total Balance")
-                                .font(themeManager.currentTheme.font(style: .subheadline, weight: .medium))
+                                .font(themeManager.currentTheme.font(style: .subheadline))
                                 .foregroundColor(themeManager.currentTheme.textSecondary)
                             
                             if case .loaded(let balances) = wsm.state {
                                 // For V1.0, we just show ETH as the primary display or a sum if we had prices
                                 let ethBalance = balances[.ethereum]?.amount ?? "0.00"
                                 Text("\(ethBalance) ETH")
-                                    .font(themeManager.currentTheme.font(style: .largeTitle, weight: .bold))
+                                    .font(themeManager.currentTheme.balanceFont)
                                     .foregroundColor(themeManager.currentTheme.textPrimary)
                             } else if case .loading = wsm.state {
                                 ProgressView()
                             } else {
                                 Text("$0.00")
-                                    .font(themeManager.currentTheme.font(style: .largeTitle, weight: .bold))
+                                    .font(themeManager.currentTheme.balanceFont)
                                     .foregroundColor(themeManager.currentTheme.textPrimary)
                             }
                         }
@@ -73,7 +73,7 @@ struct HomeView: View {
                     // Assets List
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Assets")
-                            .font(themeManager.currentTheme.font(style: .headline, weight: .bold))
+                            .font(themeManager.currentTheme.font(style: .headline))
                             .foregroundColor(themeManager.currentTheme.textPrimary)
                             .padding(.horizontal)
                         
@@ -121,13 +121,13 @@ struct AssetRow: View {
                     .overlay(Text(chain.rawValue.prefix(1).uppercased()).font(.caption).bold().foregroundColor(.white))
                 
                 Text(chain.rawValue.capitalized)
-                    .font(themeManager.currentTheme.font(style: .body, weight: .medium))
+                    .font(themeManager.currentTheme.font(style: .body))
                     .foregroundColor(themeManager.currentTheme.textPrimary)
                 
                 Spacer()
                 
                 Text("\(balance.amount) \(balance.currency)")
-                    .font(themeManager.currentTheme.font(style: .body, weight: .bold))
+                    .font(themeManager.currentTheme.font(style: .body))
                     .foregroundColor(themeManager.currentTheme.textPrimary)
             }
         }

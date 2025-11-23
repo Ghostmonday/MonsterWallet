@@ -12,7 +12,7 @@ struct SettingsView: View {
                 // Header
                 HStack {
                     Text("Settings")
-                        .font(themeManager.currentTheme.font(style: .title2, weight: .bold))
+                        .font(themeManager.currentTheme.font(style: .title2))
                         .foregroundColor(themeManager.currentTheme.textPrimary)
                     Spacer()
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
@@ -23,20 +23,52 @@ struct SettingsView: View {
                 }
                 .padding()
                 
-                // Theme Selector (Monetization Hook)
+                // Theme Selector
                 KryptoCard {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Themes")
-                            .font(themeManager.currentTheme.font(style: .headline, weight: .bold))
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Appearance")
+                            .font(themeManager.currentTheme.font(style: .headline))
                             .foregroundColor(themeManager.currentTheme.textPrimary)
                         
-                        HStack {
-                            Text("Current: \(themeManager.currentTheme.name)")
-                                .foregroundColor(themeManager.currentTheme.textSecondary)
-                            Spacer()
-                            if themeManager.currentTheme.isPremium {
-                                Image(systemName: "star.fill")
-                                    .foregroundColor(themeManager.currentTheme.warningColor)
+                        VStack(spacing: 0) {
+                            ThemeRow(name: "Default (Apple)", isSelected: themeManager.currentTheme.id == "apple_default") {
+                                themeManager.setTheme(AppleDefaultTheme())
+                            }
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            ThemeRow(name: "Obsidian Stealth", isSelected: themeManager.currentTheme.id == "obsidian_stealth") {
+                                themeManager.setTheme(ObsidianStealthTheme())
+                            }
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            ThemeRow(name: "Cyberpunk Neon", isSelected: themeManager.currentTheme.id == "cyberpunk_neon") {
+                                themeManager.setTheme(CyberpunkNeonTheme())
+                            }
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            ThemeRow(name: "Bunker Gray", isSelected: themeManager.currentTheme.id == "bunker_gray") {
+                                themeManager.setTheme(BunkerGrayTheme())
+                            }
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            ThemeRow(name: "Crimson Tide", isSelected: themeManager.currentTheme.id == "crimson_tide") {
+                                themeManager.setTheme(CrimsonTideTheme())
+                            }
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            ThemeRow(name: "Quantum Frost", isSelected: themeManager.currentTheme.id == "quantum_frost") {
+                                themeManager.setTheme(QuantumFrostTheme())
+                            }
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            ThemeRow(name: "Golden Era", isSelected: themeManager.currentTheme.id == "golden_era") {
+                                themeManager.setTheme(GoldenEraTheme())
+                            }
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            ThemeRow(name: "Matrix Code", isSelected: themeManager.currentTheme.id == "matrix_code") {
+                                themeManager.setTheme(MatrixCodeTheme())
+                            }
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            ThemeRow(name: "Neon Tokyo", isSelected: themeManager.currentTheme.id == "neon_tokyo") {
+                                themeManager.setTheme(NeonTokyoTheme())
+                            }
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            ThemeRow(name: "Stealth Bomber", isSelected: themeManager.currentTheme.id == "stealth_bomber") {
+                                themeManager.setTheme(StealthBomberTheme())
                             }
                         }
                     }
@@ -76,10 +108,34 @@ struct SettingsView: View {
                 Spacer()
                 
                 Text("Version 1.0.0 (Build 1)")
-                    .font(themeManager.currentTheme.font(style: .caption, weight: .regular))
+                    .font(themeManager.currentTheme.font(style: .caption))
                     .foregroundColor(themeManager.currentTheme.textSecondary)
                     .padding(.bottom)
             }
+        }
+    }
+}
+
+struct ThemeRow: View {
+    let name: String
+    let isSelected: Bool
+    let action: () -> Void
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Text(name)
+                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .font(themeManager.currentTheme.font(style: .body))
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(themeManager.currentTheme.accentColor)
+                }
+            }
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
         }
     }
 }

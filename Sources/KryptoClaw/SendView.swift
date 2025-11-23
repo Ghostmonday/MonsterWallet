@@ -18,7 +18,7 @@ struct SendView: View {
                 // Header
                 HStack {
                     Text("Send Crypto")
-                        .font(themeManager.currentTheme.font(style: .title2, weight: .bold))
+                        .font(themeManager.currentTheme.font(style: .title2))
                         .foregroundColor(themeManager.currentTheme.textPrimary)
                     Spacer()
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
@@ -42,17 +42,17 @@ struct SendView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Text("Simulation Result")
-                                    .font(themeManager.currentTheme.font(style: .headline, weight: .bold))
+                                    .font(themeManager.currentTheme.font(style: .headline))
                                     .foregroundColor(themeManager.currentTheme.textPrimary)
                                 Spacer()
                                 if result.success {
                                     Text("PASSED")
-                                        .foregroundColor(KryptoColors.success)
-                                        .font(themeManager.currentTheme.font(style: .headline, weight: .heavy))
+                                        .foregroundColor(themeManager.currentTheme.successColor)
+                                        .font(themeManager.currentTheme.font(style: .headline))
                                 } else {
                                     Text("FAILED")
-                                        .foregroundColor(KryptoColors.error)
-                                        .font(themeManager.currentTheme.font(style: .headline, weight: .heavy))
+                                        .foregroundColor(themeManager.currentTheme.errorColor)
+                                        .font(themeManager.currentTheme.font(style: .headline))
                                 }
                             }
                             
@@ -60,9 +60,9 @@ struct SendView: View {
                                 ForEach(wsm.riskAlerts, id: \.description) { alert in
                                     HStack {
                                         Image(systemName: "exclamationmark.triangle.fill")
-                                            .foregroundColor(KryptoColors.warning)
+                                            .foregroundColor(themeManager.currentTheme.warningColor)
                                         Text(alert.description)
-                                            .font(themeManager.currentTheme.font(style: .caption, weight: .medium))
+                                            .font(themeManager.currentTheme.font(style: .caption))
                                             .foregroundColor(themeManager.currentTheme.textPrimary)
                                     }
                                 }
@@ -71,10 +71,10 @@ struct SendView: View {
                             HStack {
                                 Text("Est. Gas:")
                                     .foregroundColor(themeManager.currentTheme.textSecondary)
-                                    .font(themeManager.currentTheme.font(style: .body, weight: .medium))
+                                    .font(themeManager.currentTheme.font(style: .body))
                                 Text("\(result.estimatedGasUsed)")
                                     .foregroundColor(themeManager.currentTheme.textPrimary)
-                                    .font(themeManager.currentTheme.font(style: .body, weight: .bold))
+                                    .font(themeManager.currentTheme.font(style: .body))
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -119,16 +119,17 @@ struct KryptoInput: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(themeManager.currentTheme.font(style: .headline, weight: .bold))
+                .font(themeManager.currentTheme.font(style: .headline))
                 .foregroundColor(themeManager.currentTheme.textPrimary)
             
             TextField(placeholder, text: $text)
-                .font(themeManager.currentTheme.font(style: .title3, weight: .medium))
+                .font(themeManager.currentTheme.font(style: .title3))
+                .foregroundColor(themeManager.currentTheme.textPrimary)
                 .padding()
                 .background(themeManager.currentTheme.cardBackground)
-                .cornerRadius(12)
+                .cornerRadius(2)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 2)
                         .stroke(themeManager.currentTheme.borderColor, lineWidth: 2)
                 )
         }

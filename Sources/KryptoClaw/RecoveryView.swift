@@ -20,7 +20,7 @@ struct RecoveryView: View {
                 // Header
                 HStack {
                     Text("Backup Wallet")
-                        .font(themeManager.currentTheme.font(style: .title2, weight: .bold))
+                        .font(themeManager.currentTheme.font(style: .title2).weight(.bold))
                         .foregroundColor(themeManager.currentTheme.textPrimary)
                     Spacer()
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
@@ -40,10 +40,10 @@ struct RecoveryView: View {
                         
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Secret Recovery Phrase")
-                                .font(themeManager.currentTheme.font(style: .headline, weight: .bold))
+                                .font(themeManager.currentTheme.font(style: .headline).weight(.bold))
                                 .foregroundColor(themeManager.currentTheme.textPrimary)
                             Text("This is the ONLY way to recover your wallet. Write it down and keep it safe.")
-                                .font(themeManager.currentTheme.font(style: .caption, weight: .regular))
+                                .font(themeManager.currentTheme.font(style: .caption).weight(.regular))
                                 .foregroundColor(themeManager.currentTheme.textSecondary)
                         }
                     }
@@ -56,11 +56,11 @@ struct RecoveryView: View {
                     ForEach(0..<12, id: \.self) { index in
                         HStack {
                             Text("\(index + 1).")
-                                .font(themeManager.currentTheme.font(style: .caption, weight: .medium))
+                                .font(themeManager.currentTheme.font(style: .caption).weight(.medium))
                                 .foregroundColor(themeManager.currentTheme.textSecondary)
                             
                             Text(isRevealed ? mockSeed[index] : "••••")
-                                .font(themeManager.currentTheme.font(style: .body, weight: .bold))
+                                .font(themeManager.currentTheme.font(style: .body).weight(.bold))
                                 .foregroundColor(themeManager.currentTheme.textPrimary)
                                 .blur(radius: isRevealed ? 0 : 4)
                         }
