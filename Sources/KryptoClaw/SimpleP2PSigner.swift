@@ -25,6 +25,15 @@ public class SimpleP2PSigner: SignerProtocol {
         // CryptoKit supports P256 (secp256r1) but not k1 natively until recently or with headers.
         // For this architecture demo, we will hash the data + key to simulate a signature.
         
+        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+        // [SECURITY CRITICAL] [BLOCKER]
+        // This is a fake signature implementation using SHA256 hashing.
+        // 1. Functionality: Real Ethereum/Bitcoin transactions require ECDSA signatures on the secp256k1 curve.
+        //    - SHA256 hashes are NOT valid signatures and will be rejected by any real node/RPC.
+        // 2. Security: This exposes no real security properties of a digital signature.
+        // ACTION: Replace with `swift-crypto` (if available for secp256k1) or a library like `BlueECC`, `Secp256k1.swift`, or `Web3.swift`.
+        // The App Store will reject this if they test any transaction capability, or if you claim "Secure" but use this.
+
         let signatureInput = txData + privateKeyData
         let signature = SHA256.hash(data: signatureInput).withUnsafeBytes { Data($0) }
         
@@ -40,6 +49,11 @@ public class SimpleP2PSigner: SignerProtocol {
             throw BlockchainError.parsingError
         }
         
+        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+        // [SECURITY CRITICAL]
+        // Same issue as `signTransaction`. This is a mock signature.
+        // Real implementation requires EIP-191 (Personal Sign) or EIP-712 (Typed Data).
+
         let signatureInput = msgData + privateKeyData
         let signature = SHA256.hash(data: signatureInput).withUnsafeBytes { Data($0) }
         

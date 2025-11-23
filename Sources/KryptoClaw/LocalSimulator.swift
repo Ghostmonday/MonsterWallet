@@ -8,6 +8,13 @@ public class LocalSimulator: TransactionSimulatorProtocol {
     }
     
     public func simulate(tx: Transaction) async throws -> SimulationResult {
+        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+        // [FUNCTIONALITY/SECURITY]
+        // This entire simulator is a heuristic mock.
+        // 1. Real Simulation: A production wallet should simulate the transaction against a forked state of the blockchain to see *actual* effects (internal txs, event logs, accurate gas usage).
+        // 2. Current Logic: It basically just subtracts numbers locally. It won't catch revert reasons from smart contracts or tax-on-transfer tokens.
+        // ACTION: Integrate a real simulation provider or remove the feature if it's not "True Simulation".
+
         // 0. Strict Security Check (V2)
         if AppConfig.Features.isAddressPoisoningProtectionEnabled {
              // Block infinite approvals (common scam pattern)

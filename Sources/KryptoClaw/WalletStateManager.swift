@@ -223,6 +223,13 @@ public class WalletStateManager: ObservableObject {
     
     // MARK: - Wallet Management
     public func createWallet(name: String) async {
+        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+        // [FUNCTIONALITY CRITICAL] [BLOCKER]
+        // This creates a fake wallet ID (UUID).
+        // 1. Real wallets require BIP39 Mnemonic generation + BIP32/44 Key Derivation.
+        // 2. The ID should be the public address derived from the key, not a random UUID.
+        // ACTION: Implement BIP39/BIP44.
+
         // In a real app:
         // 1. Generate Mnemonic
         // 2. Derive Key

@@ -101,6 +101,14 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal)
                 
+                // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+                // [COMPLIANCE CRITICAL] [BLOCKER]
+                // App Store Guideline 5.1.1(v):
+                // "Apps that support account creation must also offer account deletion within the app."
+                // Since we have "Create Wallet", we technically have accounts (even if local).
+                // Best practice for non-custodial: "Reset Wallet" or "Wipe Data" button.
+                // ACTION: Add a "Destructive" section with a "Reset Wallet" button that wipes the KeyStore and UserDefaults.
+
                 Spacer()
                 
                 Text("Version 1.0.0 (Build 1)")

@@ -76,6 +76,11 @@ public struct OnboardingView: View {
     }
     
     func createWallet() {
+        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+        // [FUNCTIONALITY CRITICAL]
+        // This button currently loads a hardcoded demo account ("0x123...").
+        // ACTION: It must trigger the flow to generate a NEW 12/24 word seed phrase and prompt the user to back it up.
+
         // In a real app, this would generate a seed phrase
         // For V1.0, we simulate by loading a demo account
         Task {
@@ -85,6 +90,11 @@ public struct OnboardingView: View {
     }
     
     func importWallet(seed: String) {
+        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+        // [FUNCTIONALITY CRITICAL]
+        // This import logic ignores the user's input and loads the demo account.
+        // ACTION: Validate the mnemonic (checksum) and derive the real keys/address.
+
         // Simulate import
         Task {
             await wsm.loadAccount(id: "0x1234567890abcdef1234567890abcdef12345678")
