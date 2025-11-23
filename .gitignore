@@ -31,3 +31,4 @@ fastlane/screenshots/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+Secrets.xcconfig
