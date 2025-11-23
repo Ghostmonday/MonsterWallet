@@ -23,25 +23,18 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
     
     public func broadcast(signedTx: Data, chain: Chain) async throws -> String {
         guard chain == .ethereum else { throw BlockchainError.unsupportedChain }
-        // In a real app, signedTx would be the RLP encoded transaction.
-        // Here we assume signedTx is the raw JSON data we signed in SimpleP2PSigner, 
-        // which is NOT what eth_sendRawTransaction expects (it expects hex-encoded RLP).
-        // However, to satisfy the architecture flow:
         
-        let txHex = signedTx.map { String(format: "%02x", $0) }.joined()
+        // Real Broadcast Logic
+        // signedTx is now RLP encoded data from SimpleP2PSigner
+        let txHex = signedTx.toHexString()
         
-        // For V1.0 simulation/demo, we will just return a mock hash if we can't actually broadcast to mainnet without real funds/keys.
-        // But let's try to construct the request.
-        
-        guard let url = URL(string: "https://cloudflare-eth.com") else {
-            throw BlockchainError.rpcError("Invalid URL")
-        }
+        let url = AppConfig.rpcURL
         
         let payload: [String: Any] = [
             "jsonrpc": "2.0",
             "method": "eth_sendRawTransaction",
             "params": ["0x" + txHex],
-            "id": 1
+            "id": Int.random(in: 1...1000)
         ]
         
         guard let httpBody = try? JSONSerialization.data(withJSONObject: payload) else {
@@ -81,9 +74,7 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
     }
     
     private func fetchEthereumBalance(address: String) async throws -> Balance {
-        guard let url = URL(string: "https://cloudflare-eth.com") else {
-            throw BlockchainError.rpcError("Invalid URL")
-        }
+        let url = AppConfig.rpcURL
         
         let payload: [String: Any] = [
             "jsonrpc": "2.0",

@@ -150,8 +150,7 @@ public struct HomeView: View {
             SendView() // Assuming SendView exists and can handle context via environment or init
         }
         .sheet(isPresented: $showingReceive) {
-            // Placeholder for Receive View
-            Text("Receive View")
+            ReceiveView()
         }
         .sheet(isPresented: $showingSwap) {
             SwapView()

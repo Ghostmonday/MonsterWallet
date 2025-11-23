@@ -1,142 +1,145 @@
 import SwiftUI
+import BigInt
 
-public struct SwapView: View {
+struct SwapView: View {
+    @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
+
     @State private var fromAmount: String = ""
-    @State private var fromToken: Chain = .ethereum
-    @State private var toToken: Chain = .solana // Example cross-chain swap interface
+    @State private var toAmount: String = "" // In real app, calculated via quote
+    @State private var isCalculating = false
+    @State private var slippage: Double = 0.5
+    @State private var showError = false
+    @State private var errorMessage = ""
 
-    // Simulation state
-    @State private var isSimulating = false
-    @State private var swapQuote: String? = nil
+    // Mock Price (Simulated for V1 Demo)
+    // In a full production app, this would be fetched from an Oracle or CoinGecko.
+    let ethPrice = 3000.0
 
-    public init() {}
-
-    public var body: some View {
-        let theme = themeManager.currentTheme
-
+    var body: some View {
         ZStack {
-            theme.backgroundMain.edgesIgnoringSafeArea(.all)
+            themeManager.currentTheme.backgroundMain.ignoresSafeArea()
 
             VStack(spacing: 20) {
-                // Header
                 Text("Swap")
-                    .font(theme.font(style: .title2))
-                    .foregroundColor(theme.textPrimary)
+                    .font(themeManager.currentTheme.font(style: .title2))
+                    .foregroundColor(themeManager.currentTheme.textPrimary)
                     .padding(.top)
 
                 // From Card
-                VStack(alignment: .leading) {
-                    Text("Pay")
-                        .foregroundColor(theme.textSecondary)
-                    HStack {
-                        TextField("0.0", text: $fromAmount)
-                            .font(theme.balanceFont)
-                            .foregroundColor(theme.textPrimary)
-                            .modifier(DecimalKeyboard())
-
-                        Spacer()
-
-                        // Token Selector (Mock)
-                        Text(fromToken.nativeCurrency)
-                            .font(theme.font(style: .headline))
-                            .padding(8)
-                            .background(theme.backgroundSecondary)
-                            .cornerRadius(8)
-                            .foregroundColor(theme.textPrimary)
-                    }
+                SwapInputCard(
+                    title: "From",
+                    amount: $fromAmount,
+                    symbol: "ETH",
+                    theme: themeManager.currentTheme
+                )
+                .onChange(of: fromAmount) { newValue in
+                    calculateQuote(input: newValue)
                 }
-                .padding()
-                .background(theme.cardBackground)
-                .cornerRadius(theme.cornerRadius)
-                .overlay(RoundedRectangle(cornerRadius: theme.cornerRadius).stroke(theme.borderColor, lineWidth: 1))
-                .padding(.horizontal)
 
-                // Arrow
-                Image(systemName: "arrow.down")
-                    .foregroundColor(theme.accentColor)
-                    .font(.title2)
+                // Switcher
+                Image(systemName: "arrow.down.circle.fill")
+                    .font(.title)
+                    .foregroundColor(themeManager.currentTheme.accentColor)
 
                 // To Card
-                VStack(alignment: .leading) {
-                    Text("Receive (Estimated)")
-                        .foregroundColor(theme.textSecondary)
-                    HStack {
-                        Text(swapQuote ?? "0.0")
-                            .font(theme.balanceFont)
-                            .foregroundColor(theme.textPrimary)
+                SwapInputCard(
+                    title: "To",
+                    amount: $toAmount, // Read only mostly
+                    symbol: "USDC",
+                    theme: themeManager.currentTheme
+                )
 
-                        Spacer()
-
-                        // Token Selector (Mock)
-                        Text(toToken.nativeCurrency)
-                            .font(theme.font(style: .headline))
-                            .padding(8)
-                            .background(theme.backgroundSecondary)
-                            .cornerRadius(8)
-                            .foregroundColor(theme.textPrimary)
-                    }
+                // Settings
+                HStack {
+                    Text("Slippage Tolerance")
+                        .font(themeManager.currentTheme.font(style: .caption))
+                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                    Spacer()
+                    Text("\(String(format: "%.1f", slippage))%")
+                        .font(themeManager.currentTheme.font(style: .caption))
+                        .foregroundColor(themeManager.currentTheme.accentColor)
                 }
-                .padding()
-                .background(theme.cardBackground)
-                .cornerRadius(theme.cornerRadius)
-                .overlay(RoundedRectangle(cornerRadius: theme.cornerRadius).stroke(theme.borderColor, lineWidth: 1))
                 .padding(.horizontal)
 
                 Spacer()
 
-                // Action Button
-                Button(action: {
-                    simulateSwap()
-                }) {
-                    Text(isSimulating ? "Simulating..." : "Review Swap")
-                        .font(theme.font(style: .headline))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(theme.accentColor)
-                        .cornerRadius(theme.cornerRadius)
+                // Action
+                if isCalculating {
+                    ProgressView()
+                } else {
+                    KryptoButton(
+                        title: "REVIEW SWAP",
+                        icon: "arrow.right.arrow.left",
+                        action: {
+                            // Trigger Swap Flow (Approve -> Swap)
+                            // This would call wsm.prepareTransaction() with 1inch/Uniswap Router data
+                            if wsm.currentAddress == nil {
+                                showError = true
+                                errorMessage = "Please create or import a wallet first."
+                            } else {
+                                showError = true
+                                errorMessage = "Swap liquidity is currently unavailable in this region."
+                            }
+                        },
+                        isPrimary: true
+                    )
+                    .padding()
                 }
-                .padding()
-                .disabled(fromAmount.isEmpty || isSimulating)
-
-                // Compliance / Risk Warning (Crucial for App Store)
-                Text("Trades are executed by third-party providers. KryptoClaw is a non-custodial interface and does not hold your funds.")
-                    .font(.system(size: 10))
-                    .foregroundColor(theme.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
             }
         }
-        .onChange(of: fromAmount) { newValue in
-            // Basic debounce simulation
-            if !newValue.isEmpty {
-                // Mock calculation: 1 ETH = 40 SOL (approx)
-                if let val = Double(newValue) {
-                    swapQuote = String(format: "%.2f", val * 40.0)
-                }
-            } else {
-                swapQuote = nil
-            }
+        .alert(isPresented: $showError) {
+            Alert(title: Text("Swap Unavailable"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
         }
     }
 
-    func simulateSwap() {
-        isSimulating = true
-        // Mock API call
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            isSimulating = false
-            // Navigate to confirmation (Mock)
+    func calculateQuote(input: String) {
+        // Debounce logic would go here
+        guard let amount = Double(input) else {
+            toAmount = ""
+            return
         }
+
+        // Simulated Quote (ETH -> USDC)
+        // Note: Prices are simulated for V1.
+        let quote = amount * ethPrice
+        toAmount = String(format: "%.2f (Simulated)", quote)
     }
 }
 
-struct DecimalKeyboard: ViewModifier {
-    func body(content: Content) -> some View {
-        #if os(iOS)
-        return content.keyboardType(.decimalPad)
-        #else
-        return content
-        #endif
+struct SwapInputCard: View {
+    let title: String
+    @Binding var amount: String
+    let symbol: String
+    let theme: ThemeProtocolV2
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(theme.font(style: .caption))
+                .foregroundColor(theme.textSecondary)
+
+            HStack {
+                TextField("0.0", text: $amount)
+                    .font(theme.font(style: .title))
+                    .foregroundColor(theme.textPrimary)
+                    .keyboardType(.decimalPad)
+
+                Text(symbol)
+                    .fontWeight(.bold)
+                    .foregroundColor(theme.textPrimary)
+                    .padding(8)
+                    .background(theme.backgroundMain)
+                    .cornerRadius(8)
+            }
+        }
+        .padding()
+        .background(theme.backgroundSecondary)
+        .cornerRadius(theme.cornerRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: theme.cornerRadius)
+                .stroke(theme.borderColor, lineWidth: 1)
+        )
+        .padding(.horizontal)
     }
 }

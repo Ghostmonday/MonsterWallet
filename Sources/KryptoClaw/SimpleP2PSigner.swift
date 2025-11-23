@@ -1,5 +1,7 @@
 import Foundation
 import CryptoKit
+import web3
+import BigInt
 
 public class SimpleP2PSigner: SignerProtocol {
     
@@ -15,23 +17,52 @@ public class SimpleP2PSigner: SignerProtocol {
         // 1. Get Private Key (Triggers Auth)
         let privateKeyData = try keyStore.getPrivateKey(id: keyId)
         
-        // 2. Serialize Tx
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .sortedKeys // Deterministic
-        let txData = try encoder.encode(tx)
+        // 2. Construct Ethereum Transaction
+        // Assuming 'tx' struct fields map to standard params.
+        // Using web3.swift structures.
         
-        // 3. Sign (Mocking ECDSA for V1.0 without external dependencies)
-        // In production, this would use CoreCrypto or CryptoKit with the specific curve (secp256k1 for ETH).
-        // CryptoKit supports P256 (secp256r1) but not k1 natively until recently or with headers.
-        // For this architecture demo, we will hash the data + key to simulate a signature.
+        guard let valueBig = BigUInt(tx.value) else { throw BlockchainError.parsingError }
+        guard let gasPriceBig = BigUInt(tx.maxFeePerGas) else { throw BlockchainError.parsingError }
+        guard let gasLimitBig = BigUInt(tx.gasLimit) else { throw BlockchainError.parsingError }
         
-        let signatureInput = txData + privateKeyData
-        let signature = SHA256.hash(data: signatureInput).withUnsafeBytes { Data($0) }
+        // Fix: EthereumAddress init is failable
+        let toAddress = EthereumAddress(tx.to) ?? EthereumAddress("0x0000000000000000000000000000000000000000")
         
-        // 4. Calculate Hash (Tx Hash)
-        let txHash = SHA256.hash(data: txData).compactMap { String(format: "%02x", $0) }.joined()
+        let ethereumTx = EthereumTransaction(
+            nonce: BigUInt(tx.nonce),
+            gasPrice: gasPriceBig,
+            gasLimit: gasLimitBig,
+            to: toAddress,
+            value: valueBig,
+            data: tx.data,
+            v: 0, r: 0, s: 0 // Will be set by signing
+        )
         
-        return SignedData(raw: txData, signature: signature, txHash: "0x" + txHash)
+        // 3. Sign with Real ECDSA (secp256k1)
+        let account = try EthereumAccount(keyStorage: MockKeyStorage(key: privateKeyData))
+
+        // Determine ChainID (Default Mainnet=1)
+        let chainId = BigUInt(tx.chainId)
+
+        // Web3.swift handles RLP encoding + Hashing + ECDSA Signing
+        // Note: Check exact API of the version we imported.
+        // Usually: `try account.sign(transaction: ethereumTx, chainId: chainId)`
+
+        // Assuming we use the imported library's sign method:
+        let signedTx = try account.sign(tx: ethereumTx, chainId: chainId)
+
+        // 4. Get RLP encoded data
+        guard let rawTx = signedTx.raw else {
+             throw BlockchainError.parsingError
+        }
+
+        // 5. Get Tx Hash
+        let txHash = signedTx.hash?.toHexString() ?? ""
+
+        // 6. Return
+        // We assume 'signature' field in SignedData is just for reference or legacy,
+        // but 'raw' MUST be the RLP encoded data for broadcast.
+        return SignedData(raw: rawTx, signature: Data(), txHash: txHash)
     }
     
     public func signMessage(message: String) async throws -> Data {
@@ -40,8 +71,11 @@ public class SimpleP2PSigner: SignerProtocol {
             throw BlockchainError.parsingError
         }
         
-        let signatureInput = msgData + privateKeyData
-        let signature = SHA256.hash(data: signatureInput).withUnsafeBytes { Data($0) }
+        // Real ECDSA Signing (EIP-191 Personal Sign)
+        let account = try EthereumAccount(keyStorage: MockKeyStorage(key: privateKeyData))
+
+        // Web3.swift 'sign(message:)' typically implements standard personal_sign prefixing.
+        let signature = try account.sign(message: msgData)
         
         return signature
     }

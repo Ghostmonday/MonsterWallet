@@ -222,18 +222,47 @@ public class WalletStateManager: ObservableObject {
     }
     
     // MARK: - Wallet Management
-    public func createWallet(name: String) async {
-        // In a real app:
-        // 1. Generate Mnemonic
-        // 2. Derive Key
-        // 3. Store in KeyStore
-        // 4. Update State
+    public func createWallet(name: String) async -> String? {
+        // Real Implementation
+        guard let mnemonic = MnemonicService.generateMnemonic() else {
+            self.state = .error("Failed to generate mnemonic")
+            return nil
+        }
         
-        // Simulation
-        let newId = UUID().uuidString
-        let newWallet = WalletInfo(id: newId, name: name, colorTheme: "purple")
-        wallets.append(newWallet)
-        await loadAccount(id: newId)
+        do {
+            let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic)
+            let address = HDWalletService.address(from: privateKey)
+
+            // Store the key securely
+            _ = try keyStore.storePrivateKey(key: privateKey, id: address)
+
+            // Update State
+            let newWallet = WalletInfo(id: address, name: name, colorTheme: "purple")
+            wallets.append(newWallet)
+            await loadAccount(id: address)
+
+            return mnemonic // Return to UI for backup
+        } catch {
+            self.state = .error("Wallet creation failed: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    public func importWallet(mnemonic: String) async {
+        do {
+            let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic)
+            let address = HDWalletService.address(from: privateKey)
+
+            // Check if already exists? (Optional)
+
+            _ = try keyStore.storePrivateKey(key: privateKey, id: address)
+
+            let newWallet = WalletInfo(id: address, name: "Imported Wallet", colorTheme: "blue")
+            wallets.append(newWallet)
+            await loadAccount(id: address)
+        } catch {
+            self.state = .error("Import failed: \(error.localizedDescription)")
+        }
     }
     
     public func switchWallet(id: String) async {
