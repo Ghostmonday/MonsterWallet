@@ -23,8 +23,7 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: id,
             kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-            kSecUseAuthenticationUI as String: kSecUseAuthenticationUIAllow
+            kSecMatchLimit as String: kSecMatchLimitOne
         ]
         
         var item: CFTypeRef?

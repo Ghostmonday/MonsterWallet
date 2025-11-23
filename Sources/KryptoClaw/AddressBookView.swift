@@ -102,7 +102,9 @@ struct AddContactView: View {
                 }
                 .padding()
                 .navigationTitle("Add Contact")
+                #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Cancel") { isPresented = false }
@@ -130,7 +132,7 @@ struct AddContactView: View {
         wsm.addContact(contact)
         
         // Telemetry
-        print("[AddressBook] Contact Added")
+        Telemetry.shared.logEvent("Contact Added", parameters: ["name": name])
         
         isPresented = false
     }

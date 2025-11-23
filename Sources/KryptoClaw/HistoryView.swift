@@ -4,6 +4,7 @@ struct HistoryView: View {
     @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.openURL) var openURL
     
     @State private var filter: TxFilter = .all
     
@@ -86,7 +87,7 @@ struct HistoryView: View {
         // Compliance: Must open in external Safari, not embedded WebView
         if let url = URL(string: "https://etherscan.io/tx/\(hash)") {
             print("[History] Explorer Link Tapped")
-            UIApplication.shared.open(url)
+            openURL(url)
         }
     }
 }

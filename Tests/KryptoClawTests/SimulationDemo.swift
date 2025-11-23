@@ -24,7 +24,8 @@ final class SimulationDemo: XCTestCase {
             simulator: simulator,
             router: router,
             securityPolicy: securityPolicy,
-            signer: signer
+            signer: signer,
+            nftProvider: MockNFTProvider()
         )
         
         print("✅ Core Systems Initialized.")
@@ -33,8 +34,12 @@ final class SimulationDemo: XCTestCase {
         print("\n👤 User opens Home Screen...")
         await wsm.loadAccount(id: "0xUserWallet")
         
-        if case .loaded(let balance) = await wsm.state {
-            print("💰 Balance Displayed: \(balance.amount) \(balance.currency)")
+        if case .loaded(let balances) = wsm.state {
+            if let balance = balances[.ethereum] {
+                print("💰 Balance Displayed: \(balance.amount) \(balance.currency)")
+            } else {
+                print("⚠️ No ETH Balance")
+            }
         } else {
             print("❌ Failed to load balance")
         }
@@ -50,11 +55,11 @@ final class SimulationDemo: XCTestCase {
         print("\n🔄 Running Transaction Simulation...")
         await wsm.prepareTransaction(to: toAddress, value: amount)
         
-        if let result = await wsm.simulationResult {
+        if let result = wsm.simulationResult {
             if result.success {
                 print("✅ Simulation PASSED")
                 print("   - Est. Gas: \(result.estimatedGasUsed)")
-                print("   - Risk Analysis: \(await wsm.riskAlerts.isEmpty ? "Safe" : "Risks Detected")")
+                print("   - Risk Analysis: \(wsm.riskAlerts.isEmpty ? "Safe" : "Risks Detected")")
             } else {
                 print("❌ Simulation FAILED: \(result.error ?? "Unknown")")
             }
@@ -64,7 +69,7 @@ final class SimulationDemo: XCTestCase {
         print("\n🔓 User taps 'Confirm' (FaceID Triggered)...")
         await wsm.confirmTransaction(to: toAddress, value: amount)
         
-        if let hash = await wsm.lastTxHash {
+        if let hash = wsm.lastTxHash {
             print("🚀 Transaction Broadcasted Successfully!")
             print("🔗 Tx Hash: \(hash)")
         } else {

@@ -15,13 +15,14 @@ final class ModelsTests: XCTestCase {
     }
     
     func testContactValidation() {
-        let validContact = Contact(name: "Bob Smith", address: "0x123")
+        let validAddress = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        let validContact = Contact(name: "Bob Smith", address: validAddress)
         XCTAssertNoThrow(try validContact.validate())
         
-        let invalidNameContact = Contact(name: "Bob 🚀", address: "0x123")
+        let invalidNameContact = Contact(name: "Bob 🚀", address: validAddress)
         XCTAssertThrowsError(try invalidNameContact.validate())
         
-        let longNameContact = Contact(name: String(repeating: "A", count: 51), address: "0x123")
+        let longNameContact = Contact(name: String(repeating: "A", count: 51), address: validAddress)
         XCTAssertThrowsError(try longNameContact.validate())
     }
     

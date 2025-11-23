@@ -137,7 +137,9 @@ struct WalletCreationView: View {
                 }
                 .padding()
                 .navigationTitle(stepTitle)
+                #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
             }
         }
     }

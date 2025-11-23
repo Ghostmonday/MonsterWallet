@@ -151,7 +151,9 @@ struct ImportWalletView: View {
                     Spacer()
                 }
             }
+            #if os(iOS)
             .navigationBarHidden(true)
+            #endif
         }
     }
 }

@@ -54,7 +54,8 @@ final class WalletStateManagerTests: XCTestCase {
             simulator: MockSimulator(),
             router: MockRouter(),
             securityPolicy: MockSecurityPolicy(),
-            signer: mockSigner
+            signer: mockSigner,
+            nftProvider: MockNFTProvider()
         )
     }
     
@@ -62,8 +63,8 @@ final class WalletStateManagerTests: XCTestCase {
         await wsm.loadAccount(id: "0xAddr")
         
         let state = await wsm.state
-        if case .loaded(let balance) = state {
-            XCTAssertEqual(balance.currency, "ETH")
+        if case .loaded(let balances) = state {
+            XCTAssertEqual(balances[.ethereum]?.currency, "ETH")
         } else {
             XCTFail("State should be loaded")
         }

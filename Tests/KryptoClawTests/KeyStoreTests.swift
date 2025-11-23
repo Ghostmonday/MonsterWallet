@@ -107,7 +107,7 @@ final class KeyStoreTests: XCTestCase {
         let data2 = "data2".data(using: .utf8)!
         
         // First store
-        try keyStore.storePrivateKey(key: data1, id: keyID)
+        _ = try keyStore.storePrivateKey(key: data1, id: keyID)
         
         // Second store (should update)
         let stored = try keyStore.storePrivateKey(key: data2, id: keyID)

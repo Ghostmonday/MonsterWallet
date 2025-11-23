@@ -18,7 +18,8 @@ final class StressTests: XCTestCase {
             simulator: MockSimulator(),
             router: MockRouter(),
             securityPolicy: MockSecurityPolicy(),
-            signer: mockSigner
+            signer: mockSigner,
+            nftProvider: MockNFTProvider()
         )
     }
     
