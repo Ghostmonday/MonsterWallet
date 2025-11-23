@@ -53,14 +53,7 @@ public struct HomeView: View {
                 // For now, we integrate it into the header for the current address if available
                 if let address = walletState.currentAddress {
                     Button(action: {
-                        // Trigger Security Feature
-                        // Note: In a real app, we'd get this via DI or Environment.
-                        // Since ClipboardGuard is internal to WSM or App, we might need to expose a method on WSM or access it via a singleton if we didn't inject it into the View.
-                        // However, WSM doesn't expose 'copyAddress' helper.
-                        // Ideally, WSM should handle this "safe copy".
-                        // Let's assume we add a `copyAddressToClipboard` to WSM or just use UIPasteboard here for V1.
-                        // But to use the *Guard*, we need access to it.
-                        // Let's add `copyCurrentAddress()` to WalletStateManager to handle this securely.
+                        // Trigger Security Feature (ClipboardGuard)
                         walletState.copyCurrentAddress()
                     }) {
                         HStack {

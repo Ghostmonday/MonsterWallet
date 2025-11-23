@@ -7,7 +7,6 @@ public struct KryptoClawApp: App {
     
     public init() {
         // Initialize Core Dependencies (Dependency Injection Root)
-        // In a real app, these might be singletons or constructed by a DI container.
         
         // 1. Foundation
         let keychain = SystemKeychain()
@@ -24,7 +23,6 @@ public struct KryptoClawApp: App {
         let securityPolicy = BasicHeuristicAnalyzer()
         
         // V2 Update: Use Real NFT Provider
-        // Note: API Key should come from AppConfig or Environment
         let nftProvider = HTTPNFTProvider(session: session, apiKey: AppConfig.openseaAPIKey)
         
         // V2 Security
@@ -32,7 +30,6 @@ public struct KryptoClawApp: App {
         let clipboardGuard = ClipboardGuard()
 
         // 3. Signer (Requires KeyStore)
-        // Note: In a real app, keyId would be dynamic or managed by an AccountManager.
         // For V1.0 Single Account, we use a fixed ID.
         let signer = SimpleP2PSigner(keyStore: keyStore, keyId: "primary_account")
         
