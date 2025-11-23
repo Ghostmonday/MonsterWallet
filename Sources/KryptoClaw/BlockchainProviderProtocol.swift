@@ -79,4 +79,5 @@ public protocol BlockchainProviderProtocol {
     func fetchBalance(address: String, chain: Chain) async throws -> Balance
     func fetchHistory(address: String, chain: Chain) async throws -> TransactionHistory
     func broadcast(signedTx: Data, chain: Chain) async throws -> String // TxHash
+    func fetchPrice(chain: Chain) async throws -> Decimal
 }
