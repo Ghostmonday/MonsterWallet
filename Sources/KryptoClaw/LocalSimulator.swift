@@ -48,6 +48,10 @@ public class LocalSimulator: TransactionSimulatorProtocol {
              return SimulationResult(success: true, estimatedGasUsed: 21000, balanceChanges: [:])
         }
         
+        // TODO: [JULES-REVIEW] Critical Safety: ensure BigInt usage.
+        // Previous implementations used UInt64 which risks overflow.
+        // We rely on RPC `eth_call` here, but any local math must use BigInt.
+
         let url = AppConfig.rpcURL
         
         let payload: [String: Any] = [

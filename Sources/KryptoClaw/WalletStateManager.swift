@@ -113,6 +113,8 @@ public class WalletStateManager: ObservableObject {
             }
             
             // Parallel data fetching
+            // TODO: [JULES-REVIEW] Production Readiness: Fetch history for all chains, not just Ethereum.
+            // Currently, this leaves a gap for Multi-Chain feature completeness.
             async let historyResult = blockchainProvider.fetchHistory(address: address, chain: .ethereum)
             async let nftsResult = nftProvider.fetchNFTs(address: address)
             
@@ -151,6 +153,8 @@ public class WalletStateManager: ObservableObject {
              let status = detector.analyze(targetAddress: to, safeHistory: uniqueHistory)
 
              if case .potentialPoison(let reason) = status {
+                 // TODO: [JULES-REVIEW] Security: A Critical RiskAlert should ideally invalidate the transaction state
+                 // or force a specific user override interaction. Currently, it just appends an alert.
                  self.riskAlerts.append(RiskAlert(level: .critical, description: reason))
              }
         }
@@ -200,6 +204,9 @@ public class WalletStateManager: ObservableObject {
             // Let's assume we need to re-estimate or use stored values.
             // To be safe and atomic, we should probably store the `pendingTransaction` in state.
             // But for now, let's re-create it using the same logic (assuming deterministic).
+            // TODO: [JULES-REVIEW] Safety: Re-creating the transaction here is risky.
+            // If network conditions (Gas) change between prepare and confirm, this tx might fail or be priced differently.
+            // Store the `preparedTransaction` in a class-level variable during `prepareTransaction` and use it here.
             
             let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: chain)
             

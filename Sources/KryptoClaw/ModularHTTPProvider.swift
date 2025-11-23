@@ -18,6 +18,8 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
     }
     
     public func fetchHistory(address: String, chain: Chain) async throws -> TransactionHistory {
+        // TODO: [JULES-REVIEW] Production Readiness: Implement actual history fetching.
+        // Use Etherscan API (or similar indexer) for history as standard RPC nodes (like Cloudflare) do not efficiently support "get history by address".
         return TransactionHistory(transactions: [])
     }
     
@@ -25,7 +27,8 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         guard chain == .ethereum else { throw BlockchainError.unsupportedChain }
         
         // Real Broadcast Logic
-        // signedTx is now RLP encoded data from SimpleP2PSigner
+        // TODO: [JULES-REVIEW] Production Readiness: CRITICAL. Ensure `signedTx` is valid RLP-encoded data.
+        // If `signedTx` is just raw JSON bytes from a mock signer, `eth_sendRawTransaction` will fail.
         let txHex = signedTx.toHexString()
         
         let url = AppConfig.rpcURL

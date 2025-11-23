@@ -9,7 +9,11 @@ public class BasicGasRouter: RoutingProtocol {
     }
     
     public func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate {
-        // Refactored to use provider-exposed method as per audit
+        // Refactored to use provider-exposed method as per audit.
+        //
+        // TODO: [JULES-REVIEW] Production Readiness Audit:
+        // Ensure the underlying provider implementation uses `eth_estimateGas` and fetches real `eth_gasPrice`.
+        // Hardcoded values (like 21000 gas limit) are dangerous for complex interactions.
         return try await provider.estimateGas(to: to, value: value, data: data, chain: chain)
     }
 }

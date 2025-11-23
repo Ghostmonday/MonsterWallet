@@ -61,6 +61,8 @@ struct SendView: View {
                                     HStack {
                                         Image(systemName: "exclamationmark.triangle.fill")
                                             .foregroundColor(themeManager.currentTheme.warningColor)
+                                        // TODO: [JULES-REVIEW] UX Safety: Ensure "Critical" alerts are visually distinct (e.g., Red background)
+                                        // and explain *why* it is dangerous.
                                         Text(alert.description)
                                             .font(themeManager.currentTheme.font(style: .caption))
                                             .foregroundColor(themeManager.currentTheme.textPrimary)
@@ -95,6 +97,9 @@ struct SendView: View {
                             }
                         }, isPrimary: true)
                     } else {
+                        // TODO: [JULES-REVIEW] Safety: Block "Confirm & Send" if there are Critical Risk Alerts,
+                        // or require an explicit "I accept the risk" checkbox.
+                        // Currently, a user can ignore the red text and just click Send because simulation passed.
                         KryptoButton(title: "Confirm & Send", icon: themeManager.currentTheme.iconSend, action: {
                             Task {
                                 await wsm.confirmTransaction(to: toAddress, value: amount)
