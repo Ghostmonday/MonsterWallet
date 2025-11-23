@@ -8,6 +8,7 @@ public struct HomeView: View {
     @State private var showingSend = false
     @State private var showingReceive = false
     @State private var showingSwap = false
+    @State private var showingSettings = false
     
     // For V2: Track selected chain/asset for detail view
     @State private var selectedChain: Chain?
@@ -37,12 +38,19 @@ public struct HomeView: View {
                         Image(systemName: walletState.isPrivacyModeEnabled ? "eye.slash.fill" : "eye.fill")
                             .foregroundColor(theme.textSecondary)
                     }
+
+                    Button(action: {
+                        showingSettings = true
+                    }) {
+                        Image(systemName: theme.iconSettings)
+                            .foregroundColor(theme.textSecondary)
+                    }
                 }
                 .padding()
-                
+
                 ScrollView {
                     VStack(spacing: 20) {
-                        
+
                         // Total Balance Card
                         VStack(spacing: 10) {
                             Text("Total Portfolio Value")
@@ -118,6 +126,9 @@ public struct HomeView: View {
         }
         .sheet(isPresented: $showingSwap) {
             SwapView()
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
         .onAppear {
             Task {

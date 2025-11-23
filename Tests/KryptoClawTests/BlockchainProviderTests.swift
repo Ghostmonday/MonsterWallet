@@ -124,7 +124,7 @@ final class BlockchainProviderTests: XCTestCase {
             return (response, data)
         }
         
-        let hash = try await provider.broadcast(signedTx: Data([0x01, 0x02]))
+        let hash = try await provider.broadcast(signedTx: Data([0x01, 0x02]), chain: .ethereum)
         XCTAssertEqual(hash, expectedHash)
     }
 }
