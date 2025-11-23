@@ -8,6 +8,20 @@ public class LocalSimulator: TransactionSimulatorProtocol {
     }
     
     public func simulate(tx: Transaction) async throws -> SimulationResult {
+        // 0. Strict Security Check (V2)
+        if AppConfig.Features.isAddressPoisoningProtectionEnabled {
+             // Block infinite approvals (common scam pattern)
+             // 0xffffff... is typical for infinite approval
+             if tx.data.count > 0 && tx.data.hexString.contains("ffffffffffffffffffffffffffffffff") {
+                 return SimulationResult(
+                     success: false,
+                     estimatedGasUsed: 0,
+                     balanceChanges: [:],
+                     error: "Security Risk: Infinite Token Approval detected. This is a common wallet drainer technique. Transaction blocked."
+                 )
+             }
+        }
+
         // 1. Fetch Balance
         // Map chainId to Chain enum (Simplified for V1.0)
         let chain: Chain = .ethereum 

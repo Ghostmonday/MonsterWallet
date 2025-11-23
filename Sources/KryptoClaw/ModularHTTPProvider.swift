@@ -21,7 +21,8 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         return TransactionHistory(transactions: [])
     }
     
-    public func broadcast(signedTx: Data) async throws -> String {
+    public func broadcast(signedTx: Data, chain: Chain) async throws -> String {
+        guard chain == .ethereum else { throw BlockchainError.unsupportedChain }
         // In a real app, signedTx would be the RLP encoded transaction.
         // Here we assume signedTx is the raw JSON data we signed in SimpleP2PSigner, 
         // which is NOT what eth_sendRawTransaction expects (it expects hex-encoded RLP).

@@ -8,13 +8,15 @@ public struct KryptoClawApp: App {
     public init() {
         // Initialize Core Dependencies (Dependency Injection Root)
         // In a real app, these might be singletons or constructed by a DI container.
-        // For V1.0, we construct the graph here.
         
         // 1. Foundation
         let keychain = SystemKeychain()
         let keyStore = SecureEnclaveKeyStore(keychain: keychain)
         let session = URLSession.shared
-        let provider = ModularHTTPProvider(session: session)
+
+        // V2 Update: Use MultiChainProvider instead of ModularHTTPProvider
+        // This enables BTC/SOL support.
+        let provider = MultiChainProvider(session: session)
         
         // 2. Logic
         let simulator = LocalSimulator(provider: provider)
@@ -52,6 +54,10 @@ public struct KryptoClawApp: App {
             } else {
                 OnboardingView(onComplete: {
                     hasOnboarded = true
+                    Task {
+                        // Create initial wallet if needed
+                        await wsm.createWallet(name: "Main Wallet")
+                    }
                 })
                 .environmentObject(wsm)
                 .environmentObject(themeManager)
