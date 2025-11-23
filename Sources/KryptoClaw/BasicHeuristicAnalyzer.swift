@@ -26,6 +26,6 @@ public class BasicHeuristicAnalyzer: SecurityPolicyProtocol {
     }
     
     public func onBreach(alert: RiskAlert) {
-        KryptoLogger.shared.log(level: .warning, category: .boundary, message: "Security Breach: \(alert.description)")
+        KryptoLogger.shared.log(level: .warning, category: .boundary, message: "Security Breach: \(alert.description)", metadata: ["level": alert.level.rawValue, "module": "BasicHeuristicAnalyzer"])
     }
 }

@@ -19,7 +19,7 @@ public struct KryptoClawApp: App {
         let provider = MultiChainProvider(session: session)
         
         // 2. Logic
-        let simulator = LocalSimulator(provider: provider)
+        let simulator = LocalSimulator(provider: provider, session: session)
         let router = BasicGasRouter(provider: provider)
         let securityPolicy = BasicHeuristicAnalyzer()
         

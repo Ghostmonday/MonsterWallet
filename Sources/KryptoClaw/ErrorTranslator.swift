@@ -20,7 +20,65 @@ public struct ErrorTranslator {
             }
         }
         
-        // Handle other known error types if any
+        // Handle WalletError
+        if let walletError = error as? WalletError {
+            switch walletError {
+            case .invalidMnemonic:
+                return "Invalid recovery phrase. Please check and try again."
+            case .derivationFailed:
+                return "Failed to generate wallet. Please try again."
+            }
+        }
+        
+        // Handle KeyStoreError
+        if let keyStoreError = error as? KeyStoreError {
+            switch keyStoreError {
+            case .itemNotFound:
+                return "Key not found. Please create or import a wallet."
+            case .invalidData:
+                return "Invalid key data. Please try again."
+            case .accessControlSetupFailed:
+                return "Security setup failed. Please check your device settings."
+            case .unhandledError:
+                return "Key storage error. Please try again."
+            }
+        }
+        
+        // Handle RecoveryError
+        if let recoveryError = error as? RecoveryError {
+            switch recoveryError {
+            case .invalidThreshold:
+                return "Invalid recovery threshold. Please check your recovery shares."
+            case .encodingError:
+                return "Recovery encoding failed. Please try again."
+            case .invalidShares:
+                return "Invalid recovery shares. Please verify your recovery phrase."
+            case .reconstructionFailed:
+                return "Failed to reconstruct wallet. Please check your recovery shares."
+            }
+        }
+        
+        // Handle NFTError
+        if let nftError = error as? NFTError {
+            switch nftError {
+            case .invalidContract:
+                return "Invalid NFT contract address."
+            case .fetchFailed:
+                return "Failed to fetch NFTs. Please try again."
+            case .timeout:
+                return "Request timed out. Please check your connection and try again."
+            }
+        }
+        
+        // Handle ValidationError
+        if let validationError = error as? ValidationError {
+            switch validationError {
+            case .invalidName(let message):
+                return message
+            case .invalidAddress:
+                return "Invalid address format. Please check and try again."
+            }
+        }
         
         // Fallback for unknown errors (Masking raw details)
         return "An unexpected error occurred. Please try again."

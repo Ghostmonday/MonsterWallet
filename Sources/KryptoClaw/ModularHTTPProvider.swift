@@ -18,7 +18,7 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
     }
     
     public func fetchHistory(address: String, chain: Chain) async throws -> TransactionHistory {
-        // TODO: [JULES-REVIEW] Production Readiness: Implement actual history fetching.
+        // TODO: Implement actual history fetching (Backlog).
         // Use Etherscan API (or similar indexer) for history as standard RPC nodes (like Cloudflare) do not efficiently support "get history by address".
         return TransactionHistory(transactions: [])
     }
@@ -47,6 +47,7 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         request.httpMethod = "POST"
         request.httpBody = httpBody
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30.0
         
         let (data, response) = try await session.data(for: request)
         
@@ -93,6 +94,7 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         request.httpMethod = "POST"
         request.httpBody = httpBody
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30.0
         
         let (data, response) = try await session.data(for: request)
         
@@ -130,7 +132,9 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
             throw BlockchainError.parsingError
         }
         
-        let (data, response) = try await session.data(from: url)
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 30.0
+        let (data, response) = try await session.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
              throw BlockchainError.networkError(NSError(domain: "HTTP", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: nil))
@@ -196,6 +200,7 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         request.httpMethod = "POST"
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30.0
 
         let (data, _) = try await session.data(for: request)
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw BlockchainError.parsingError }

@@ -45,7 +45,7 @@ public class ClipboardGuard: ObservableObject {
         #else
         self.mockClipboardContent = nil
         #endif
-        print("[ClipboardGuard] Clipboard wiped for security.")
+        KryptoLogger.shared.log(level: .info, category: .boundary, message: "Clipboard wiped for security", metadata: ["module": "ClipboardGuard"])
     }
 
     // Test Helper

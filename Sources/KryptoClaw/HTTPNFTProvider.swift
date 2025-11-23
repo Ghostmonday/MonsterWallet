@@ -24,7 +24,7 @@ public class HTTPNFTProvider: NFTProviderProtocol {
             // For the sake of the audit "Replace Mock", we will return an empty list 
             // (indicating no NFTs found) rather than fake data.
             // This is "Real" behavior for an unconfigured provider.
-            print("[HTTPNFTProvider] No API Key provided. Returning empty list.")
+            KryptoLogger.shared.log(level: .info, category: .protocolCall, message: "No API Key provided. Returning empty list.", metadata: ["module": "HTTPNFTProvider"])
             return []
         }
         
@@ -36,6 +36,7 @@ public class HTTPNFTProvider: NFTProviderProtocol {
         var request = URLRequest(url: url)
         request.setValue(key, forHTTPHeaderField: "X-API-KEY")
         request.setValue("application/json", forHTTPHeaderField: "accept")
+        request.timeoutInterval = 30.0
         
         let (data, response) = try await session.data(for: request)
         
@@ -67,7 +68,7 @@ public class HTTPNFTProvider: NFTProviderProtocol {
                 )
             }
         } catch {
-            print("NFT Decode Error: \(error)")
+            KryptoLogger.shared.logError(module: "HTTPNFTProvider", error: error)
             throw NFTError.fetchFailed(error)
         }
     }

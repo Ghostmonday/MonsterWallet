@@ -116,7 +116,8 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             )
 
         } catch {
-             return SimulationResult(success: false, estimatedGasUsed: 0, balanceChanges: [:], error: "Network Error")
+             KryptoLogger.shared.logError(module: "LocalSimulator", error: error)
+             return SimulationResult(success: false, estimatedGasUsed: 0, balanceChanges: [:], error: "Network Error: \(ErrorTranslator.userFriendlyMessage(for: error))")
         }
     }
 }

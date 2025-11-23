@@ -41,7 +41,7 @@ struct WalletManagementView: View {
             WalletCreationView(isPresented: $showingCreate)
         }
         .onAppear {
-            print("[WalletManagement] ViewDidAppear")
+            KryptoLogger.shared.log(level: .info, category: .lifecycle, message: "ViewDidAppear", metadata: ["view": "WalletManagement"])
         }
     }
 }
@@ -154,7 +154,7 @@ struct WalletCreationView: View {
     }
     
     func createWallet() {
-        print("[WalletManagement] CreateWallet tapped")
+        KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "CreateWallet tapped", metadata: ["view": "WalletManagement"])
         Task {
             await wsm.createWallet(name: name)
             isPresented = false

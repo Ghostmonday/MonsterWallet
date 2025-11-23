@@ -113,7 +113,7 @@ struct SwapView: View {
                 do {
                     price = try await wsm.fetchPrice(chain: .ethereum)
                 } catch {
-                    print("Failed to fetch price: \(error)")
+                    KryptoLogger.shared.logError(module: "SwapView", error: error)
                 }
             }
         }

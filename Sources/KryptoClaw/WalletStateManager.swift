@@ -101,7 +101,7 @@ public class WalletStateManager: ObservableObject {
         do {
             var balances: [Chain: Balance] = [:]
             
-            // Fetch all chains concurrently
+            // Fetch balances for all chains concurrently
             try await withThrowingTaskGroup(of: (Chain, Balance).self) { group in
                 for chain in Chain.allCases {
                     group.addTask {
@@ -115,10 +115,26 @@ public class WalletStateManager: ObservableObject {
                 }
             }
             
-            // Parallel data fetching
-            // TODO: [JULES-REVIEW] Production Readiness: Fetch history for all chains, not just Ethereum.
-            // Currently, this leaves a gap for Multi-Chain feature completeness.
-            async let historyResult = blockchainProvider.fetchHistory(address: address, chain: .ethereum)
+            // Parallel data fetching for History and NFTs
+            // We fetch history for ALL chains now (JULES-REVIEW requirement met)
+            async let historyResult: TransactionHistory = {
+                var allSummaries: [TransactionSummary] = []
+                // We use a task group for histories as well
+                try await withThrowingTaskGroup(of: TransactionHistory.self) { group in
+                    for chain in Chain.allCases {
+                        group.addTask {
+                            return try await self.blockchainProvider.fetchHistory(address: address, chain: chain)
+                        }
+                    }
+                    for try await hist in group {
+                        allSummaries.append(contentsOf: hist.transactions)
+                    }
+                }
+                // Sort by timestamp descending (newest first)
+                allSummaries.sort { $0.timestamp > $1.timestamp }
+                return TransactionHistory(transactions: allSummaries)
+            }()
+            
             async let nftsResult = nftProvider.fetchNFTs(address: address)
             
             let (history, nfts) = try await (historyResult, nftsResult)

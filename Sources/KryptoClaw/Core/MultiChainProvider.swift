@@ -6,8 +6,10 @@ import Foundation
 public class MultiChainProvider: BlockchainProviderProtocol {
 
     private let ethProvider: ModularHTTPProvider // Existing provider
+    private let session: URLSession
 
     public init(session: URLSession = .shared) {
+        self.session = session
         self.ethProvider = ModularHTTPProvider(session: session)
     }
 
@@ -29,7 +31,9 @@ public class MultiChainProvider: BlockchainProviderProtocol {
         let urlString = "https://mempool.space/api/address/\(address)"
         guard let url = URL(string: urlString) else { throw BlockchainError.invalidAddress }
         
-        let (data, response) = try await URLSession.shared.data(from: url)
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 30.0
+        let (data, response) = try await session.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
              throw BlockchainError.networkError(NSError(domain: "HTTP", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: nil))
@@ -68,8 +72,9 @@ public class MultiChainProvider: BlockchainProviderProtocol {
         request.httpMethod = "POST"
         request.httpBody = httpBody
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30.0
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
              throw BlockchainError.networkError(NSError(domain: "HTTP", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: nil))

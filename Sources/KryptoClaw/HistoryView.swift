@@ -47,7 +47,7 @@ struct HistoryView: View {
                         },
                         set: { index in
                             filter = TxFilter.allCases[index]
-                            print("[History] Filter Changed: \(filter.rawValue)")
+                            KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "Filter Changed", metadata: ["filter": filter.rawValue, "view": "History"])
                         }
                     )
                 )
@@ -72,21 +72,21 @@ struct HistoryView: View {
                     }
                     .listStyle(.plain)
                     .refreshable {
-                        print("[History] Refresh Triggered")
+                        KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "Refresh Triggered", metadata: ["view": "History"])
                         await wsm.refreshBalance()
                     }
                 }
             }
         }
         .onAppear {
-            print("[History] ViewDidAppear")
+            KryptoLogger.shared.log(level: .info, category: .lifecycle, message: "ViewDidAppear", metadata: ["view": "History"])
         }
     }
     
     func openExplorer(hash: String) {
         // Compliance: Must open in external Safari, not embedded WebView
         if let url = URL(string: "https://etherscan.io/tx/\(hash)") {
-            print("[History] Explorer Link Tapped")
+            KryptoLogger.shared.log(level: .info, category: .boundary, message: "Explorer Link Tapped", metadata: ["hash": hash, "view": "History"])
             openURL(url)
         }
     }

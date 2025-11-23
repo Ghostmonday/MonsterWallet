@@ -27,7 +27,7 @@ struct NFTGalleryView: View {
                         ForEach(wsm.nfts) { nft in
                             NFTCard(nft: nft)
                                 .onTapGesture {
-                                    print("[NFTGallery] NFT Tapped: \(nft.id)")
+                                    KryptoLogger.shared.log(level: .info, category: .boundary, message: "NFT Tapped", metadata: ["nftId": nft.id, "view": "NFTGallery"])
                                 }
                         }
                     }
@@ -36,7 +36,7 @@ struct NFTGalleryView: View {
             }
         }
         .onAppear {
-            print("[NFTGallery] ViewDidAppear")
+            KryptoLogger.shared.log(level: .info, category: .lifecycle, message: "ViewDidAppear", metadata: ["view": "NFTGallery"])
         }
     }
 }

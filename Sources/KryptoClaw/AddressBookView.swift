@@ -60,7 +60,7 @@ struct AddressBookView: View {
         }
         .onAppear {
             // Telemetry
-            print("[AddressBook] ViewDidAppear")
+            KryptoLogger.shared.log(level: .info, category: .lifecycle, message: "ViewDidAppear", metadata: ["view": "AddressBook"])
         }
     }
 }
