@@ -91,3 +91,162 @@ struct KryptoTextField: View {
             .font(themeManager.currentTheme.addressFont) // Monospace for input usually looks good in this style, or use body
     }
 }
+
+// MARK: - List Row
+public struct KryptoListRow: View {
+    let title: String
+    let subtitle: String?
+    let value: String?
+    let icon: String? // SF Symbol name or URL placeholder
+    let isSystemIcon: Bool
+    
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    public init(title: String, subtitle: String? = nil, value: String? = nil, icon: String? = nil, isSystemIcon: Bool = true) {
+        self.title = title
+        self.subtitle = subtitle
+        self.value = value
+        self.icon = icon
+        self.isSystemIcon = isSystemIcon
+    }
+    
+    public var body: some View {
+        HStack(spacing: 12) {
+            if let iconName = icon {
+                Group {
+                    if isSystemIcon {
+                        Image(systemName: iconName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } else {
+                        // Network image placeholder
+                        AsyncImage(url: URL(string: iconName)) { phase in
+                            if let image = phase.image {
+                                image.resizable()
+                            } else {
+                                Color.gray.opacity(0.3)
+                            }
+                        }
+                    }
+                }
+                .frame(width: 32, height: 32)
+                .cornerRadius(4)
+                .foregroundColor(themeManager.currentTheme.textPrimary)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(themeManager.currentTheme.font(style: .body))
+                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .lineLimit(1)
+                
+                if let sub = subtitle {
+                    Text(sub)
+                        .font(themeManager.currentTheme.font(style: .caption))
+                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                        .lineLimit(1)
+                }
+            }
+            
+            Spacer()
+            
+            if let val = value {
+                Text(val)
+                    .font(themeManager.currentTheme.font(style: .body))
+                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.vertical, 12)
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(subtitle ?? ""), \(value ?? "")")
+    }
+}
+
+// MARK: - Header
+public struct KryptoHeader: View {
+    let title: String
+    let onBack: (() -> Void)?
+    let actionIcon: String?
+    let onAction: (() -> Void)?
+    
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    public init(title: String, onBack: (() -> Void)? = nil, actionIcon: String? = nil, onAction: (() -> Void)? = nil) {
+        self.title = title
+        self.onBack = onBack
+        self.actionIcon = actionIcon
+        self.onAction = onAction
+    }
+    
+    public var body: some View {
+        HStack {
+            if let onBack = onBack {
+                Button(action: onBack) {
+                    Image(systemName: "chevron.left")
+                        .font(.title2)
+                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                }
+                .accessibilityLabel("Go Back")
+            } else {
+                Spacer().frame(width: 24) // Balance spacing if no back button but action exists
+            }
+            
+            Spacer()
+            
+            Text(title)
+                .font(themeManager.currentTheme.font(style: .headline))
+                .foregroundColor(themeManager.currentTheme.textPrimary)
+            
+            Spacer()
+            
+            if let icon = actionIcon, let onAction = onAction {
+                Button(action: onAction) {
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                }
+                .accessibilityLabel("Action")
+            } else {
+                Spacer().frame(width: 24)
+            }
+        }
+        .padding()
+        .background(themeManager.currentTheme.backgroundMain)
+    }
+}
+
+// MARK: - Tab Segment
+public struct KryptoTab: View {
+    let tabs: [String]
+    @Binding var selectedIndex: Int
+    @EnvironmentObject var themeManager: ThemeManager
+    
+    public init(tabs: [String], selectedIndex: Binding<Int>) {
+        self.tabs = tabs
+        self._selectedIndex = selectedIndex
+    }
+    
+    public var body: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<tabs.count, id: \.self) { index in
+                Button(action: { selectedIndex = index }) {
+                    VStack(spacing: 8) {
+                        Text(tabs[index])
+                            .font(themeManager.currentTheme.font(style: .subheadline))
+                            .foregroundColor(selectedIndex == index ? themeManager.currentTheme.accentColor : themeManager.currentTheme.textSecondary)
+                        
+                        Rectangle()
+                            .fill(selectedIndex == index ? themeManager.currentTheme.accentColor : Color.clear)
+                            .frame(height: 2)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityLabel(tabs[index])
+                .accessibilityAddTraits(selectedIndex == index ? .isSelected : [])
+            }
+        }
+        .padding(.horizontal)
+    }
+}

@@ -7,7 +7,9 @@ struct HomeView: View {
     // Navigation State
     @State private var showingSend = false
     @State private var showingReceive = false
+    @State private var showingHistory = false
     @State private var showingSettings = false
+    @State private var selectedTab = 0 // 0: Tokens, 1: NFTs
     
     var body: some View {
         NavigationView {
@@ -67,26 +69,44 @@ struct HomeView: View {
                     HStack(spacing: 16) {
                         KryptoButton(title: "Send", icon: themeManager.currentTheme.iconSend, action: { showingSend = true }, isPrimary: true)
                         KryptoButton(title: "Receive", icon: themeManager.currentTheme.iconReceive, action: { showingReceive = true }, isPrimary: false)
+                        Button(action: { showingHistory = true }) {
+                            VStack {
+                                Image(systemName: "clock.arrow.circlepath")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                                Text("History")
+                                    .font(themeManager.currentTheme.font(style: .caption))
+                                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                            }
+                            .frame(width: 60)
+                        }
                     }
                     .padding(.horizontal)
                     
-                    // Assets List
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Assets")
-                            .font(themeManager.currentTheme.font(style: .headline))
-                            .foregroundColor(themeManager.currentTheme.textPrimary)
-                            .padding(.horizontal)
+                    // Content
+                    VStack(spacing: 0) {
+                        KryptoTab(tabs: ["Tokens", "NFTs"], selectedIndex: $selectedTab)
+                            .padding(.bottom, 16)
                         
-                        ScrollView {
-                            VStack(spacing: 12) {
-                                if case .loaded(let balances) = wsm.state {
-                                    ForEach(Chain.allCases, id: \.self) { chain in
-                                        if let balance = balances[chain] {
-                                            AssetRow(chain: chain, balance: balance)
+                        if selectedTab == 0 {
+                            // Assets List
+                            ScrollView {
+                                VStack(spacing: 12) {
+                                    if case .loaded(let balances) = wsm.state {
+                                        ForEach(Chain.allCases, id: \.self) { chain in
+                                            if let balance = balances[chain] {
+                                                AssetRow(chain: chain, balance: balance)
+                                            }
                                         }
+                                    } else if case .loading = wsm.state {
+                                        ProgressView()
+                                            .padding()
                                     }
                                 }
+                                .padding(.bottom)
                             }
+                        } else {
+                            NFTGalleryView()
                         }
                     }
                     
@@ -99,9 +119,19 @@ struct HomeView: View {
             .sheet(isPresented: $showingSend) {
                 SendView()
             }
+            .sheet(isPresented: $showingReceive) {
+                // Placeholder for ReceiveView
+                Text("Receive View")
+            }
+            .sheet(isPresented: $showingHistory) {
+                HistoryView()
+            }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
+        }
+        .onAppear {
+            print("[Home] ViewDidAppear")
         }
     }
 }

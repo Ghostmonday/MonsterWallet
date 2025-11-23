@@ -20,6 +20,7 @@ public struct KryptoClawApp: App {
         let simulator = LocalSimulator(provider: provider)
         let router = BasicGasRouter(provider: provider)
         let securityPolicy = BasicHeuristicAnalyzer()
+        let nftProvider = MockNFTProvider() // Using Mock for V1.0/Previews
         
         // 3. Signer (Requires KeyStore)
         // Note: In a real app, keyId would be dynamic or managed by an AccountManager.
@@ -33,7 +34,8 @@ public struct KryptoClawApp: App {
             simulator: simulator,
             router: router,
             securityPolicy: securityPolicy,
-            signer: signer
+            signer: signer,
+            nftProvider: nftProvider
         )
         
         _wsm = StateObject(wrappedValue: stateManager)

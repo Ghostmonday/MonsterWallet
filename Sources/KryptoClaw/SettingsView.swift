@@ -26,6 +26,33 @@ struct SettingsView: View {
                 // Theme Selector
                 KryptoCard {
                     VStack(alignment: .leading, spacing: 16) {
+                        NavigationLink(destination: WalletManagementView()) {
+                            HStack {
+                                Text("Manage Wallets")
+                                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                            }
+                        }
+                        Divider().background(themeManager.currentTheme.borderColor)
+                        
+                        NavigationLink(destination: AddressBookView()) {
+                            HStack {
+                                Text("Address Book")
+                                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                
+                // Theme Selector
+                KryptoCard {
+                    VStack(alignment: .leading, spacing: 16) {
                         Text("Appearance")
                             .font(themeManager.currentTheme.font(style: .headline))
                             .foregroundColor(themeManager.currentTheme.textPrimary)

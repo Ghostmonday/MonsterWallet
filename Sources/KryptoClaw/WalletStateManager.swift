@@ -19,6 +19,7 @@ public class WalletStateManager: ObservableObject {
     private let router: RoutingProtocol
     private let securityPolicy: SecurityPolicyProtocol
     private let signer: SignerProtocol
+    private let nftProvider: NFTProviderProtocol
     
     // State
     @Published public var state: AppState = .idle
@@ -26,6 +27,12 @@ public class WalletStateManager: ObservableObject {
     @Published public var simulationResult: SimulationResult?
     @Published public var riskAlerts: [RiskAlert] = []
     @Published public var lastTxHash: String?
+    @Published public var contacts: [Contact] = []
+    @Published public var isPrivacyModeEnabled: Bool = false
+    @Published public var nfts: [NFTMetadata] = []
+    @Published public var wallets: [WalletInfo] = [
+        WalletInfo(id: "primary_account", name: "Main Wallet", colorTheme: "blue")
+    ]
     
     // Current Account
     public var currentAddress: String?
@@ -36,7 +43,8 @@ public class WalletStateManager: ObservableObject {
         simulator: TransactionSimulatorProtocol,
         router: RoutingProtocol,
         securityPolicy: SecurityPolicyProtocol,
-        signer: SignerProtocol
+        signer: SignerProtocol,
+        nftProvider: NFTProviderProtocol
     ) {
         self.keyStore = keyStore
         self.blockchainProvider = blockchainProvider
@@ -44,6 +52,7 @@ public class WalletStateManager: ObservableObject {
         self.router = router
         self.securityPolicy = securityPolicy
         self.signer = signer
+        self.nftProvider = nftProvider
     }
     
     public func loadAccount(id: String) async {
@@ -77,8 +86,13 @@ public class WalletStateManager: ObservableObject {
             // In a real app, we'd merge histories
             let history = try await blockchainProvider.fetchHistory(address: address, chain: .ethereum)
             
+            // Fetch NFTs
+            // In a real app, this would be parallel
+            let nfts = try await nftProvider.fetchNFTs(address: address)
+            
             self.state = .loaded(balances)
             self.history = history
+            self.nfts = nfts
         } catch {
             self.state = .error(ErrorTranslator.userFriendlyMessage(for: error))
         }
@@ -155,5 +169,40 @@ public class WalletStateManager: ObservableObject {
         } catch {
             self.state = .error(ErrorTranslator.userFriendlyMessage(for: error))
         }
+    }
+    
+    // MARK: - Privacy
+    public func togglePrivacyMode() {
+        isPrivacyModeEnabled.toggle()
+    }
+    
+    // MARK: - Contact Management
+    public func addContact(_ contact: Contact) {
+        contacts.append(contact)
+        // In a real app, we would persist to disk here
+    }
+    
+    public func removeContact(id: UUID) {
+        contacts.removeAll { $0.id == id }
+    }
+    
+    // MARK: - Wallet Management
+    public func createWallet(name: String) async {
+        // In a real app:
+        // 1. Generate Mnemonic
+        // 2. Derive Key
+        // 3. Store in KeyStore
+        // 4. Update State
+        
+        // Simulation
+        let newId = UUID().uuidString
+        let newWallet = WalletInfo(id: newId, name: name, colorTheme: "purple")
+        wallets.append(newWallet)
+        await loadAccount(id: newId)
+    }
+    
+    public func switchWallet(id: String) async {
+        print("[WalletManagement] SwitchWallet: \(id)")
+        await loadAccount(id: id)
     }
 }
