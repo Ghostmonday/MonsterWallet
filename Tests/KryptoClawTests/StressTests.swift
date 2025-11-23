@@ -21,7 +21,9 @@ final class StressTests: XCTestCase {
             router: MockRouter(),
             securityPolicy: MockSecurityPolicy(),
             signer: mockSigner,
-            nftProvider: MockNFTProvider()
+            nftProvider: MockNFTProvider(),
+            poisoningDetector: nil, // Nil for standard stress tests (or mock if needed)
+            clipboardGuard: nil
         )
     }
     

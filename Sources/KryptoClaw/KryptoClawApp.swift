@@ -24,6 +24,10 @@ public struct KryptoClawApp: App {
         let securityPolicy = BasicHeuristicAnalyzer()
         let nftProvider = MockNFTProvider() // Using Mock for V1.0/Previews
         
+        // V2 Security
+        let poisoningDetector = AddressPoisoningDetector()
+        let clipboardGuard = ClipboardGuard()
+
         // 3. Signer (Requires KeyStore)
         // Note: In a real app, keyId would be dynamic or managed by an AccountManager.
         // For V1.0 Single Account, we use a fixed ID.
@@ -37,7 +41,9 @@ public struct KryptoClawApp: App {
             router: router,
             securityPolicy: securityPolicy,
             signer: signer,
-            nftProvider: nftProvider
+            nftProvider: nftProvider,
+            poisoningDetector: poisoningDetector,
+            clipboardGuard: clipboardGuard
         )
         
         _wsm = StateObject(wrappedValue: stateManager)

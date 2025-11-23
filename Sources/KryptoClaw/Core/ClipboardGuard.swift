@@ -1,5 +1,8 @@
 import Foundation
 import Combine
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// A utility to enhance security by automatically clearing the clipboard
 /// if it contains sensitive data or addresses after a short timeout.
@@ -15,8 +18,12 @@ public class ClipboardGuard: ObservableObject {
 
     /// Call this when the user copies an address or sensitive data
     public func protectClipboard(content: String, timeout: TimeInterval = 60.0, isSensitive: Bool = false) {
-        // In real app: UIPasteboard.general.string = content
+        #if os(iOS)
+        UIPasteboard.general.string = content
+        #else
+        // Mock behavior for Linux tests
         self.mockClipboardContent = content
+        #endif
 
         // If it's highly sensitive (like a seed phrase or private key - which we should NEVER copy anyway),
         // we clear it much faster or immediately.
@@ -33,13 +40,20 @@ public class ClipboardGuard: ObservableObject {
     }
 
     public func clearClipboard() {
-        // In real app: UIPasteboard.general.string = ""
-        print("[ClipboardGuard] Clipboard wiped for security.")
+        #if os(iOS)
+        UIPasteboard.general.string = ""
+        #else
         self.mockClipboardContent = nil
+        #endif
+        print("[ClipboardGuard] Clipboard wiped for security.")
     }
 
     // Test Helper
     public func getClipboardContent() -> String? {
+        #if os(iOS)
+        return UIPasteboard.general.string
+        #else
         return mockClipboardContent
+        #endif
     }
 }

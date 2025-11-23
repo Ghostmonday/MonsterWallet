@@ -25,7 +25,9 @@ final class SimulationDemo: XCTestCase {
             router: router,
             securityPolicy: securityPolicy,
             signer: signer,
-            nftProvider: MockNFTProvider()
+            nftProvider: MockNFTProvider(),
+            poisoningDetector: nil,
+            clipboardGuard: nil
         )
         
         print("✅ Core Systems Initialized.")

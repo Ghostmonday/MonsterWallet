@@ -20,6 +20,9 @@ public class WalletStateManager: ObservableObject {
     private let securityPolicy: SecurityPolicyProtocol
     private let signer: SignerProtocol
     private let nftProvider: NFTProviderProtocol
+    // V2 Security Dependencies
+    private let poisoningDetector: AddressPoisoningDetector?
+    private let clipboardGuard: ClipboardGuard?
     
     // State
     @Published public var state: AppState = .idle
@@ -44,7 +47,9 @@ public class WalletStateManager: ObservableObject {
         router: RoutingProtocol,
         securityPolicy: SecurityPolicyProtocol,
         signer: SignerProtocol,
-        nftProvider: NFTProviderProtocol
+        nftProvider: NFTProviderProtocol,
+        poisoningDetector: AddressPoisoningDetector? = nil,
+        clipboardGuard: ClipboardGuard? = nil
     ) {
         self.keyStore = keyStore
         self.blockchainProvider = blockchainProvider
@@ -53,6 +58,8 @@ public class WalletStateManager: ObservableObject {
         self.securityPolicy = securityPolicy
         self.signer = signer
         self.nftProvider = nftProvider
+        self.poisoningDetector = poisoningDetector
+        self.clipboardGuard = clipboardGuard
     }
     
     public func loadAccount(id: String) async {
@@ -98,17 +105,40 @@ public class WalletStateManager: ObservableObject {
         }
     }
     
-    public func prepareTransaction(to: String, value: String, chain: Chain = .ethereum) async {
+    public func prepareTransaction(to: String, value: String, chain: Chain = .ethereum, data: Data? = nil) async {
         guard let from = currentAddress else { return }
         
+        // Reset alerts first to avoid duplicates
+        self.riskAlerts = []
+
+        // 0. V2 Security Check: Address Poisoning
+        if let detector = poisoningDetector, AppConfig.Features.isAddressPoisoningProtectionEnabled {
+             // Combine trusted sources: Contacts + History
+             var safeHistory = contacts.map { $0.address }
+
+             // Add historical recipients (if available in history)
+             let historicalRecipients = history.transactions.map { $0.to }
+             safeHistory.append(contentsOf: historicalRecipients)
+
+             // De-duplicate
+             let uniqueHistory = Array(Set(safeHistory))
+
+             let status = detector.analyze(targetAddress: to, safeHistory: uniqueHistory)
+
+             if case .potentialPoison(let reason) = status {
+                 self.riskAlerts.append(RiskAlert(level: .critical, message: reason))
+             }
+        }
+
         do {
-            let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: chain)
+            let txData = data ?? Data()
+            let estimate = try await router.estimateGas(to: to, value: value, data: txData, chain: chain)
             
             let tx = Transaction(
                 from: from,
                 to: to,
                 value: value,
-                data: Data(),
+                data: txData,
                 nonce: 0, 
                 gasLimit: estimate.gasLimit,
                 maxFeePerGas: estimate.maxFeePerGas,
@@ -117,7 +147,12 @@ public class WalletStateManager: ObservableObject {
             )
             
             let result = try await simulator.simulate(tx: tx)
-            let alerts = securityPolicy.analyze(result: result, tx: tx)
+            var alerts = securityPolicy.analyze(result: result, tx: tx)
+
+            // Merge poisoning alerts if any
+            if !self.riskAlerts.isEmpty {
+                alerts.append(contentsOf: self.riskAlerts)
+            }
             
             self.simulationResult = result
             self.riskAlerts = alerts
@@ -204,5 +239,10 @@ public class WalletStateManager: ObservableObject {
     public func switchWallet(id: String) async {
         print("[WalletManagement] SwitchWallet: \(id)")
         await loadAccount(id: id)
+    }
+
+    public func copyCurrentAddress() {
+        guard let address = currentAddress else { return }
+        clipboardGuard?.protectClipboard(content: address, timeout: 60.0)
     }
 }
