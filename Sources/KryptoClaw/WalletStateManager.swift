@@ -98,11 +98,11 @@ public class WalletStateManager: ObservableObject {
         }
     }
     
-    public func prepareTransaction(to: String, value: String) async {
+    public func prepareTransaction(to: String, value: String, chain: Chain = .ethereum) async {
         guard let from = currentAddress else { return }
         
         do {
-            let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: .ethereum)
+            let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: chain)
             
             let tx = Transaction(
                 from: from,
@@ -113,7 +113,7 @@ public class WalletStateManager: ObservableObject {
                 gasLimit: estimate.gasLimit,
                 maxFeePerGas: estimate.maxFeePerGas,
                 maxPriorityFeePerGas: estimate.maxPriorityFeePerGas,
-                chainId: 1
+                chainId: chain == .ethereum ? 1 : 0 // Simplified chain mapping
             )
             
             let result = try await simulator.simulate(tx: tx)
@@ -127,7 +127,7 @@ public class WalletStateManager: ObservableObject {
         }
     }
     
-    public func confirmTransaction(to: String, value: String) async {
+    public func confirmTransaction(to: String, value: String, chain: Chain = .ethereum) async {
         guard let from = currentAddress else { return }
         guard let simResult = simulationResult, simResult.success else {
             self.state = .error("Cannot confirm: Simulation failed or not run")
@@ -141,7 +141,7 @@ public class WalletStateManager: ObservableObject {
             // To be safe and atomic, we should probably store the `pendingTransaction` in state.
             // But for now, let's re-create it using the same logic (assuming deterministic).
             
-            let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: .ethereum)
+            let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: chain)
             
             let tx = Transaction(
                 from: from,
@@ -152,14 +152,14 @@ public class WalletStateManager: ObservableObject {
                 gasLimit: estimate.gasLimit,
                 maxFeePerGas: estimate.maxFeePerGas,
                 maxPriorityFeePerGas: estimate.maxPriorityFeePerGas,
-                chainId: 1
+                chainId: chain == .ethereum ? 1 : 0
             )
             
             // 1. Sign
             let signedData = try await signer.signTransaction(tx: tx)
             
             // 2. Broadcast
-            let txHash = try await blockchainProvider.broadcast(signedTx: signedData.raw) // Note: using raw for now as per provider mock
+            let txHash = try await blockchainProvider.broadcast(signedTx: signedData.raw, chain: chain)
             
             self.lastTxHash = txHash
             
