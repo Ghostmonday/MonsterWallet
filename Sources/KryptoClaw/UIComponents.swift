@@ -62,6 +62,14 @@ public struct KryptoCard<Content: View>: View {
     }
     
     public var body: some View {
+        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+        // [DESIGN SPEC: SIGNATURE CARD UPGRADE]
+        // 1. Glassmorphism:
+        //    - Replace `.background(theme.cardBackground)` with logic to check for `materialStyle` or `glassEffectOpacity`.
+        //    - Use `ZStack` with `Material.ultraThin` (if iOS 15+) opacity masked.
+        // 2. Indentation/Border:
+        //    - Apply the "Diamond Pattern" texture overlay here if defined in theme.
+
         content
             .padding(20)
             .background(themeManager.currentTheme.cardBackground)

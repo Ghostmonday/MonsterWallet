@@ -1,5 +1,15 @@
 import SwiftUI
 
+// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+// [THEME ENGINE 2.0 UPGRADE REQUIRED]
+// The user requires a "Signature" aesthetic (Black Obsidian, Liquid Glass, Diamond Indentation)
+// and "Luxury/Elemental" themes. The current Color-based system is insufficient.
+//
+// ACTION: Refactor `ThemeProtocolV2` to support:
+// 1. `backgroundTexture`: An Image or Shape (AnyView) to render the "Diamond Indentation" or "Monogram" patterns.
+// 2. `backgroundAnimation`: A closure/modifier to apply the "Liquid" motion effect.
+// 3. `materialStyle`: Support for `Material` (UltraThin, Thin, Regular) for the Glassmorphism look.
+
 // MARK: - Theme Protocol V2 (Elite)
 public protocol ThemeProtocolV2 {
     var id: String { get }
@@ -127,6 +137,15 @@ public class ThemeManager: ObservableObject {
 
 // MARK: - Standard Themes
 
+// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+// [DESIGN SPEC: SIGNATURE BLACK OBSIDIAN]
+// 1. Background: Deepest Black (#000000) with a "Liquid Reflection" animation.
+//    - Implementation: RadialGradient moving slowly across the screen.
+// 2. Texture: "Diamond Indentation" pattern.
+//    - Implementation: A tiled pattern of small diamonds (rhombus) with 5% opacity overlay.
+// 3. Card Style: "Black Glass"
+//    - Implementation: UltraThinMaterial + Black opacity 0.4 + White Border (0.5px, opacity 0.2) for the "Etched" look.
+
 public struct EliteDarkTheme: ThemeProtocolV2 {
     public let id = "elite_dark"
     public let name = "Elite Dark"
@@ -161,6 +180,18 @@ public struct EliteDarkTheme: ThemeProtocolV2 {
     public let iconSettings = "gearshape.fill"
     public let iconShield = "shield.checkerboard"
 }
+
+// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+// [DESIGN SPEC: LUXURY "CRYPTO MONOGRAM"]
+// Inspiration: LV / Gucci styling but with Crypto Symbols.
+// 1. Palette: Dark Brown / Gold / Tan.
+// 2. Pattern: Repeating grid of (BTC, ETH, $, ¥, €) symbols.
+//    - Implementation: Create a seamless tileable view.
+
+// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
+// [DESIGN SPEC: ELEMENTAL THEMES]
+// 1. "Fire & Ash": Dark Grey background with animated "Ember" particles (Orange/Red) floating up.
+// 2. "Water & Ice": Deep Blue background with "Frosted Glass" cards and a slow "Wave" animation.
 
 public struct CyberPunkTheme: ThemeProtocolV2 {
     public let id = "cyber_punk"
