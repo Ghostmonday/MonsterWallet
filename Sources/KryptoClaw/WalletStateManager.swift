@@ -126,7 +126,7 @@ public class WalletStateManager: ObservableObject {
              let status = detector.analyze(targetAddress: to, safeHistory: uniqueHistory)
 
              if case .potentialPoison(let reason) = status {
-                 self.riskAlerts.append(RiskAlert(level: .critical, message: reason))
+                 self.riskAlerts.append(RiskAlert(level: .critical, description: reason))
              }
         }
 

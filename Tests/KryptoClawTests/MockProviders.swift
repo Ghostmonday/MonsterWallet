@@ -37,11 +37,16 @@ class MockSecurityPolicy: SecurityPolicyProtocol {
     func analyze(result: SimulationResult, tx: Transaction) -> [RiskAlert] {
         return []
     }
+    func onBreach(alert: RiskAlert) {}
 }
 
 class MockSigner: SignerProtocol {
-    func signTransaction(tx: Transaction) async throws -> SignedTransaction {
-        return SignedTransaction(raw: Data(), hash: "0xHash", r: Data(), s: Data(), v: 0)
+    func signTransaction(tx: Transaction) async throws -> SignedData {
+        return SignedData(raw: Data(), signature: Data(), txHash: "0xHash")
+    }
+
+    func signMessage(message: String) async throws -> Data {
+        return Data()
     }
 }
 

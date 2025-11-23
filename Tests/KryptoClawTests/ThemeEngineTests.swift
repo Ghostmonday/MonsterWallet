@@ -13,43 +13,16 @@ final class ThemeEngineTests: XCTestCase {
     
     func testDefaultThemeProperties() {
         let theme = themeManager.currentTheme
-        XCTAssertEqual(theme.id, "apple_default")
+        XCTAssertEqual(theme.id, "elite_dark")
         // XCTAssertFalse(theme.isPremium) // Removed as not in protocol
-        XCTAssertEqual(theme.name, "Default")
+        XCTAssertEqual(theme.name, "Elite Dark")
     }
     
     func testThemeSwitching() {
-        struct PremiumTheme: ThemeProtocol {
-            let id = "premium_gold"
-            let name = "Gold Standard"
-            // let isPremium = true // Removed
-            
-            var backgroundMain: Color { .black }
-            var backgroundSecondary: Color { .gray }
-            var textPrimary: Color { .yellow }
-            var textSecondary: Color { .white }
-            var accentColor: Color { .yellow }
-            var successColor: Color { .green }
-            var errorColor: Color { .red }
-            var warningColor: Color { .orange }
-            var cardBackground: Color { .gray }
-            var borderColor: Color { .yellow }
-            
-            var balanceFont: Font { .system(.title) }
-            var addressFont: Font { .system(.body) }
-            
-            func font(style: Font.TextStyle) -> Font { .system(style) }
-            
-            var iconSend: String { "arrow.up" }
-            var iconReceive: String { "arrow.down" }
-            var iconSettings: String { "gear" }
-            var iconShield: String { "shield" }
-        }
+        // Test switching to a different theme
+        themeManager.setTheme(type: .crimsonTide)
         
-        let newTheme = PremiumTheme()
-        themeManager.setTheme(newTheme)
-        
-        XCTAssertEqual(themeManager.currentTheme.id, "premium_gold")
-        // XCTAssertTrue(themeManager.currentTheme.isPremium) // Removed
+        XCTAssertEqual(themeManager.currentTheme.id, "crimson_tide")
+        XCTAssertEqual(themeManager.currentTheme.name, "Crimson Tide")
     }
 }

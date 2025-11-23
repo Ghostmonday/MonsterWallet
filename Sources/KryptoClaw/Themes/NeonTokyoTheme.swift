@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct NeonTokyoTheme: ThemeProtocol {
+public struct NeonTokyoTheme: ThemeProtocolV2 {
     public let id = "neon_tokyo"
     public let name = "Neon Tokyo"
     
@@ -15,6 +15,12 @@ public struct NeonTokyoTheme: ThemeProtocol {
     public var cardBackground: Color { Color(red: 0.15, green: 0.05, blue: 0.25) }
     public var borderColor: Color { Color(red: 0.0, green: 1.0, blue: 1.0) }
     
+    // V2 Properties
+    public var glassEffectOpacity: Double { 0.8 }
+    public var chartGradientColors: [Color] { [Color.purple, Color.cyan] }
+    public var securityWarningColor: Color { Color.red }
+    public var cornerRadius: CGFloat { 16.0 }
+    
     public var balanceFont: Font { .system(size: 40, weight: .black, design: .rounded) }
     public var addressFont: Font { .system(.body, design: .monospaced) }
     
@@ -24,6 +30,7 @@ public struct NeonTokyoTheme: ThemeProtocol {
     
     public var iconSend: String { "bolt.fill" }
     public var iconReceive: String { "arrow.down.circle.fill" }
+    public var iconSwap: String { "arrow.triangle.2.circlepath" }
     public var iconSettings: String { "gearshape.fill" }
     public var iconShield: String { "shield.fill" }
     

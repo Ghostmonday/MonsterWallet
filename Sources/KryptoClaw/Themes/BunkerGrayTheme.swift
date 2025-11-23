@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct BunkerGrayTheme: ThemeProtocol {
+public struct BunkerGrayTheme: ThemeProtocolV2 {
     public let id = "bunker_gray"
     public let name = "Bunker Gray"
     
@@ -15,6 +15,12 @@ public struct BunkerGrayTheme: ThemeProtocol {
     public var cardBackground: Color { Color(white: 0.15) }
     public var borderColor: Color { Color(white: 0.3) } // Stronger border definition
     
+    // V2 Properties
+    public var glassEffectOpacity: Double { 0.95 }
+    public var chartGradientColors: [Color] { [Color.gray, Color.white] }
+    public var securityWarningColor: Color { Color.red }
+    public var cornerRadius: CGFloat { 4.0 }
+    
     public var balanceFont: Font { .system(size: 40, weight: .heavy, design: .default) }
     public var addressFont: Font { .system(.body, design: .monospaced) }
     
@@ -24,6 +30,7 @@ public struct BunkerGrayTheme: ThemeProtocol {
     
     public var iconSend: String { "arrow.up.circle" }
     public var iconReceive: String { "arrow.down.circle" }
+    public var iconSwap: String { "arrow.triangle.2.circlepath" }
     public var iconSettings: String { "gearshape" }
     public var iconShield: String { "shield.lefthalf.filled" }
     

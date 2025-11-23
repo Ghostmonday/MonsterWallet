@@ -1,39 +1,13 @@
 import XCTest
 @testable import KryptoClaw
 
-class MockKeyStore: KeyStoreProtocol {
-    func getPrivateKey(id: String) throws -> Data { return Data() }
-    func storePrivateKey(key: Data, id: String) throws -> Bool { return true }
-    func isProtected() -> Bool { return true }
-}
 
-class MockSimulator: TransactionSimulatorProtocol {
-    var resultToReturn: SimulationResult = SimulationResult(success: true, estimatedGasUsed: 21000, balanceChanges: [:], error: nil)
-    func simulate(tx: Transaction) async throws -> SimulationResult {
-        return resultToReturn
-    }
-}
 
-class MockRouter: RoutingProtocol {
-    func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate {
-        return GasEstimate(gasLimit: 21000, maxFeePerGas: "100", maxPriorityFeePerGas: "10")
-    }
-}
-
-class MockSecurityPolicy: SecurityPolicyProtocol {
+class WSMMockSecurityPolicy: SecurityPolicyProtocol {
     func analyze(result: SimulationResult, tx: Transaction) -> [RiskAlert] {
         return [RiskAlert(level: .low, description: "Test Alert")]
     }
     func onBreach(alert: RiskAlert) {}
-}
-
-class MockSigner: SignerProtocol {
-    func signTransaction(tx: Transaction) async throws -> SignedData {
-        return SignedData(raw: Data(), signature: Data(), txHash: "0xMockHash")
-    }
-    func signMessage(message: String) async throws -> Data {
-        return Data()
-    }
 }
 
 @available(iOS 13.0, macOS 10.15, *)
@@ -53,7 +27,7 @@ final class WalletStateManagerTests: XCTestCase {
             blockchainProvider: mockProvider,
             simulator: MockSimulator(),
             router: MockRouter(),
-            securityPolicy: MockSecurityPolicy(),
+            securityPolicy: WSMMockSecurityPolicy(),
             signer: mockSigner,
             nftProvider: MockNFTProvider()
         )

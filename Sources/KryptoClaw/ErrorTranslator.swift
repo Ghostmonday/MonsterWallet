@@ -15,6 +15,8 @@ public struct ErrorTranslator {
                 return "Unable to process server response. Please try again."
             case .unsupportedChain:
                 return "This blockchain network is not supported."
+            case .insufficientFunds:
+                return "Insufficient funds to complete this transaction."
             }
         }
         

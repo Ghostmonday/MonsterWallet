@@ -50,23 +50,44 @@ public struct KryptoClawApp: App {
     }
     
     @AppStorage("hasOnboarded") var hasOnboarded: Bool = false
+    @State private var showingSplash: Bool = true
     
     public var body: some Scene {
         WindowGroup {
-            if hasOnboarded {
-                HomeView()
+            ZStack {
+                if hasOnboarded && !showingSplash {
+                    HomeView()
+                        .environmentObject(wsm)
+                        .environmentObject(themeManager)
+                        .transition(.opacity)
+                } else if !hasOnboarded {
+                    OnboardingView(onComplete: {
+                        hasOnboarded = true
+                        Task {
+                            // Create initial wallet if needed
+                            await wsm.createWallet(name: "Main Wallet")
+                        }
+                    })
                     .environmentObject(wsm)
                     .environmentObject(themeManager)
-            } else {
-                OnboardingView(onComplete: {
-                    hasOnboarded = true
-                    Task {
-                        // Create initial wallet if needed
-                        await wsm.createWallet(name: "Main Wallet")
+                    .transition(.opacity)
+                } else {
+                    // Splash screen for returning users
+                    SplashScreenView()
+                        .environmentObject(themeManager)
+                        .transition(.opacity)
+                }
+            }
+            .animation(.easeInOut(duration: 0.5), value: showingSplash)
+            .onAppear {
+                if hasOnboarded {
+                    // Show splash for 2 seconds on every launch
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        withAnimation {
+                            showingSplash = false
+                        }
                     }
-                })
-                .environmentObject(wsm)
-                .environmentObject(themeManager)
+                }
             }
         }
     }

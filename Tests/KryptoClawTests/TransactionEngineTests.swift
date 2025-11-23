@@ -1,7 +1,7 @@
 import XCTest
 @testable import KryptoClaw
 
-class MockBlockchainProvider: BlockchainProviderProtocol {
+class TEMockBlockchainProvider: BlockchainProviderProtocol {
     var balanceToReturn: Balance = Balance(amount: "0x100000000000000", currency: "ETH", decimals: 18) // Fits in UInt64
     
     func fetchBalance(address: String, chain: Chain) async throws -> Balance {
@@ -12,21 +12,22 @@ class MockBlockchainProvider: BlockchainProviderProtocol {
         return TransactionHistory(transactions: [])
     }
     
-    func broadcast(signedTx: Data) async throws -> String {
+    func broadcast(signedTx: Data, chain: Chain) async throws -> String {
         return "0xHash"
     }
 }
+
 
 final class TransactionEngineTests: XCTestCase {
     
     var simulator: LocalSimulator!
     var router: BasicGasRouter!
     var analyzer: BasicHeuristicAnalyzer!
-    var mockProvider: MockBlockchainProvider!
+    var mockProvider: TEMockBlockchainProvider!
     
     override func setUp() {
         super.setUp()
-        mockProvider = MockBlockchainProvider()
+        mockProvider = TEMockBlockchainProvider()
         simulator = LocalSimulator(provider: mockProvider)
         router = BasicGasRouter(provider: mockProvider)
         analyzer = BasicHeuristicAnalyzer()

@@ -58,44 +58,13 @@ struct SettingsView: View {
                             .foregroundColor(themeManager.currentTheme.textPrimary)
                         
                         VStack(spacing: 0) {
-                            ThemeRow(name: "Default (Apple)", isSelected: themeManager.currentTheme.id == "apple_default") {
-                                themeManager.setTheme(AppleDefaultTheme())
-                            }
-                            Divider().background(themeManager.currentTheme.borderColor)
-                            ThemeRow(name: "Obsidian Stealth", isSelected: themeManager.currentTheme.id == "obsidian_stealth") {
-                                themeManager.setTheme(ObsidianStealthTheme())
-                            }
-                            Divider().background(themeManager.currentTheme.borderColor)
-                            ThemeRow(name: "Cyberpunk Neon", isSelected: themeManager.currentTheme.id == "cyberpunk_neon") {
-                                themeManager.setTheme(CyberpunkNeonTheme())
-                            }
-                            Divider().background(themeManager.currentTheme.borderColor)
-                            ThemeRow(name: "Bunker Gray", isSelected: themeManager.currentTheme.id == "bunker_gray") {
-                                themeManager.setTheme(BunkerGrayTheme())
-                            }
-                            Divider().background(themeManager.currentTheme.borderColor)
-                            ThemeRow(name: "Crimson Tide", isSelected: themeManager.currentTheme.id == "crimson_tide") {
-                                themeManager.setTheme(CrimsonTideTheme())
-                            }
-                            Divider().background(themeManager.currentTheme.borderColor)
-                            ThemeRow(name: "Quantum Frost", isSelected: themeManager.currentTheme.id == "quantum_frost") {
-                                themeManager.setTheme(QuantumFrostTheme())
-                            }
-                            Divider().background(themeManager.currentTheme.borderColor)
-                            ThemeRow(name: "Golden Era", isSelected: themeManager.currentTheme.id == "golden_era") {
-                                themeManager.setTheme(GoldenEraTheme())
-                            }
-                            Divider().background(themeManager.currentTheme.borderColor)
-                            ThemeRow(name: "Matrix Code", isSelected: themeManager.currentTheme.id == "matrix_code") {
-                                themeManager.setTheme(MatrixCodeTheme())
-                            }
-                            Divider().background(themeManager.currentTheme.borderColor)
-                            ThemeRow(name: "Neon Tokyo", isSelected: themeManager.currentTheme.id == "neon_tokyo") {
-                                themeManager.setTheme(NeonTokyoTheme())
-                            }
-                            Divider().background(themeManager.currentTheme.borderColor)
-                            ThemeRow(name: "Stealth Bomber", isSelected: themeManager.currentTheme.id == "stealth_bomber") {
-                                themeManager.setTheme(StealthBomberTheme())
+                            ForEach(ThemeType.allCases) { themeType in
+                                ThemeRow(name: themeType.name, isSelected: themeManager.currentTheme.id == themeType.id) {
+                                    themeManager.setTheme(type: themeType)
+                                }
+                                if themeType != ThemeType.allCases.last {
+                                    Divider().background(themeManager.currentTheme.borderColor)
+                                }
                             }
                         }
                     }

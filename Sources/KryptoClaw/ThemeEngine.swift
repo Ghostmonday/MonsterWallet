@@ -58,14 +58,34 @@ public enum ThemeType: String, CaseIterable, Identifiable {
     case eliteDark
     case cyberPunk
     case pureWhite
+    case appleDefault
+    case stealthBomber
+    case neonTokyo
+    case obsidianStealth
+    case quantumFrost
+    case bunkerGray
+    case crimsonTide
+    case cyberpunkNeon
+    case goldenEra
+    case matrixCode
 
     public var id: String { rawValue }
 
     public var name: String {
         switch self {
         case .eliteDark: return "Elite Dark"
-        case .cyberPunk: return "Cyberpunk"
+        case .cyberPunk: return "Cyberpunk (Classic)"
         case .pureWhite: return "Pure White"
+        case .appleDefault: return "Default (Apple)"
+        case .stealthBomber: return "Stealth Bomber"
+        case .neonTokyo: return "Neon Tokyo"
+        case .obsidianStealth: return "Obsidian Stealth"
+        case .quantumFrost: return "Quantum Frost"
+        case .bunkerGray: return "Bunker Gray"
+        case .crimsonTide: return "Crimson Tide"
+        case .cyberpunkNeon: return "Cyberpunk Neon"
+        case .goldenEra: return "Golden Era"
+        case .matrixCode: return "Matrix Code"
         }
     }
 }
@@ -76,6 +96,16 @@ public class ThemeFactory {
         case .eliteDark: return EliteDarkTheme()
         case .cyberPunk: return CyberPunkTheme()
         case .pureWhite: return PureWhiteTheme()
+        case .appleDefault: return AppleDefaultTheme()
+        case .stealthBomber: return StealthBomberTheme()
+        case .neonTokyo: return NeonTokyoTheme()
+        case .obsidianStealth: return ObsidianStealthTheme()
+        case .quantumFrost: return QuantumFrostTheme()
+        case .bunkerGray: return BunkerGrayTheme()
+        case .crimsonTide: return CrimsonTideTheme()
+        case .cyberpunkNeon: return CyberpunkNeonTheme()
+        case .goldenEra: return GoldenEraTheme()
+        case .matrixCode: return MatrixCodeTheme()
         }
     }
 }

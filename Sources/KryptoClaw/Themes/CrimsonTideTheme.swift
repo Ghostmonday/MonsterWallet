@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct CrimsonTideTheme: ThemeProtocol {
+public struct CrimsonTideTheme: ThemeProtocolV2 {
     public let id = "crimson_tide"
     public let name = "Crimson Tide"
     
@@ -15,6 +15,12 @@ public struct CrimsonTideTheme: ThemeProtocol {
     public var cardBackground: Color { Color(red: 0.08, green: 0.0, blue: 0.0) }
     public var borderColor: Color { Color(red: 0.8, green: 0.0, blue: 0.0) } // Brighter border
     
+    // V2 Properties
+    public var glassEffectOpacity: Double { 0.85 }
+    public var chartGradientColors: [Color] { [Color.red, Color.orange] }
+    public var securityWarningColor: Color { Color.orange }
+    public var cornerRadius: CGFloat { 16.0 }
+    
     public var balanceFont: Font { .system(size: 40, weight: .bold, design: .serif) }
     public var addressFont: Font { .system(.body, design: .monospaced) }
     
@@ -24,6 +30,7 @@ public struct CrimsonTideTheme: ThemeProtocol {
     
     public var iconSend: String { "flame.fill" }
     public var iconReceive: String { "square.and.arrow.down.fill" }
+    public var iconSwap: String { "arrow.triangle.2.circlepath" }
     public var iconSettings: String { "gearshape.2.fill" }
     public var iconShield: String { "checkmark.shield.fill" }
     

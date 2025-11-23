@@ -33,7 +33,7 @@ public struct SwapView: View {
                         TextField("0.0", text: $fromAmount)
                             .font(theme.balanceFont)
                             .foregroundColor(theme.textPrimary)
-                            .keyboardType(.decimalPad)
+                            .modifier(DecimalKeyboard())
 
                         Spacer()
 
@@ -128,5 +128,15 @@ public struct SwapView: View {
             isSimulating = false
             // Navigate to confirmation (Mock)
         }
+    }
+}
+
+struct DecimalKeyboard: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        return content.keyboardType(.decimalPad)
+        #else
+        return content
+        #endif
     }
 }

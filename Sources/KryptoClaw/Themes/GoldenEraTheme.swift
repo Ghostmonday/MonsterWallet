@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct GoldenEraTheme: ThemeProtocol {
+public struct GoldenEraTheme: ThemeProtocolV2 {
     public let id = "golden_era"
     public let name = "Golden Era"
     
@@ -15,6 +15,12 @@ public struct GoldenEraTheme: ThemeProtocol {
     public var cardBackground: Color { Color(white: 0.08) }
     public var borderColor: Color { Color(red: 0.6, green: 0.5, blue: 0.2) } // Dark Gold
     
+    // V2 Properties
+    public var glassEffectOpacity: Double { 0.8 }
+    public var chartGradientColors: [Color] { [Color.yellow, Color.orange] }
+    public var securityWarningColor: Color { Color.red }
+    public var cornerRadius: CGFloat { 12.0 }
+    
     public var balanceFont: Font { .system(size: 40, weight: .bold, design: .serif) }
     public var addressFont: Font { .system(.body, design: .monospaced) }
     
@@ -24,6 +30,7 @@ public struct GoldenEraTheme: ThemeProtocol {
     
     public var iconSend: String { "arrow.up.right.circle.fill" }
     public var iconReceive: String { "arrow.down.left.circle.fill" }
+    public var iconSwap: String { "arrow.triangle.2.circlepath" }
     public var iconSettings: String { "gear" }
     public var iconShield: String { "shield.checkerboard" }
     

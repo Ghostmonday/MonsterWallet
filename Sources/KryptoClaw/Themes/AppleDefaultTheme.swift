@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct AppleDefaultTheme: ThemeProtocol {
+public struct AppleDefaultTheme: ThemeProtocolV2 {
     public let id = "apple_default"
     public let name = "Default"
     
@@ -20,6 +20,12 @@ public struct AppleDefaultTheme: ThemeProtocol {
     public var cardBackground: Color { Color.white }
     public var borderColor: Color { Color(white: 0.9) } // Subtle separator
     
+    // V2 Properties
+    public var glassEffectOpacity: Double { 0.95 }
+    public var chartGradientColors: [Color] { [Color.blue, Color.cyan] }
+    public var securityWarningColor: Color { Color.orange }
+    public var cornerRadius: CGFloat { 12.0 }
+    
     public var balanceFont: Font { .system(size: 40, weight: .bold, design: .default) }
     public var addressFont: Font { .system(.body, design: .monospaced) }
     
@@ -29,6 +35,7 @@ public struct AppleDefaultTheme: ThemeProtocol {
     
     public var iconSend: String { "arrow.up.circle.fill" }
     public var iconReceive: String { "arrow.down.circle.fill" }
+    public var iconSwap: String { "arrow.triangle.2.circlepath" }
     public var iconSettings: String { "gear" }
     public var iconShield: String { "shield.fill" }
     

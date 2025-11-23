@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct QuantumFrostTheme: ThemeProtocol {
+public struct QuantumFrostTheme: ThemeProtocolV2 {
     public let id = "quantum_frost"
     public let name = "Quantum Frost"
     
@@ -15,6 +15,12 @@ public struct QuantumFrostTheme: ThemeProtocol {
     public var cardBackground: Color { Color(red: 0.08, green: 0.12, blue: 0.18) }
     public var borderColor: Color { Color(red: 0.2, green: 0.4, blue: 0.5) }
     
+    // V2 Properties
+    public var glassEffectOpacity: Double { 0.7 }
+    public var chartGradientColors: [Color] { [Color.cyan, Color.blue] }
+    public var securityWarningColor: Color { Color.red }
+    public var cornerRadius: CGFloat { 20.0 }
+    
     public var balanceFont: Font { .system(size: 40, weight: .light, design: .default) }
     public var addressFont: Font { .system(.body, design: .monospaced) }
     
@@ -24,6 +30,7 @@ public struct QuantumFrostTheme: ThemeProtocol {
     
     public var iconSend: String { "paperplane.fill" }
     public var iconReceive: String { "tray.and.arrow.down.fill" }
+    public var iconSwap: String { "arrow.triangle.2.circlepath" }
     public var iconSettings: String { "gearshape" }
     public var iconShield: String { "snowflake" }
     

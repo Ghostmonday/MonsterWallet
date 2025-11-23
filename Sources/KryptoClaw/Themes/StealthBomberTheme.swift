@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct StealthBomberTheme: ThemeProtocol {
+public struct StealthBomberTheme: ThemeProtocolV2 {
     public let id = "stealth_bomber"
     public let name = "Stealth Bomber"
     
@@ -15,6 +15,12 @@ public struct StealthBomberTheme: ThemeProtocol {
     public var cardBackground: Color { Color(white: 0.18) }
     public var borderColor: Color { Color.black }
     
+    // V2 Properties
+    public var glassEffectOpacity: Double { 0.9 }
+    public var chartGradientColors: [Color] { [Color.gray, Color.black] }
+    public var securityWarningColor: Color { Color.red }
+    public var cornerRadius: CGFloat { 2.0 } // Sharp/Stealth
+    
     public var balanceFont: Font { .system(size: 40, weight: .bold, design: .default) }
     public var addressFont: Font { .system(.body, design: .monospaced) }
     
@@ -24,6 +30,7 @@ public struct StealthBomberTheme: ThemeProtocol {
     
     public var iconSend: String { "airplane" }
     public var iconReceive: String { "arrow.down.square" }
+    public var iconSwap: String { "arrow.triangle.2.circlepath" }
     public var iconSettings: String { "gear" }
     public var iconShield: String { "shield" }
     
