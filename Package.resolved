@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/argentlabs/web3.swift.git",
       "state" : {
-        "revision" : "9f7ab36cc8f2d85e70d37d43674aa26fdcc2e1a2",
-        "version" : "1.1.1"
+        "revision" : "706fb0272f47697440b9f302a8ae2f8156cdce38",
+        "version" : "1.1.0"
       }
     }
   ],

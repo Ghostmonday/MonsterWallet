@@ -15,8 +15,9 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/attaswift/BigInt.git", from: "5.3.0"),
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0"),
-        // Fix: Use correct package name/product
-        .package(url: "https://github.com/argentlabs/web3.swift.git", from: "1.1.0"),
+        // Downgrading to a version that doesn't use the C-module secp256k1 directly or handles it better.
+        // Or sticking with 1.1.0 but acknowledging the manual fix required for C headers until we can properly migrate.
+        .package(url: "https://github.com/argentlabs/web3.swift.git", exact: "1.1.0"),
         .package(url: "https://github.com/Boilertalk/secp256k1.swift.git", exact: "0.1.0")
     ],
     targets: [
@@ -25,7 +26,8 @@ let package = Package(
             dependencies: [
                 "BigInt",
                 "CryptoSwift",
-                .product(name: "web3.swift", package: "web3.swift") // Fixed product name
+                .product(name: "web3.swift", package: "web3.swift"),
+                .product(name: "secp256k1", package: "secp256k1.swift")
             ]),
         .testTarget(
             name: "KryptoClawTests",

@@ -20,6 +20,7 @@ public class WalletStateManager: ObservableObject {
     private let securityPolicy: SecurityPolicyProtocol
     private let signer: SignerProtocol
     private let nftProvider: NFTProviderProtocol
+    private let persistence: PersistenceServiceProtocol
     // V2 Security Dependencies
     private let poisoningDetector: AddressPoisoningDetector?
     private let clipboardGuard: ClipboardGuard?
@@ -33,9 +34,7 @@ public class WalletStateManager: ObservableObject {
     @Published public var contacts: [Contact] = []
     @Published public var isPrivacyModeEnabled: Bool = false
     @Published public var nfts: [NFTMetadata] = []
-    @Published public var wallets: [WalletInfo] = [
-        WalletInfo(id: "primary_account", name: "Main Wallet", colorTheme: "blue")
-    ]
+    @Published public var wallets: [WalletInfo] = []
     
     // Current Account
     public var currentAddress: String?
@@ -49,7 +48,8 @@ public class WalletStateManager: ObservableObject {
         signer: SignerProtocol,
         nftProvider: NFTProviderProtocol,
         poisoningDetector: AddressPoisoningDetector? = nil,
-        clipboardGuard: ClipboardGuard? = nil
+        clipboardGuard: ClipboardGuard? = nil,
+        persistence: PersistenceServiceProtocol = PersistenceService.shared
     ) {
         self.keyStore = keyStore
         self.blockchainProvider = blockchainProvider
@@ -60,6 +60,29 @@ public class WalletStateManager: ObservableObject {
         self.nftProvider = nftProvider
         self.poisoningDetector = poisoningDetector
         self.clipboardGuard = clipboardGuard
+        self.persistence = persistence
+        
+        loadPersistedData()
+    }
+    
+    private func loadPersistedData() {
+        do {
+            self.contacts = try persistence.load([Contact].self, from: PersistenceService.contactsFile)
+        } catch {
+            // Ignore error if file doesn't exist (first run)
+            self.contacts = []
+        }
+        
+        do {
+            self.wallets = try persistence.load([WalletInfo].self, from: PersistenceService.walletsFile)
+        } catch {
+            self.wallets = []
+        }
+        
+        // Fallback for fresh install if no wallets found
+        if self.wallets.isEmpty {
+             self.wallets = [WalletInfo(id: "primary_account", name: "Main Wallet", colorTheme: "blue")]
+        }
     }
     
     public func loadAccount(id: String) async {
@@ -89,13 +112,11 @@ public class WalletStateManager: ObservableObject {
                 }
             }
             
-            // For history, we just fetch ETH for now as the main history
-            // In a real app, we'd merge histories
-            let history = try await blockchainProvider.fetchHistory(address: address, chain: .ethereum)
+            // Parallel data fetching
+            async let historyResult = blockchainProvider.fetchHistory(address: address, chain: .ethereum)
+            async let nftsResult = nftProvider.fetchNFTs(address: address)
             
-            // Fetch NFTs
-            // In a real app, this would be parallel
-            let nfts = try await nftProvider.fetchNFTs(address: address)
+            let (history, nfts) = try await (historyResult, nftsResult)
             
             self.state = .loaded(balances)
             self.history = history
@@ -218,11 +239,28 @@ public class WalletStateManager: ObservableObject {
     // MARK: - Contact Management
     public func addContact(_ contact: Contact) {
         contacts.append(contact)
-        // In a real app, we would persist to disk here
+        saveContacts()
     }
     
     public func removeContact(id: UUID) {
         contacts.removeAll { $0.id == id }
+        saveContacts()
+    }
+    
+    private func saveContacts() {
+        do {
+            try persistence.save(contacts, to: PersistenceService.contactsFile)
+        } catch {
+            print("Failed to save contacts: \(error)")
+        }
+    }
+    
+    private func saveWallets() {
+        do {
+            try persistence.save(wallets, to: PersistenceService.walletsFile)
+        } catch {
+            print("Failed to save wallets: \(error)")
+        }
     }
     
     // MARK: - Wallet Management
@@ -243,6 +281,7 @@ public class WalletStateManager: ObservableObject {
             // Update State
             let newWallet = WalletInfo(id: address, name: name, colorTheme: "purple")
             wallets.append(newWallet)
+            saveWallets()
             await loadAccount(id: address)
 
             return mnemonic // Return to UI for backup
@@ -263,6 +302,7 @@ public class WalletStateManager: ObservableObject {
 
             let newWallet = WalletInfo(id: address, name: "Imported Wallet", colorTheme: "blue")
             wallets.append(newWallet)
+            saveWallets()
             await loadAccount(id: address)
         } catch {
             self.state = .error("Import failed: \(error.localizedDescription)")
@@ -287,9 +327,11 @@ public class WalletStateManager: ObservableObject {
             contacts.removeAll()
             // Clear UserDefaults
             UserDefaults.standard.removeObject(forKey: "hasOnboarded")
-            // In a real app, we'd clear other persisted files too
+            // Clear persisted files
+            try persistence.delete(filename: PersistenceService.contactsFile)
+            try persistence.delete(filename: PersistenceService.walletsFile)
         } catch {
-            print("Failed to delete keys: \(error)")
+            print("Failed to delete data: \(error)")
         }
     }
 }
