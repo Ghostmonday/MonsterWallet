@@ -6,7 +6,22 @@ public struct AppConfig {
     
     // Infrastructure
     public static let rpcURL = URL(string: "https://eth.llamarpc.com")!
-    public static let openseaAPIKey: String? = nil // Set via ENV or Build Config in production
+
+    // Secrets Management
+    // For local development, use Secrets.xcconfig (which is git-ignored).
+    // In CI/Production, use Environment Variables.
+    public static let openseaAPIKey: String? = {
+        // 1. Try Environment Variable (CI/Production)
+        if let envKey = ProcessInfo.processInfo.environment["OPENSEA_API_KEY"] {
+            return envKey
+        }
+
+        // 2. Try Info.plist / Build Configuration (iOS App runtime)
+        // Note: Reading from Secrets.xcconfig at runtime requires exposing it in Info.plist
+        // or using a build script to generate a .swift file.
+        // For this skeleton, we assume the environment variable or manual injection is primary.
+        return nil
+    }()
 
     // Feature Flags
     // V1.0 Compliance: Novel/Risky features DISABLED. Standard features ENABLED.
