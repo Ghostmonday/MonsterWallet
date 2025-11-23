@@ -64,8 +64,8 @@ struct ReceiveView: View {
                     }
                     .padding(.horizontal)
 
-                    // Share Sheet (Partial Implementation via ShareLink if iOS 16, or just Copy for now)
-                    ShareLink(item: address) {
+                    // Share Sheet
+                    ShareLink(item: address, subject: Text("My Wallet Address"), message: Text("Here is my wallet address: \(address)")) {
                         Label("Share Address", systemImage: "square.and.arrow.up")
                     }
                     .foregroundColor(themeManager.currentTheme.accentColor)

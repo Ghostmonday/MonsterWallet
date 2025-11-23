@@ -80,4 +80,27 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
     public func isProtected() -> Bool {
         return true
     }
+    
+    public func deleteKey(id: String) throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: id
+        ]
+        
+        let status = keychain.delete(query)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw KeyStoreError.unhandledError(status)
+        }
+    }
+    
+    public func deleteAll() throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword
+        ]
+        
+        let status = keychain.delete(query)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw KeyStoreError.unhandledError(status)
+        }
+    }
 }

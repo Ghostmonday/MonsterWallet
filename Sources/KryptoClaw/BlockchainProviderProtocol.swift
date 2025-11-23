@@ -80,4 +80,5 @@ public protocol BlockchainProviderProtocol {
     func fetchHistory(address: String, chain: Chain) async throws -> TransactionHistory
     func broadcast(signedTx: Data, chain: Chain) async throws -> String // TxHash
     func fetchPrice(chain: Chain) async throws -> Decimal
+    func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate
 }

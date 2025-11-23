@@ -105,6 +105,10 @@ public class WalletStateManager: ObservableObject {
         }
     }
     
+    public func fetchPrice(chain: Chain) async throws -> Decimal {
+        return try await blockchainProvider.fetchPrice(chain: chain)
+    }
+    
     public func prepareTransaction(to: String, value: String, chain: Chain = .ethereum, data: Data? = nil) async {
         guard let from = currentAddress else { return }
         
@@ -273,5 +277,19 @@ public class WalletStateManager: ObservableObject {
     public func copyCurrentAddress() {
         guard let address = currentAddress else { return }
         clipboardGuard?.protectClipboard(content: address, timeout: 60.0)
+    }
+    
+    public func deleteAllData() {
+        do {
+            try keyStore.deleteAll()
+            wallets.removeAll()
+            currentAddress = nil
+            contacts.removeAll()
+            // Clear UserDefaults
+            UserDefaults.standard.removeObject(forKey: "hasOnboarded")
+            // In a real app, we'd clear other persisted files too
+        } catch {
+            print("Failed to delete keys: \(error)")
+        }
     }
 }

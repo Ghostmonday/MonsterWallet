@@ -113,4 +113,92 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         // Result is hex string (e.g. "0x123...")
         return Balance(amount: result, currency: "ETH", decimals: 18)
     }
+    
+    public func fetchPrice(chain: Chain) async throws -> Decimal {
+        // Use CoinGecko Simple Price API
+        let id: String
+        switch chain {
+        case .ethereum: id = "ethereum"
+        case .bitcoin: id = "bitcoin"
+        case .solana: id = "solana"
+        }
+        
+        let urlString = "https://api.coingecko.com/api/v3/simple/price?ids=\(id)&vs_currencies=usd"
+        guard let url = URL(string: urlString) else {
+            throw BlockchainError.parsingError
+        }
+        
+        let (data, response) = try await session.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+             throw BlockchainError.networkError(NSError(domain: "HTTP", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: nil))
+        }
+        
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: [String: Double]],
+              let priceData = json[id],
+              let price = priceData["usd"] else {
+            throw BlockchainError.parsingError
+        }
+        
+        return Decimal(price)
+    }
+    
+    public func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate {
+        guard chain == .ethereum else {
+            // For V1, we only support ETH gas estimation fully.
+            // BTC/SOL would have different fee models.
+            // Return a safe default or throw.
+            return GasEstimate(gasLimit: 21000, maxFeePerGas: "20000000000", maxPriorityFeePerGas: "2000000000")
+        }
+        
+        let url = AppConfig.rpcURL
+        
+        // 1. Estimate Gas Limit
+        let estimatePayload: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "eth_estimateGas",
+            "params": [[
+                "to": to,
+                "value": "0x" + (BigUInt(value)?.toString(radix: 16) ?? "0"),
+                "data": "0x" + data.toHexString()
+            ]],
+            "id": 1
+        ]
+        
+        let limitHex = try await rpcCall(url: url, payload: estimatePayload)
+        let gasLimit = UInt64(limitHex.dropFirst(2), radix: 16) ?? 21000
+
+        // 2. Get Gas Price (EIP-1559)
+        let pricePayload: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "eth_gasPrice",
+            "params": [],
+            "id": 2
+        ]
+        let priceHex = try await rpcCall(url: url, payload: pricePayload)
+        let baseFee = BigUInt(priceHex.dropFirst(2), radix: 16) ?? BigUInt(20_000_000_000)
+
+        // Add tip
+        let priorityFee = BigUInt(2_000_000_000) // 2 Gwei tip
+        let maxFee = baseFee + priorityFee
+        
+        return GasEstimate(
+            gasLimit: gasLimit,
+            maxFeePerGas: String(maxFee),
+            maxPriorityFeePerGas: String(priorityFee)
+        )
+    }
+    
+    private func rpcCall(url: URL, payload: [String: Any]) async throws -> String {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let (data, _) = try await session.data(for: request)
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw BlockchainError.parsingError }
+
+        if let err = json["error"] as? [String: Any] { throw BlockchainError.rpcError(err["message"] as? String ?? "RPC Error") }
+        return json["result"] as? String ?? "0x0"
+    }
 }

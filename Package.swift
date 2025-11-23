@@ -16,7 +16,8 @@ let package = Package(
         .package(url: "https://github.com/attaswift/BigInt.git", from: "5.3.0"),
         .package(url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.8.0"),
         // Fix: Use correct package name/product
-        .package(url: "https://github.com/argentlabs/web3.swift.git", from: "1.6.0")
+        .package(url: "https://github.com/argentlabs/web3.swift.git", from: "1.1.0"),
+        .package(url: "https://github.com/Boilertalk/secp256k1.swift.git", exact: "0.1.0")
     ],
     targets: [
         .target(
@@ -24,7 +25,7 @@ let package = Package(
             dependencies: [
                 "BigInt",
                 "CryptoSwift",
-                .product(name: "web3", package: "web3.swift") // Fixed product name
+                .product(name: "web3.swift", package: "web3.swift") // Fixed product name
             ]),
         .testTarget(
             name: "KryptoClawTests",

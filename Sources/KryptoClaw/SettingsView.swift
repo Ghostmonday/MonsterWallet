@@ -124,8 +124,7 @@ struct SettingsView: View {
                             message: Text("This action is irreversible. Ensure you have backed up your Seed Phrase. All data will be wiped."),
                             primaryButton: .destructive(Text("Delete"), action: {
                                  // Wipe Data
-                                 // In a real app, this calls KeyStore.deleteAll()
-                                 UserDefaults.standard.removeObject(forKey: "hasOnboarded")
+                                 wsm.deleteAllData()
                                  // Force exit or restart (simplest for V1)
                                  exit(0)
                             }),

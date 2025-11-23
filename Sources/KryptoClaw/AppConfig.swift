@@ -6,6 +6,7 @@ public struct AppConfig {
     
     // Infrastructure
     public static let rpcURL = URL(string: "https://eth.llamarpc.com")!
+    public static let openseaAPIKey: String? = nil // Set via ENV or Build Config in production
 
     // Feature Flags
     // V1.0 Compliance: Novel/Risky features DISABLED. Standard features ENABLED.

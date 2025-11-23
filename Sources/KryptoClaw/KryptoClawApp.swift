@@ -22,7 +22,10 @@ public struct KryptoClawApp: App {
         let simulator = LocalSimulator(provider: provider)
         let router = BasicGasRouter(provider: provider)
         let securityPolicy = BasicHeuristicAnalyzer()
-        let nftProvider = MockNFTProvider() // Using Mock for V1.0/Previews
+        
+        // V2 Update: Use Real NFT Provider
+        // Note: API Key should come from AppConfig or Environment
+        let nftProvider = HTTPNFTProvider(session: session, apiKey: AppConfig.openseaAPIKey)
         
         // V2 Security
         let poisoningDetector = AddressPoisoningDetector()

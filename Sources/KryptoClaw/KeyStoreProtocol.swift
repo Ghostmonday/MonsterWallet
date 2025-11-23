@@ -18,4 +18,10 @@ public protocol KeyStoreProtocol {
     /// Checks if the store is protected (e.g. requires User Authentication).
     /// - Returns: True if protected.
     func isProtected() -> Bool
+    
+    /// Deletes a specific key.
+    func deleteKey(id: String) throws
+    
+    /// Deletes all keys managed by this store.
+    func deleteAll() throws
 }
