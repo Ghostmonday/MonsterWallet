@@ -13,10 +13,12 @@ targets:
     type: application
     platform: iOS
     sources:
-      - path: Sources/KryptoClaw
-        excludes:
-          - "**/*Tests.swift"
-    dependencies: []
+      - path: Sources/KryptoClaw/KryptoClawApp.swift
+      - path: Sources/KryptoClaw/Info.plist
+      - path: Sources/KryptoClaw/Resources
+    dependencies:
+      - package: KryptoClaw
+        product: KryptoClaw
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.kryptoclaw.app

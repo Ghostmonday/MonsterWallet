@@ -1,137 +1,66 @@
-# KryptoClaw V2.0 Roadmap & Execution Plan
+# KryptoClaw Development Task Breakdown
 
-**Objective**: Evolve KryptoClaw from a single-currency V1.0 foundation into a feature-complete, multi-currency DeFi powerhouse.
+This document outlines the remaining work for KryptoClaw, divided into three distinct groups suitable for parallel development by separate models/agents.
 
----
+## Group 1: Core Blockchain & Security (Critical/Backend)
+**Focus:** Cryptography, Transaction Signing, and Wallet Logic using `WalletCore`.
+**Goal:** Replace all stubs with real, secure blockchain interactions.
 
-## 📅 Phase 1: Core Infrastructure (✅ COMPLETE)
-*   **Status**: V1.0 Released.
-*   **Foundation**: Secure Enclave, WalletStateManager, Transaction Engine, Theme Engine V1.
-*   **Compliance**: App Store Ready, Privacy Policy, No Forbidden Frameworks.
+1.  **Solana Transaction Signing (`SolanaTransactionService.swift`)**
+    *   **Task:** Implement `sign(message:privateKey:)` and `sendSol(...)` using `WalletCore`'s `SolanaSigner`.
+    *   **Requirements:** Use Ed25519, handle blockhash, serialization, and returning the signed base64 transaction string.
+    *   **Context:** `Sources/KryptoClaw/Core/Blockchain/SolanaTransactionService.swift`.
 
----
+2.  **Bitcoin Transaction Construction (`BitcoinTransactionService.swift`)**
+    *   **Task:** Implement UTXO selection and transaction building using `WalletCore`'s `BitcoinScript` and `BitcoinTransaction`.
+    *   **Requirements:** Calculate fees (sat/vB), sign inputs, and serialize for broadcast.
+    *   **Context:** `Sources/KryptoClaw/Core/Blockchain/BitcoinTransactionService.swift`.
 
-## 📅 Phase 2: Multi-Currency Support (The Backend Expansion)
-**Goal**: Expand the wallet to support ETH, BTC, SOL, and USDC natively.
-**Constraint**: Must be completed BEFORE any UI work or third-party integrations.
-
-### 2.1 Provider Abstraction
-- [ ] Refactor `BlockchainProviderProtocol` to support multiple chains.
-- [ ] Implement `BitcoinProvider` (UTXO model).
-- [ ] Implement `SolanaProvider` (SPL model).
-- [ ] Update `ModularHTTPProvider` to route requests based on chain ID.
-
-### 2.2 Balance & State Management
-- [ ] Update `WalletStateManager` to hold a dictionary of balances: `[Chain: Balance]`.
-- [ ] Update `Transaction` struct to include `chainId` and `tokenContractAddress`.
-- [ ] Implement `TokenStandard` enum (ERC20, SPL, etc.).
-
-### 2.3 Gas & Fees
-- [ ] Implement chain-specific gas estimators (Sat/vB for BTC, Lamports for SOL).
-- [ ] Update `BasicGasRouter` to handle multi-chain fee logic.
+3.  **Secure Enclave & Key Storage Hardening**
+    *   **Task:** Review `SecureEnclaveKeyStore.swift` and ensure keys are never exposed in memory longer than necessary. Implement `SecureBytes` if not present.
+    *   **Context:** `Sources/KryptoClaw/SecureEnclaveKeyStore.swift`.
 
 ---
 
-## 📅 Phase 3: Third-Party Integrations (The Feature Layer)
-**Goal**: Integrate external services to provide real utility.
-**Constraint**: Use strict service wrappers; no direct API calls from UI.
+## Group 2: Data Integration & Networking (API/Middleware)
+**Focus:** Real-world data fetching, APIs, and connecting the app to the blockchain.
+**Goal:** Replace mock data providers with real live data.
 
-### 3.1 Fiat On-Ramp
-- [ ] **Service**: MoonPay / Ramp.
-- [ ] **Task**: Create `FiatOnRampManager`.
-- [ ] **Flow**: Select Currency -> Enter Amount -> SDK Handoff -> Callback.
-- [ ] **Compliance**: Handle KYC/AML triggers via SDK.
+1.  **Transaction History Indexer (`ModularHTTPProvider.swift`)**
+    *   **Task:** Implement `fetchHistory(address:chain:)` using real APIs.
+    *   **APIs:** Etherscan (ETH), Mempool.space (BTC), Solscan/Helius (SOL).
+    *   **Requirements:** Parse JSON responses into `TransactionHistory` models. Remove mock data.
+    *   **Context:** `Sources/KryptoClaw/ModularHTTPProvider.swift`.
 
-### 3.2 DEX / Swaps
-- [ ] **Service**: Uniswap / Sushiswap / Jupiter (SOL).
-- [ ] **Task**: Create `DexSwapManager`.
-- [ ] **Features**: Token List, Slippage Settings, Quote Fetching.
-- [ ] **Security**: Simulate swap transactions before signing.
+2.  **DEX Aggregator Integration (`DEXAggregator.swift`)**
+    *   **Task:** Implement `getQuote(...)` to query real DEX APIs.
+    *   **APIs:** 1inch (EVM), Jupiter (Solana).
+    *   **Requirements:** Return real price impact, estimated gas, and call data.
+    *   **Context:** `Sources/KryptoClaw/Core/DEX/DEXAggregator.swift`.
 
-### 3.3 Market Data
-- [ ] **Service**: CoinGecko / Chainlink.
-- [ ] **Task**: Create `MarketDataProvider`.
-- [ ] **Features**: Real-time prices, 24h change, sparkline data.
-- [ ] **Performance**: Implement caching strategy (15s TTL).
-
-### 3.4 Security Intelligence
-- [ ] **Service**: Chainalysis / CipherTrace.
-- [ ] **Task**: Create `FraudDetectionManager`.
-- [ ] **Features**: Address screening, contract risk scoring.
+3.  **NFT Data Provider (`HTTPNFTProvider.swift`)**
+    *   **Task:** Implement `fetchNFTs(address:)` to replace `MockNFTProvider`.
+    *   **APIs:** OpenSea, MagicEden, or a multichain indexer like SimpleHash.
+    *   **Requirements:** Fetch images and metadata asynchronously.
+    *   **Context:** `Sources/KryptoClaw/NFTProviderProtocol.swift`.
 
 ---
 
-## 📅 Phase 4: UI/UX Expansion (The Interface Layer)
-**Goal**: Expose the new features via a polished, tab-based interface.
-**Constraint**: Maintain separation between core logic and UI presentation.
+## Group 3: UI/UX Polish & Advanced Features (Frontend)
+**Focus:** User experience, visual assets, and advanced interaction flows.
+**Goal:** Make the app look professional and complete the user journey.
 
-### 4.1 Navigation Structure
-- [ ] Implement `TabBarView` with 5 tabs:
-    1.  **Portfolio**: Multi-asset dashboard.
-    2.  **Actions**: Send, Receive, Swap, Buy.
-    3.  **Activity**: History & Analytics.
-    4.  **Security**: Alerts & Recovery.
-    5.  **Settings**: Preferences & Themes.
+1.  **Chain Logo Assets (`HomeView.swift` & `UIComponents.swift`)**
+    *   **Task:** Replace placeholder circles with actual logo assets for ETH, BTC, SOL, and popular tokens.
+    *   **Requirements:** Add assets to `Assets.xcassets`, update `Chain` enum to return correct image names, handle loading states.
+    *   **Context:** `Sources/KryptoClaw/HomeView.swift`.
 
-### 4.2 Portfolio Tab
-- [ ] **Multi-Card Layout**: Scrollable cards for ETH, BTC, SOL, USDC.
-- [ ] **Total Balance**: Aggregated USD value.
-- [ ] **Charts**: 24h/7d/30d line charts (themed).
+2.  **Clipboard Guard UI Feedback**
+    *   **Task:** Improve the visual feedback when Clipboard Guard is triggered.
+    *   **Requirements:** Show a clear toast or status indicator that the address was copied safely and/or cleared after usage.
+    *   **Context:** `Sources/KryptoClaw/HomeView.swift`.
 
-### 4.3 Actions Tab
-- [ ] **Unified Action Center**:
-    -   **Send**: Chain selector -> Address -> Amount.
-    -   **Receive**: QR Code + Copy Address.
-    -   **Swap**: Token A -> Token B interface.
-    -   **Buy**: Fiat On-Ramp trigger.
-- [ ] **QR Scanner**: Camera overlay for addresses.
-
-### 4.4 Activity & Insights
-- [ ] **Transaction List**: Filterable by Chain/Token/Date.
-- [ ] **Analytics**: Inflow/Outflow pie charts.
-- [ ] **Status Indicators**: Pending, Confirmed, Failed (themed colors).
-
-### 4.5 Security Center
-- [ ] **Risk Dashboard**: Active alerts from `BasicHeuristicAnalyzer`.
-- [ ] **Recovery Wizard**: Guided flow for seed phrase backup.
-- [ ] **Biometric Toggle**: FaceID/TouchID control.
-
----
-
-## 📅 Phase 5: Theme System V2 & Generation Pipeline
-**Goal**: Scale theme production to hundreds of high-quality, compliant skins.
-
-### 5.1 Expanded Theme Protocol
-- [ ] Update `ThemeProtocol` documentation to cover new UI slots (Charts, Swaps, Alerts).
-- [ ] **No New Slots**: Reuse existing slots (`accentColor`, `backgroundSecondary`) for new features.
-
-### 5.2 Automated Theme Pipeline
-**Input**: List of Theme Names (e.g., "Winter Glow", "Cyber Punk").
-
-**Step 1: Generation**
-- [ ] **LLM Prompt**: Expand name to JSON definition (Colors, Fonts, Icons, Vibe).
-- [ ] **Brand Safety**: Filter trademarked terms (e.g., "Nintendo" -> "Retro Console").
-
-**Step 2: Validation**
-- [ ] **Programmatic**: Check WCAG contrast, Dark Mode compliance, Icon validity.
-- [ ] **Visual**: Render snapshots of all 6 core screens.
-
-**Step 3: Vision QA Gate (Gemini)**
-- [ ] **Compliance Check**: "Is text legible? Are icons correct?"
-- [ ] **Quality Score**: "Aesthetic harmony (0-10), Emotional resonance (0-10)."
-- [ ] **Threshold**: Only themes scoring > 8.5 pass.
-
-**Step 4: Packaging**
-- [ ] **Output**: Swift Structs ready for `ThemeCatalog`.
-- [ ] **Bundles**: "Holiday Pack", "Sports Pack", "Retro Pack".
-
----
-
-## 📝 Execution Checklist
-
-- [ ] **Phase 2**: Multi-Currency Backend
-- [ ] **Phase 3**: Integrations (Fiat, DEX, Data, Security)
-- [ ] **Phase 4**: UI Expansion (Tabs, Charts, Swaps)
-- [ ] **Phase 5**: Theme Pipeline & V2 Guide
-
-**Ready to Execute.**
+3.  **Transaction Simulation Visualization (`SendView.swift`)**
+    *   **Task:** Improve how simulation results are displayed to the user.
+    *   **Requirements:** Show detailed "Expected Changes" (e.g., "-0.1 ETH", "+100 USDT"), gas cost in USD, and explicit risk warnings.
+    *   **Context:** `Sources/KryptoClaw/SendView.swift`.

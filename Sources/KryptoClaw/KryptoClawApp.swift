@@ -1,4 +1,5 @@
 import SwiftUI
+import KryptoClaw
 #if os(iOS)
 import UIKit
 #endif

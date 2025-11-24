@@ -1,5 +1,4 @@
 {
-  "originHash" : "e39673eed93019a163ea1b375b8ec9c3b7b04a68315bfe7e72a5bcd598ce4f94",
   "pins" : [
     {
       "identity" : "bigint",
@@ -47,6 +46,15 @@
       }
     },
     {
+      "identity" : "wallet-core",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/trustwallet/wallet-core",
+      "state" : {
+        "revision" : "1fe9c732de7aa7b96f9e8633050f634f1910977d",
+        "version" : "4.4.2"
+      }
+    },
+    {
       "identity" : "web3.swift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/argentlabs/web3.swift.git",
@@ -56,5 +64,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }

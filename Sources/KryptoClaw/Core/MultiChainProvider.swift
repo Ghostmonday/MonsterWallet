@@ -99,19 +99,95 @@ public class MultiChainProvider: BlockchainProviderProtocol {
     public func fetchHistory(address: String, chain: Chain) async throws -> TransactionHistory {
         switch chain {
         case .ethereum:
+            // Etherscan or similar indexer integration should happen in ethProvider or here
+            // For now, we will implement a basic Etherscan call in ethProvider or here directly
             return try await ethProvider.fetchHistory(address: address, chain: .ethereum)
-        default:
-            // TODO: Implement real BTC/SOL history fetching
-            let tx = TransactionSummary(
-                hash: "0xMockHash\(chain.rawValue)",
-                from: "0xSender",
-                to: address,
-                value: "1.0",
-                timestamp: Date().addingTimeInterval(-3600),
-                chain: chain
-            )
-            return TransactionHistory(transactions: [tx])
+        case .bitcoin:
+            return try await fetchBitcoinHistory(address: address)
+        case .solana:
+            return try await fetchSolanaHistory(address: address)
         }
+    }
+
+    private func fetchBitcoinHistory(address: String) async throws -> TransactionHistory {
+        let urlString = "https://mempool.space/api/address/\(address)/txs"
+        guard let url = URL(string: urlString) else { throw BlockchainError.invalidAddress }
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 30.0
+        let (data, response) = try await session.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            // If 404, it might just mean no history, but mempool.space usually returns []
+            if (response as? HTTPURLResponse)?.statusCode == 404 { return TransactionHistory(transactions: []) }
+            throw BlockchainError.networkError(NSError(domain: "HTTP", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: nil))
+        }
+
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw BlockchainError.parsingError
+        }
+
+        let txs: [TransactionSummary] = json.compactMap { txDict in
+            guard let txid = txDict["txid"] as? String,
+                  let status = txDict["status"] as? [String: Any],
+                  let blockTime = status["block_time"] as? TimeInterval else { return nil }
+            
+            // Simplification: Parsing BTC inputs/outputs to determine value/from/to is complex.
+            // For summary, we just list the TXID.
+            // TODO: Parse 'vin' and 'vout' to determine direction and amount.
+            
+            return TransactionSummary(
+                hash: txid,
+                from: "BTC_Sender", // Needs parsing
+                to: address,        // Needs parsing
+                value: "0.0",       // Needs parsing
+                timestamp: Date(timeIntervalSince1970: blockTime),
+                chain: .bitcoin
+            )
+        }
+
+        return TransactionHistory(transactions: txs)
+    }
+
+    private func fetchSolanaHistory(address: String) async throws -> TransactionHistory {
+        let url = URL(string: "https://api.mainnet-beta.solana.com")!
+        let payload: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getSignaturesForAddress",
+            "params": [
+                address,
+                ["limit": 20]
+            ]
+        ]
+
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: payload) else { throw BlockchainError.parsingError }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = httpBody
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let (data, _) = try await session.data(for: request)
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let result = json["result"] as? [[String: Any]] else {
+            return TransactionHistory(transactions: [])
+        }
+
+        let txs: [TransactionSummary] = result.compactMap { sigDict in
+            guard let signature = sigDict["signature"] as? String,
+                  let blockTime = sigDict["blockTime"] as? TimeInterval else { return nil }
+            
+            return TransactionSummary(
+                hash: signature,
+                from: "Unknown", // Solana getSignaturesForAddress doesn't give details
+                to: address,
+                value: "0.0",
+                timestamp: Date(timeIntervalSince1970: blockTime),
+                chain: .solana
+            )
+        }
+        
+        return TransactionHistory(transactions: txs)
     }
 
     public func broadcast(signedTx: Data, chain: Chain) async throws -> String {

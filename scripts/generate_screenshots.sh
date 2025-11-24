@@ -54,3 +54,4 @@ else
     echo "Screenshot generation cancelled."
 fi
 
+
