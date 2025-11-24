@@ -5,8 +5,13 @@ import Foundation
 public class SolanaTransactionService {
     public init() {}
 
+    public enum ServiceError: Error {
+        case notImplemented
+    }
+
     // TODO: Implement Solana transaction creation (sendSol)
     public func sendSol(to destination: String, amountLamports: UInt64) async throws -> String {
-        fatalError("Not implemented")
+        // Safe fail instead of crash
+        throw ServiceError.notImplemented
     }
 }

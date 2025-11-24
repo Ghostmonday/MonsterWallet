@@ -5,8 +5,13 @@ import Foundation
 public class BitcoinTransactionService {
     public init() {}
 
+    public enum ServiceError: Error {
+        case notImplemented
+    }
+
     // TODO: Implement Bitcoin transaction creation
     public func createTransaction(to address: String, amountSats: UInt64) async throws -> Data {
-        fatalError("Not implemented")
+        // Safe fail instead of crash
+        throw ServiceError.notImplemented
     }
 }

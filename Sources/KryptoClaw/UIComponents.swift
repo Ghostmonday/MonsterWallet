@@ -4,6 +4,36 @@ import SwiftUI
 import UIKit
 #endif
 
+// MARK: - Shapes & Patterns
+
+/// A diamond pattern shape for "Elite" themes.
+public struct DiamondPattern: Shape {
+    public func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let size: CGFloat = 20 // Size of each diamond
+        let rows = Int(rect.height / size) + 1
+        let cols = Int(rect.width / size) + 1
+
+        for r in 0..<rows {
+            for c in 0..<cols {
+                let x = CGFloat(c) * size
+                let y = CGFloat(r) * size
+                let offset = (r % 2 == 0) ? 0 : size / 2
+
+                let centerX = x + offset
+                let centerY = y
+
+                path.move(to: CGPoint(x: centerX, y: centerY - size/4))
+                path.addLine(to: CGPoint(x: centerX + size/4, y: centerY))
+                path.addLine(to: CGPoint(x: centerX, y: centerY + size/4))
+                path.addLine(to: CGPoint(x: centerX - size/4, y: centerY))
+                path.closeSubpath()
+            }
+        }
+        return path
+    }
+}
+
 public struct KryptoButton: View {
     let title: String
     let icon: String
@@ -62,22 +92,36 @@ public struct KryptoCard<Content: View>: View {
     }
     
     public var body: some View {
-        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-        // [DESIGN SPEC: SIGNATURE CARD UPGRADE]
-        // 1. Glassmorphism:
-        //    - Replace `.background(theme.cardBackground)` with logic to check for `materialStyle` or `glassEffectOpacity`.
-        //    - Use `ZStack` with `Material.ultraThin` (if iOS 15+) opacity masked.
-        // 2. Indentation/Border:
-        //    - Apply the "Diamond Pattern" texture overlay here if defined in theme.
+        ZStack {
+            if themeManager.currentTheme.glassEffectOpacity < 1.0 {
+                // Glassmorphism
+                if #available(iOS 15.0, *) {
+                    Rectangle()
+                        .fill(Material.ultraThin)
+                        .opacity(themeManager.currentTheme.glassEffectOpacity)
+                } else {
+                    themeManager.currentTheme.cardBackground
+                        .opacity(themeManager.currentTheme.glassEffectOpacity)
+                }
+            } else {
+                themeManager.currentTheme.cardBackground
+            }
 
-        content
-            .padding(20)
-            .background(themeManager.currentTheme.cardBackground)
-            .cornerRadius(2) // Razor-edged
-            .overlay(
-                RoundedRectangle(cornerRadius: 2)
-                    .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
-            )
+            if themeManager.currentTheme.hasDiamondTexture {
+                DiamondPattern()
+                    .fill(Color.white.opacity(0.03))
+                    .clipped()
+            }
+
+            content
+                .padding(20)
+        }
+        .background(themeManager.currentTheme.glassEffectOpacity == 1.0 ? themeManager.currentTheme.cardBackground : Color.clear)
+        .cornerRadius(themeManager.currentTheme.cornerRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
+                .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
+        )
     }
 }
 
@@ -90,13 +134,13 @@ struct KryptoTextField: View {
         TextField(placeholder, text: $text)
             .padding()
             .background(themeManager.currentTheme.backgroundSecondary)
-            .cornerRadius(2)
+            .cornerRadius(themeManager.currentTheme.cornerRadius)
             .foregroundColor(themeManager.currentTheme.textPrimary)
             .overlay(
-                RoundedRectangle(cornerRadius: 2)
+                RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
                     .stroke(themeManager.currentTheme.borderColor.opacity(0.5), lineWidth: 1)
             )
-            .font(themeManager.currentTheme.addressFont) // Monospace for input usually looks good in this style, or use body
+            .font(themeManager.currentTheme.addressFont)
     }
 }
 

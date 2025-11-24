@@ -1,15 +1,5 @@
 import SwiftUI
 
-// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-// [THEME ENGINE 2.0 UPGRADE REQUIRED]
-// The user requires a "Signature" aesthetic (Black Obsidian, Liquid Glass, Diamond Indentation)
-// and "Luxury/Elemental" themes. The current Color-based system is insufficient.
-//
-// ACTION: Refactor `ThemeProtocolV2` to support:
-// 1. `backgroundTexture`: An Image or Shape (AnyView) to render the "Diamond Indentation" or "Monogram" patterns.
-// 2. `backgroundAnimation`: A closure/modifier to apply the "Liquid" motion effect.
-// 3. `materialStyle`: Support for `Material` (UltraThin, Thin, Regular) for the Glassmorphism look.
-
 // MARK: - Theme Protocol V2 (Elite)
 public protocol ThemeProtocolV2 {
     var id: String { get }
@@ -33,6 +23,7 @@ public protocol ThemeProtocolV2 {
     var glassEffectOpacity: Double { get } // For glassmorphism
     var chartGradientColors: [Color] { get }
     var securityWarningColor: Color { get } // For poisoning alerts
+    var hasDiamondTexture: Bool { get } // New: Support for "Diamond Indentation"
 
     // Metrics
     var cornerRadius: CGFloat { get }
@@ -137,15 +128,6 @@ public class ThemeManager: ObservableObject {
 
 // MARK: - Standard Themes
 
-// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-// [DESIGN SPEC: SIGNATURE BLACK OBSIDIAN]
-// 1. Background: Deepest Black (#000000) with a "Liquid Reflection" animation.
-//    - Implementation: RadialGradient moving slowly across the screen.
-// 2. Texture: "Diamond Indentation" pattern.
-//    - Implementation: A tiled pattern of small diamonds (rhombus) with 5% opacity overlay.
-// 3. Card Style: "Black Glass"
-//    - Implementation: UltraThinMaterial + Black opacity 0.4 + White Border (0.5px, opacity 0.2) for the "Etched" look.
-
 public struct EliteDarkTheme: ThemeProtocolV2 {
     public let id = "elite_dark"
     public let name = "Elite Dark"
@@ -164,6 +146,7 @@ public struct EliteDarkTheme: ThemeProtocolV2 {
     public let glassEffectOpacity = 0.8
     public let chartGradientColors = [KryptoColors.cyberBlue, KryptoColors.weaponizedPurple]
     public let securityWarningColor = KryptoColors.neonRed
+    public let hasDiamondTexture = true
 
     public let cornerRadius: CGFloat = 20.0
 
@@ -180,18 +163,6 @@ public struct EliteDarkTheme: ThemeProtocolV2 {
     public let iconSettings = "gearshape.fill"
     public let iconShield = "shield.checkerboard"
 }
-
-// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-// [DESIGN SPEC: LUXURY "CRYPTO MONOGRAM"]
-// Inspiration: LV / Gucci styling but with Crypto Symbols.
-// 1. Palette: Dark Brown / Gold / Tan.
-// 2. Pattern: Repeating grid of (BTC, ETH, $, ¥, €) symbols.
-//    - Implementation: Create a seamless tileable view.
-
-// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-// [DESIGN SPEC: ELEMENTAL THEMES]
-// 1. "Fire & Ash": Dark Grey background with animated "Ember" particles (Orange/Red) floating up.
-// 2. "Water & Ice": Deep Blue background with "Frosted Glass" cards and a slow "Wave" animation.
 
 public struct CyberPunkTheme: ThemeProtocolV2 {
     public let id = "cyber_punk"
@@ -211,6 +182,7 @@ public struct CyberPunkTheme: ThemeProtocolV2 {
     public let glassEffectOpacity = 0.6
     public let chartGradientColors = [Color.pink, Color.yellow]
     public let securityWarningColor = Color.red
+    public let hasDiamondTexture = false
 
     public let cornerRadius: CGFloat = 4.0 // Sharp corners
 
@@ -246,6 +218,7 @@ public struct PureWhiteTheme: ThemeProtocolV2 {
     public let glassEffectOpacity = 0.9
     public let chartGradientColors = [Color.blue, Color.purple]
     public let securityWarningColor = Color.orange
+    public let hasDiamondTexture = false
 
     public let cornerRadius: CGFloat = 16.0
 
@@ -256,6 +229,287 @@ public struct PureWhiteTheme: ThemeProtocolV2 {
         return Font.system(style, design: .serif)
     }
 
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+// Fallback Themes
+public struct AppleDefaultTheme: ThemeProtocolV2 {
+    public let id = "apple_default"
+    public let name = "Default (Apple)"
+    public let backgroundMain = Color.white
+    public let backgroundSecondary = Color(white: 0.95)
+    public let textPrimary = Color.black
+    public let textSecondary = Color.gray
+    public let accentColor = Color.blue
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = Color.white
+    public let borderColor = Color(white: 0.9)
+    public let glassEffectOpacity = 1.0
+    public let chartGradientColors = [Color.blue, Color.blue]
+    public let securityWarningColor = Color.red
+    public let hasDiamondTexture = false
+    public let cornerRadius: CGFloat = 10.0
+    public let balanceFont = Font.system(size: 32)
+    public let addressFont = Font.system(size: 12)
+    public func font(style: Font.TextStyle) -> Font { .system(style) }
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+public struct StealthBomberTheme: ThemeProtocolV2 {
+    public let id = "stealth_bomber"
+    public let name = "Stealth Bomber"
+    public let backgroundMain = Color.black
+    public let backgroundSecondary = Color.black
+    public let textPrimary = Color(white: 0.8)
+    public let textSecondary = Color.gray
+    public let accentColor = Color.gray
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = Color(white: 0.1)
+    public let borderColor = Color(white: 0.2)
+    public let glassEffectOpacity = 1.0
+    public let chartGradientColors = [Color.gray, Color.gray]
+    public let securityWarningColor = Color.red
+    public let hasDiamondTexture = true
+    public let cornerRadius: CGFloat = 0.0
+    public let balanceFont = Font.system(size: 32, design: .monospaced)
+    public let addressFont = Font.system(size: 12, design: .monospaced)
+    public func font(style: Font.TextStyle) -> Font { .system(style, design: .monospaced) }
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+public struct NeonTokyoTheme: ThemeProtocolV2 {
+    public let id = "neon_tokyo"
+    public let name = "Neon Tokyo"
+    public let backgroundMain = Color(red: 0.05, green: 0.0, blue: 0.1)
+    public let backgroundSecondary = Color(red: 0.1, green: 0.0, blue: 0.2)
+    public let textPrimary = Color.white
+    public let textSecondary = Color.pink
+    public let accentColor = Color.cyan
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.yellow
+    public let cardBackground = Color.black.opacity(0.8)
+    public let borderColor = Color.cyan
+    public let glassEffectOpacity = 0.8
+    public let chartGradientColors = [Color.cyan, Color.pink]
+    public let securityWarningColor = Color.red
+    public let hasDiamondTexture = false
+    public let cornerRadius: CGFloat = 12.0
+    public let balanceFont = Font.system(size: 32, design: .rounded)
+    public let addressFont = Font.system(size: 12)
+    public func font(style: Font.TextStyle) -> Font { .system(style, design: .rounded) }
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+public struct ObsidianStealthTheme: ThemeProtocolV2 {
+    public let id = "obsidian_stealth"
+    public let name = "Obsidian Stealth"
+    public let backgroundMain = Color.black
+    public let backgroundSecondary = Color.black
+    public let textPrimary = Color.white
+    public let textSecondary = Color.gray
+    public let accentColor = Color.white
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = Color(white: 0.05)
+    public let borderColor = Color(white: 0.1)
+    public let glassEffectOpacity = 1.0
+    public let chartGradientColors = [Color.white, Color.gray]
+    public let securityWarningColor = Color.red
+    public let hasDiamondTexture = true
+    public let cornerRadius: CGFloat = 8.0
+    public let balanceFont = Font.system(size: 32)
+    public let addressFont = Font.system(size: 12)
+    public func font(style: Font.TextStyle) -> Font { .system(style) }
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+public struct QuantumFrostTheme: ThemeProtocolV2 {
+    public let id = "quantum_frost"
+    public let name = "Quantum Frost"
+    public let backgroundMain = Color(red: 0.9, green: 0.95, blue: 1.0)
+    public let backgroundSecondary = Color.white
+    public let textPrimary = Color.black
+    public let textSecondary = Color.blue
+    public let accentColor = Color.blue
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = Color.white.opacity(0.9)
+    public let borderColor = Color.blue.opacity(0.3)
+    public let glassEffectOpacity = 0.9
+    public let chartGradientColors = [Color.blue, Color.cyan]
+    public let securityWarningColor = Color.orange
+    public let hasDiamondTexture = false
+    public let cornerRadius: CGFloat = 16.0
+    public let balanceFont = Font.system(size: 32, design: .serif)
+    public let addressFont = Font.system(size: 12)
+    public func font(style: Font.TextStyle) -> Font { .system(style, design: .serif) }
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+public struct BunkerGrayTheme: ThemeProtocolV2 {
+    public let id = "bunker_gray"
+    public let name = "Bunker Gray"
+    public let backgroundMain = Color(white: 0.2)
+    public let backgroundSecondary = Color(white: 0.15)
+    public let textPrimary = Color.white
+    public let textSecondary = Color(white: 0.7)
+    public let accentColor = Color.yellow
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = Color(white: 0.25)
+    public let borderColor = Color(white: 0.3)
+    public let glassEffectOpacity = 1.0
+    public let chartGradientColors = [Color.yellow, Color.orange]
+    public let securityWarningColor = Color.red
+    public let hasDiamondTexture = false
+    public let cornerRadius: CGFloat = 4.0
+    public let balanceFont = Font.system(size: 32, design: .monospaced)
+    public let addressFont = Font.system(size: 12)
+    public func font(style: Font.TextStyle) -> Font { .system(style, design: .monospaced) }
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+public struct CrimsonTideTheme: ThemeProtocolV2 {
+    public let id = "crimson_tide"
+    public let name = "Crimson Tide"
+    public let backgroundMain = Color(red: 0.2, green: 0.0, blue: 0.0)
+    public let backgroundSecondary = Color(red: 0.1, green: 0.0, blue: 0.0)
+    public let textPrimary = Color.white
+    public let textSecondary = Color.red
+    public let accentColor = Color.red
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = Color(red: 0.3, green: 0.0, blue: 0.0).opacity(0.8)
+    public let borderColor = Color.red
+    public let glassEffectOpacity = 0.8
+    public let chartGradientColors = [Color.red, Color.orange]
+    public let securityWarningColor = Color.yellow
+    public let hasDiamondTexture = true
+    public let cornerRadius: CGFloat = 10.0
+    public let balanceFont = Font.system(size: 32)
+    public let addressFont = Font.system(size: 12)
+    public func font(style: Font.TextStyle) -> Font { .system(style) }
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+public struct CyberpunkNeonTheme: ThemeProtocolV2 {
+    public let id = "cyberpunk_neon"
+    public let name = "Cyberpunk Neon"
+    public let backgroundMain = Color.black
+    public let backgroundSecondary = Color(red: 0.1, green: 0.1, blue: 0.2)
+    public let textPrimary = Color.cyan
+    public let textSecondary = Color.pink
+    public let accentColor = Color.yellow
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = Color.black.opacity(0.7)
+    public let borderColor = Color.cyan
+    public let glassEffectOpacity = 0.7
+    public let chartGradientColors = [Color.cyan, Color.purple]
+    public let securityWarningColor = Color.red
+    public let hasDiamondTexture = false
+    public let cornerRadius: CGFloat = 6.0
+    public let balanceFont = Font.system(size: 32, design: .monospaced)
+    public let addressFont = Font.system(size: 12)
+    public func font(style: Font.TextStyle) -> Font { .system(style, design: .monospaced) }
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+public struct GoldenEraTheme: ThemeProtocolV2 {
+    public let id = "golden_era"
+    public let name = "Golden Era"
+    public let backgroundMain = Color(red: 0.95, green: 0.9, blue: 0.8)
+    public let backgroundSecondary = Color(red: 0.9, green: 0.85, blue: 0.75)
+    public let textPrimary = Color(red: 0.4, green: 0.3, blue: 0.1)
+    public let textSecondary = Color(red: 0.6, green: 0.5, blue: 0.3)
+    public let accentColor = Color(red: 0.8, green: 0.6, blue: 0.2)
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = Color.white.opacity(0.8)
+    public let borderColor = Color(red: 0.8, green: 0.6, blue: 0.2)
+    public let glassEffectOpacity = 0.8
+    public let chartGradientColors = [Color.orange, Color.yellow]
+    public let securityWarningColor = Color.red
+    public let hasDiamondTexture = true
+    public let cornerRadius: CGFloat = 14.0
+    public let balanceFont = Font.system(size: 32, design: .serif)
+    public let addressFont = Font.system(size: 12)
+    public func font(style: Font.TextStyle) -> Font { .system(style, design: .serif) }
+    public let iconSend = "arrow.up"
+    public let iconReceive = "arrow.down"
+    public let iconSwap = "arrow.left.and.right"
+    public let iconSettings = "gear"
+    public let iconShield = "shield"
+}
+
+public struct MatrixCodeTheme: ThemeProtocolV2 {
+    public let id = "matrix_code"
+    public let name = "Matrix Code"
+    public let backgroundMain = Color.black
+    public let backgroundSecondary = Color(red: 0.0, green: 0.1, blue: 0.0)
+    public let textPrimary = Color.green
+    public let textSecondary = Color(red: 0.0, green: 0.5, blue: 0.0)
+    public let accentColor = Color.green
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = Color.black.opacity(0.9)
+    public let borderColor = Color.green
+    public let glassEffectOpacity = 0.9
+    public let chartGradientColors = [Color.green, Color(red: 0.0, green: 0.3, blue: 0.0)]
+    public let securityWarningColor = Color.red
+    public let hasDiamondTexture = false
+    public let cornerRadius: CGFloat = 0.0
+    public let balanceFont = Font.system(size: 32, design: .monospaced)
+    public let addressFont = Font.system(size: 12)
+    public func font(style: Font.TextStyle) -> Font { .system(style, design: .monospaced) }
     public let iconSend = "arrow.up"
     public let iconReceive = "arrow.down"
     public let iconSwap = "arrow.left.and.right"

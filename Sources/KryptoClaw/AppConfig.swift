@@ -27,8 +27,9 @@ public struct AppConfig {
     // V1.0 Compliance: Novel/Risky features DISABLED. Standard features ENABLED.
     public struct Features {
         // Standard in Top-Tier Wallets
-        public static let isMultiChainEnabled = true
-        public static let isSwapEnabled = true // Standard interface, non-custodial
+        // DISABLED for V1 Submission to ensure stability (Pending full implementation)
+        public static let isMultiChainEnabled = false
+        public static let isSwapEnabled = false // Standard interface, non-custodial
         public static let isAddressPoisoningProtectionEnabled = true // Enhanced Security
 
         // Novel/Risky (Disabled for approval safety)
