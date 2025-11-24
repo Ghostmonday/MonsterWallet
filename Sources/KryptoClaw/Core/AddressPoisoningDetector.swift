@@ -5,9 +5,6 @@ import Foundation
 /// from an address that looks very similar to one the user frequently interacts with (e.g. same first/last 4 chars).
 /// The goal is to trick the user into copying the wrong address from history.
 public class AddressPoisoningDetector {
-
-    // Configurable similarity threshold
-    // e.g., if >80% match but not identical, flag it.
     private let similarityThreshold: Double = 0.8
 
     public init() {}
@@ -28,14 +25,11 @@ public class AddressPoisoningDetector {
         for safeAddr in safeHistory {
             let safe = safeAddr.lowercased()
 
-            // 1. Exact match is safe (assuming history is trusted)
             if target == safe {
-                continue // It's a known address, likely safe.
+                continue
             }
 
-            // 2. Check for "Vanity Spoofing" (First 4 and Last 4 match, but middle differs)
             if hasMatchingEndpoints(addr1: target, addr2: safe) {
-                // It matches endpoints but is NOT the same string. HIGH RISK.
                 return .potentialPoison(reason: "Warning: This address looks similar to \(shorten(safe)) but is different. Verify every character.")
             }
         }

@@ -5,9 +5,20 @@ import Foundation
 public class DEXAggregator {
     public init() {}
 
-    // TODO: Implement quote fetching from real APIs
+    /// Fetches the best quote for a swap.
+    /// - Parameters:
+    ///   - from: Source token address or symbol
+    ///   - to: Destination token address or symbol
+    ///   - amount: Amount in base units
+    /// - Returns: A string description of the quote (Mock).
     public func getQuote(from: String, to: String, amount: String) async throws -> String {
-        // Return a mock quote for now
-        return "Quote: 1 \(from) = 0.98 \(to)"
+        // TODO: Implement real DEX aggregator - query 1inch/0x/Jupiter APIs in parallel
+
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        let rate = Double.random(in: 0.95 ... 1.05)
+        let estimatedOutput = (Double(amount) ?? 0) * rate
+
+        return String(format: "Best Quote: 1 %@ ≈ %.4f %@ (via Uniswap V3)", from, rate, to)
     }
 }

@@ -3,12 +3,12 @@ import SwiftUI
 struct NFTGalleryView: View {
     @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     let columns = [
         GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
+        GridItem(.flexible(), spacing: 16),
     ]
-    
+
     var body: some View {
         VStack {
             if wsm.nfts.isEmpty {
@@ -44,10 +44,9 @@ struct NFTGalleryView: View {
 struct NFTCard: View {
     let nft: NFTMetadata
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Image
             AsyncImage(url: nft.imageURL) { phase in
                 if let image = phase.image {
                     image
@@ -63,14 +62,13 @@ struct NFTCard: View {
             }
             .frame(height: 150)
             .clipped()
-            
-            // Details
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(nft.collectionName)
                     .font(themeManager.currentTheme.font(style: .caption))
                     .foregroundColor(themeManager.currentTheme.textSecondary)
                     .lineLimit(1)
-                
+
                 Text(nft.name)
                     .font(themeManager.currentTheme.font(style: .headline))
                     .foregroundColor(themeManager.currentTheme.textPrimary)
@@ -86,4 +84,3 @@ struct NFTCard: View {
         )
     }
 }
-

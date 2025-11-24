@@ -1,21 +1,9 @@
 import SwiftUI
 
-// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-// [THEME ENGINE 2.0 UPGRADE REQUIRED]
-// The user requires a "Signature" aesthetic (Black Obsidian, Liquid Glass, Diamond Indentation)
-// and "Luxury/Elemental" themes. The current Color-based system is insufficient.
-//
-// ACTION: Refactor `ThemeProtocolV2` to support:
-// 1. `backgroundTexture`: An Image or Shape (AnyView) to render the "Diamond Indentation" or "Monogram" patterns.
-// 2. `backgroundAnimation`: A closure/modifier to apply the "Liquid" motion effect.
-// 3. `materialStyle`: Support for `Material` (UltraThin, Thin, Regular) for the Glassmorphism look.
-
-// MARK: - Theme Protocol V2 (Elite)
 public protocol ThemeProtocolV2 {
     var id: String { get }
     var name: String { get }
-    
-    // Core Colors
+
     var backgroundMain: Color { get }
     var backgroundSecondary: Color { get }
     var textPrimary: Color { get }
@@ -25,24 +13,22 @@ public protocol ThemeProtocolV2 {
     var errorColor: Color { get }
     var warningColor: Color { get }
 
-    // UI Elements
     var cardBackground: Color { get }
     var borderColor: Color { get }
-    
-    // Advanced (V2)
-    var glassEffectOpacity: Double { get } // For glassmorphism
-    var chartGradientColors: [Color] { get }
-    var securityWarningColor: Color { get } // For poisoning alerts
 
-    // Metrics
+    var glassEffectOpacity: Double { get }
+    var materialStyle: Material { get }
+    var showDiamondPattern: Bool { get }
+    var backgroundAnimation: BackgroundAnimationType { get }
+    var chartGradientColors: [Color] { get }
+    var securityWarningColor: Color { get }
+
     var cornerRadius: CGFloat { get }
 
-    // Typography
     var balanceFont: Font { get }
     var addressFont: Font { get }
     func font(style: Font.TextStyle) -> Font
-    
-    // Assets
+
     var iconSend: String { get }
     var iconReceive: String { get }
     var iconSwap: String { get }
@@ -50,7 +36,19 @@ public protocol ThemeProtocolV2 {
     var iconShield: String { get }
 }
 
-// MARK: - Color Constants
+public enum BackgroundAnimationType {
+    case none
+    case liquidRefraction
+    case fireParticles
+    case waterWave
+}
+
+public extension ThemeProtocolV2 {
+    var materialStyle: Material { .regular }
+    var showDiamondPattern: Bool { false }
+    var backgroundAnimation: BackgroundAnimationType { .none }
+}
+
 public enum KryptoColors {
     public static let pitchBlack = Color.black
     public static let deepSpace = Color(red: 0.05, green: 0.05, blue: 0.1)
@@ -61,13 +59,23 @@ public enum KryptoColors {
     public static let bunkerGray = Color(white: 0.12)
     public static let warningOrange = Color(red: 1.0, green: 0.6, blue: 0.0)
     public static let white = Color.white
+
+    public static let luxuryGold = Color(red: 0.83, green: 0.69, blue: 0.22)
+    public static let luxuryBrown = Color(red: 0.24, green: 0.17, blue: 0.12)
+    public static let deepOcean = Color(red: 0.0, green: 0.1, blue: 0.2)
+    public static let icyBlue = Color(red: 0.6, green: 0.8, blue: 1.0)
+    public static let ashGray = Color(white: 0.2)
+    public static let emberOrange = Color(red: 1.0, green: 0.4, blue: 0.0)
 }
 
-// MARK: - Theme Factory (Scalable)
 public enum ThemeType: String, CaseIterable, Identifiable {
     case eliteDark
     case cyberPunk
     case pureWhite
+    case luxuryMonogram
+    case fireAsh
+    case waterIce
+
     case appleDefault
     case stealthBomber
     case neonTokyo
@@ -83,19 +91,13 @@ public enum ThemeType: String, CaseIterable, Identifiable {
 
     public var name: String {
         switch self {
-        case .eliteDark: return "Elite Dark"
-        case .cyberPunk: return "Cyberpunk (Classic)"
-        case .pureWhite: return "Pure White"
-        case .appleDefault: return "Default (Apple)"
-        case .stealthBomber: return "Stealth Bomber"
-        case .neonTokyo: return "Neon Tokyo"
-        case .obsidianStealth: return "Obsidian Stealth"
-        case .quantumFrost: return "Quantum Frost"
-        case .bunkerGray: return "Bunker Gray"
-        case .crimsonTide: return "Crimson Tide"
-        case .cyberpunkNeon: return "Cyberpunk Neon"
-        case .goldenEra: return "Golden Era"
-        case .matrixCode: return "Matrix Code"
+        case .eliteDark: "Elite Dark (Signature)"
+        case .cyberPunk: "Cyberpunk (Classic)"
+        case .pureWhite: "Pure White"
+        case .luxuryMonogram: "Luxury Monogram"
+        case .fireAsh: "Fire & Ash"
+        case .waterIce: "Water & Ice"
+        default: rawValue.capitalized
         }
     }
 }
@@ -103,29 +105,31 @@ public enum ThemeType: String, CaseIterable, Identifiable {
 public class ThemeFactory {
     public static func create(type: ThemeType) -> ThemeProtocolV2 {
         switch type {
-        case .eliteDark: return EliteDarkTheme()
-        case .cyberPunk: return CyberPunkTheme()
-        case .pureWhite: return PureWhiteTheme()
-        case .appleDefault: return AppleDefaultTheme()
-        case .stealthBomber: return StealthBomberTheme()
-        case .neonTokyo: return NeonTokyoTheme()
-        case .obsidianStealth: return ObsidianStealthTheme()
-        case .quantumFrost: return QuantumFrostTheme()
-        case .bunkerGray: return BunkerGrayTheme()
-        case .crimsonTide: return CrimsonTideTheme()
-        case .cyberpunkNeon: return CyberpunkNeonTheme()
-        case .goldenEra: return GoldenEraTheme()
-        case .matrixCode: return MatrixCodeTheme()
+        case .eliteDark: EliteDarkTheme()
+        case .cyberPunk: CyberPunkTheme()
+        case .pureWhite: PureWhiteTheme()
+        case .luxuryMonogram: LuxuryMonogramTheme()
+        case .fireAsh: FireAshTheme()
+        case .waterIce: WaterIceTheme()
+        case .obsidianStealth: EliteDarkTheme()
+        case .stealthBomber: EliteDarkTheme()
+        case .goldenEra: LuxuryMonogramTheme()
+        case .crimsonTide: FireAshTheme()
+        case .quantumFrost: WaterIceTheme()
+        case .neonTokyo: CyberPunkTheme()
+        case .cyberpunkNeon: CyberPunkTheme()
+        case .matrixCode: CyberPunkTheme()
+        case .bunkerGray: EliteDarkTheme()
+        case .appleDefault: PureWhiteTheme()
         }
     }
 }
 
-// MARK: - Theme Manager
 public class ThemeManager: ObservableObject {
     @Published public var currentTheme: ThemeProtocolV2
 
     public init(type: ThemeType = .eliteDark) {
-        self.currentTheme = ThemeFactory.create(type: type)
+        currentTheme = ThemeFactory.create(type: type)
     }
 
     public func setTheme(type: ThemeType) {
@@ -134,17 +138,6 @@ public class ThemeManager: ObservableObject {
         }
     }
 }
-
-// MARK: - Standard Themes
-
-// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-// [DESIGN SPEC: SIGNATURE BLACK OBSIDIAN]
-// 1. Background: Deepest Black (#000000) with a "Liquid Reflection" animation.
-//    - Implementation: RadialGradient moving slowly across the screen.
-// 2. Texture: "Diamond Indentation" pattern.
-//    - Implementation: A tiled pattern of small diamonds (rhombus) with 5% opacity overlay.
-// 3. Card Style: "Black Glass"
-//    - Implementation: UltraThinMaterial + Black opacity 0.4 + White Border (0.5px, opacity 0.2) for the "Etched" look.
 
 public struct EliteDarkTheme: ThemeProtocolV2 {
     public let id = "elite_dark"
@@ -160,8 +153,11 @@ public struct EliteDarkTheme: ThemeProtocolV2 {
     public let warningColor = KryptoColors.warningOrange
     public let cardBackground = KryptoColors.bunkerGray
     public let borderColor = Color.white.opacity(0.1)
-    
+
     public let glassEffectOpacity = 0.8
+    public let materialStyle: Material = .ultraThin
+    public let showDiamondPattern = true
+    public let backgroundAnimation: BackgroundAnimationType = .liquidRefraction
     public let chartGradientColors = [KryptoColors.cyberBlue, KryptoColors.weaponizedPurple]
     public let securityWarningColor = KryptoColors.neonRed
 
@@ -171,7 +167,7 @@ public struct EliteDarkTheme: ThemeProtocolV2 {
     public let addressFont = Font.system(size: 14, weight: .medium, design: .monospaced)
 
     public func font(style: Font.TextStyle) -> Font {
-        return Font.system(style, design: .default)
+        Font.system(style, design: .default)
     }
 
     public let iconSend = "arrow.up.circle.fill"
@@ -180,18 +176,6 @@ public struct EliteDarkTheme: ThemeProtocolV2 {
     public let iconSettings = "gearshape.fill"
     public let iconShield = "shield.checkerboard"
 }
-
-// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-// [DESIGN SPEC: LUXURY "CRYPTO MONOGRAM"]
-// Inspiration: LV / Gucci styling but with Crypto Symbols.
-// 1. Palette: Dark Brown / Gold / Tan.
-// 2. Pattern: Repeating grid of (BTC, ETH, $, ¥, €) symbols.
-//    - Implementation: Create a seamless tileable view.
-
-// <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-// [DESIGN SPEC: ELEMENTAL THEMES]
-// 1. "Fire & Ash": Dark Grey background with animated "Ember" particles (Orange/Red) floating up.
-// 2. "Water & Ice": Deep Blue background with "Frosted Glass" cards and a slow "Wave" animation.
 
 public struct CyberPunkTheme: ThemeProtocolV2 {
     public let id = "cyber_punk"
@@ -209,18 +193,21 @@ public struct CyberPunkTheme: ThemeProtocolV2 {
     public let borderColor = Color.pink
 
     public let glassEffectOpacity = 0.6
+    public let materialStyle: Material = .regular
+    public let showDiamondPattern = false
+    public let backgroundAnimation: BackgroundAnimationType = .none
     public let chartGradientColors = [Color.pink, Color.yellow]
     public let securityWarningColor = Color.red
 
-    public let cornerRadius: CGFloat = 4.0 // Sharp corners
+    public let cornerRadius: CGFloat = 4.0
 
     public let balanceFont = Font.system(size: 36, weight: .heavy, design: .monospaced)
     public let addressFont = Font.system(size: 14, weight: .regular, design: .monospaced)
 
     public func font(style: Font.TextStyle) -> Font {
-        return Font.system(style, design: .monospaced)
+        Font.system(style, design: .monospaced)
     }
-    
+
     public let iconSend = "paperplane.fill"
     public let iconReceive = "tray.and.arrow.down.fill"
     public let iconSwap = "arrow.2.squarepath"
@@ -244,6 +231,9 @@ public struct PureWhiteTheme: ThemeProtocolV2 {
     public let borderColor = Color(white: 0.9)
 
     public let glassEffectOpacity = 0.9
+    public let materialStyle: Material = .thick
+    public let showDiamondPattern = false
+    public let backgroundAnimation: BackgroundAnimationType = .none
     public let chartGradientColors = [Color.blue, Color.purple]
     public let securityWarningColor = Color.orange
 
@@ -253,7 +243,7 @@ public struct PureWhiteTheme: ThemeProtocolV2 {
     public let addressFont = Font.system(size: 14, weight: .regular, design: .default)
 
     public func font(style: Font.TextStyle) -> Font {
-        return Font.system(style, design: .serif)
+        Font.system(style, design: .serif)
     }
 
     public let iconSend = "arrow.up"
@@ -261,4 +251,118 @@ public struct PureWhiteTheme: ThemeProtocolV2 {
     public let iconSwap = "arrow.left.and.right"
     public let iconSettings = "gear"
     public let iconShield = "shield"
+}
+
+public struct LuxuryMonogramTheme: ThemeProtocolV2 {
+    public let id = "luxury_monogram"
+    public let name = "Luxury Monogram"
+
+    public let backgroundMain = KryptoColors.luxuryBrown
+    public let backgroundSecondary = Color.black
+    public let textPrimary = KryptoColors.luxuryGold
+    public let textSecondary = Color(white: 0.8)
+    public let accentColor = KryptoColors.luxuryGold
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = Color.orange
+    public let cardBackground = KryptoColors.luxuryBrown.opacity(0.8)
+    public let borderColor = KryptoColors.luxuryGold.opacity(0.5)
+
+    public let glassEffectOpacity = 0.9
+    public let materialStyle: Material = .ultraThin
+    public let showDiamondPattern = true // Reusing diamond pattern as monogram base for now
+    public let backgroundAnimation: BackgroundAnimationType = .none
+    public let chartGradientColors = [KryptoColors.luxuryGold, Color.white]
+    public let securityWarningColor = Color.red
+
+    public let cornerRadius: CGFloat = 12.0
+
+    public let balanceFont = Font.system(size: 36, weight: .medium, design: .serif)
+    public let addressFont = Font.system(size: 14, weight: .regular, design: .serif)
+
+    public func font(style: Font.TextStyle) -> Font {
+        Font.system(style, design: .serif)
+    }
+
+    public let iconSend = "arrow.up.circle"
+    public let iconReceive = "arrow.down.circle"
+    public let iconSwap = "arrow.triangle.2.circlepath.circle"
+    public let iconSettings = "gearshape"
+    public let iconShield = "shield"
+}
+
+public struct FireAshTheme: ThemeProtocolV2 {
+    public let id = "fire_ash"
+    public let name = "Fire & Ash"
+
+    public let backgroundMain = KryptoColors.ashGray
+    public let backgroundSecondary = Color.black
+    public let textPrimary = KryptoColors.emberOrange
+    public let textSecondary = Color(white: 0.7)
+    public let accentColor = Color.red
+    public let successColor = Color.green
+    public let errorColor = Color.red
+    public let warningColor = KryptoColors.emberOrange
+    public let cardBackground = Color.black.opacity(0.7)
+    public let borderColor = KryptoColors.emberOrange.opacity(0.3)
+
+    public let glassEffectOpacity = 0.5
+    public let materialStyle: Material = .thin
+    public let showDiamondPattern = false
+    public let backgroundAnimation: BackgroundAnimationType = .fireParticles
+    public let chartGradientColors = [KryptoColors.emberOrange, Color.red]
+    public let securityWarningColor = Color.red
+
+    public let cornerRadius: CGFloat = 8.0
+
+    public let balanceFont = Font.system(size: 36, weight: .bold, design: .default)
+    public let addressFont = Font.system(size: 14, weight: .medium, design: .monospaced)
+
+    public func font(style: Font.TextStyle) -> Font {
+        Font.system(style, design: .rounded)
+    }
+
+    public let iconSend = "flame.fill"
+    public let iconReceive = "arrow.down.to.line.compact"
+    public let iconSwap = "arrow.triangle.swap"
+    public let iconSettings = "gear"
+    public let iconShield = "shield.fill"
+}
+
+public struct WaterIceTheme: ThemeProtocolV2 {
+    public let id = "water_ice"
+    public let name = "Water & Ice"
+
+    public let backgroundMain = KryptoColors.deepOcean
+    public let backgroundSecondary = KryptoColors.icyBlue.opacity(0.1)
+    public let textPrimary = KryptoColors.icyBlue
+    public let textSecondary = Color.white.opacity(0.7)
+    public let accentColor = Color.blue
+    public let successColor = Color.cyan
+    public let errorColor = Color.purple
+    public let warningColor = Color.yellow
+    public let cardBackground = KryptoColors.deepOcean.opacity(0.6)
+    public let borderColor = KryptoColors.icyBlue.opacity(0.3)
+
+    public let glassEffectOpacity = 0.7
+    public let materialStyle: Material = .ultraThin
+    public let showDiamondPattern = false
+    public let backgroundAnimation: BackgroundAnimationType = .waterWave
+    public let chartGradientColors = [KryptoColors.icyBlue, Color.blue]
+    public let securityWarningColor = Color.purple
+
+    public let cornerRadius: CGFloat = 24.0
+
+    public let balanceFont = Font.system(size: 36, weight: .light, design: .rounded)
+    public let addressFont = Font.system(size: 14, weight: .light, design: .default)
+
+    public func font(style: Font.TextStyle) -> Font {
+        Font.system(style, design: .default)
+    }
+
+    public let iconSend = "drop.fill"
+    public let iconReceive = "cloud.rain.fill"
+    public let iconSwap = "arrow.triangle.2.circlepath"
+    public let iconSettings = "gearshape"
+    public let iconShield = "lock.shield"
 }

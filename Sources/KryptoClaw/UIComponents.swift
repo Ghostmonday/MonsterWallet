@@ -1,7 +1,7 @@
 import SwiftUI
 
 #if os(iOS)
-import UIKit
+    import UIKit
 #endif
 
 public struct KryptoButton: View {
@@ -9,15 +9,15 @@ public struct KryptoButton: View {
     let icon: String
     let action: () -> Void
     let isPrimary: Bool
-    
+
     @EnvironmentObject var themeManager: ThemeManager
     @State private var isHovering = false
-    
+
     public var body: some View {
         Button(action: {
             #if os(iOS)
-            let generator = UIImpactFeedbackGenerator(style: .medium)
-            generator.impactOccurred()
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
             #endif
             action()
         }) {
@@ -31,12 +31,12 @@ public struct KryptoButton: View {
             .frame(height: 56)
             .background(isPrimary ? themeManager.currentTheme.accentColor : Color.clear)
             .foregroundColor(isPrimary ? .white : themeManager.currentTheme.textPrimary)
-            .cornerRadius(2) // Razor-edged
+            .cornerRadius(2)
             .overlay(
                 RoundedRectangle(cornerRadius: 2)
                     .stroke(themeManager.currentTheme.borderColor, lineWidth: isPrimary ? 0 : 2)
             )
-            .shadow(color: isHovering ? themeManager.currentTheme.accentColor.opacity(0.8) : .clear, radius: 10, x: 0, y: 0) // Glow on hover
+            .shadow(color: isHovering ? themeManager.currentTheme.accentColor.opacity(0.8) : .clear, radius: 10, x: 0, y: 0)
             .onHover { hovering in
                 isHovering = hovering
             }
@@ -48,7 +48,7 @@ public struct KryptoButton: View {
 struct SquishButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.98 : 1.0) // Subtle press
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
@@ -56,24 +56,33 @@ struct SquishButtonStyle: ButtonStyle {
 public struct KryptoCard<Content: View>: View {
     let content: Content
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     public init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
-    
-    public var body: some View {
-        // <<<<<<!!!!!JULES!!!!!!>>>>>>>>
-        // [DESIGN SPEC: SIGNATURE CARD UPGRADE]
-        // 1. Glassmorphism:
-        //    - Replace `.background(theme.cardBackground)` with logic to check for `materialStyle` or `glassEffectOpacity`.
-        //    - Use `ZStack` with `Material.ultraThin` (if iOS 15+) opacity masked.
-        // 2. Indentation/Border:
-        //    - Apply the "Diamond Pattern" texture overlay here if defined in theme.
 
+    public var body: some View {
         content
             .padding(20)
-            .background(themeManager.currentTheme.cardBackground)
-            .cornerRadius(2) // Razor-edged
+            .background(
+                ZStack {
+                    if themeManager.currentTheme.glassEffectOpacity > 0 {
+                        Rectangle()
+                            .fill(themeManager.currentTheme.materialStyle)
+                            .opacity(themeManager.currentTheme.glassEffectOpacity)
+                    } else {
+                        themeManager.currentTheme.cardBackground
+                    }
+
+                    if themeManager.currentTheme.showDiamondPattern {
+                        DiamondPattern()
+                            .stroke(themeManager.currentTheme.borderColor.opacity(0.05), lineWidth: 1)
+                            .background(Color.black.opacity(0.2))
+                            .mask(Rectangle())
+                    }
+                }
+            )
+            .cornerRadius(2)
             .overlay(
                 RoundedRectangle(cornerRadius: 2)
                     .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
@@ -81,11 +90,32 @@ public struct KryptoCard<Content: View>: View {
     }
 }
 
+struct DiamondPattern: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let step: CGFloat = 10
+
+        for y in stride(from: 0, to: rect.height, by: step) {
+            for x in stride(from: 0, to: rect.width, by: step) {
+                let midX = x + step / 2
+                let midY = y + step / 2
+
+                path.move(to: CGPoint(x: midX, y: y))
+                path.addLine(to: CGPoint(x: x + step, y: midY))
+                path.addLine(to: CGPoint(x: midX, y: y + step))
+                path.addLine(to: CGPoint(x: x, y: midY))
+                path.closeSubpath()
+            }
+        }
+        return path
+    }
+}
+
 struct KryptoTextField: View {
     let placeholder: String
     @Binding var text: String
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     var body: some View {
         TextField(placeholder, text: $text)
             .padding()
@@ -96,20 +126,19 @@ struct KryptoTextField: View {
                 RoundedRectangle(cornerRadius: 2)
                     .stroke(themeManager.currentTheme.borderColor.opacity(0.5), lineWidth: 1)
             )
-            .font(themeManager.currentTheme.addressFont) // Monospace for input usually looks good in this style, or use body
+            .font(themeManager.currentTheme.addressFont)
     }
 }
 
-// MARK: - List Row
 public struct KryptoListRow: View {
     let title: String
     let subtitle: String?
     let value: String?
-    let icon: String? // SF Symbol name or URL placeholder
+    let icon: String?
     let isSystemIcon: Bool
-    
+
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     public init(title: String, subtitle: String? = nil, value: String? = nil, icon: String? = nil, isSystemIcon: Bool = true) {
         self.title = title
         self.subtitle = subtitle
@@ -117,7 +146,7 @@ public struct KryptoListRow: View {
         self.icon = icon
         self.isSystemIcon = isSystemIcon
     }
-    
+
     public var body: some View {
         HStack(spacing: 12) {
             if let iconName = icon {
@@ -127,7 +156,6 @@ public struct KryptoListRow: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                     } else {
-                        // Network image placeholder
                         AsyncImage(url: URL(string: iconName)) { phase in
                             if let image = phase.image {
                                 image.resizable()
@@ -141,13 +169,13 @@ public struct KryptoListRow: View {
                 .cornerRadius(4)
                 .foregroundColor(themeManager.currentTheme.textPrimary)
             }
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(themeManager.currentTheme.font(style: .body))
                     .foregroundColor(themeManager.currentTheme.textPrimary)
                     .lineLimit(1)
-                
+
                 if let sub = subtitle {
                     Text(sub)
                         .font(themeManager.currentTheme.font(style: .caption))
@@ -155,9 +183,9 @@ public struct KryptoListRow: View {
                         .lineLimit(1)
                 }
             }
-            
+
             Spacer()
-            
+
             if let val = value {
                 Text(val)
                     .font(themeManager.currentTheme.font(style: .body))
@@ -172,25 +200,24 @@ public struct KryptoListRow: View {
     }
 }
 
-// MARK: - Header
 public struct KryptoHeader: View {
     let title: String
     let onBack: (() -> Void)?
     let actionIcon: String?
     let onAction: (() -> Void)?
-    
+
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     public init(title: String, onBack: (() -> Void)? = nil, actionIcon: String? = nil, onAction: (() -> Void)? = nil) {
         self.title = title
         self.onBack = onBack
         self.actionIcon = actionIcon
         self.onAction = onAction
     }
-    
+
     public var body: some View {
         HStack {
-            if let onBack = onBack {
+            if let onBack {
                 Button(action: onBack) {
                     Image(systemName: "chevron.left")
                         .font(.title2)
@@ -198,18 +225,18 @@ public struct KryptoHeader: View {
                 }
                 .accessibilityLabel("Go Back")
             } else {
-                Spacer().frame(width: 24) // Balance spacing if no back button but action exists
+                Spacer().frame(width: 24)
             }
-            
+
             Spacer()
-            
+
             Text(title)
                 .font(themeManager.currentTheme.font(style: .headline))
                 .foregroundColor(themeManager.currentTheme.textPrimary)
-            
+
             Spacer()
-            
-            if let icon = actionIcon, let onAction = onAction {
+
+            if let icon = actionIcon, let onAction {
                 Button(action: onAction) {
                     Image(systemName: icon)
                         .font(.title2)
@@ -225,26 +252,25 @@ public struct KryptoHeader: View {
     }
 }
 
-// MARK: - Tab Segment
 public struct KryptoTab: View {
     let tabs: [String]
     @Binding var selectedIndex: Int
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     public init(tabs: [String], selectedIndex: Binding<Int>) {
         self.tabs = tabs
-        self._selectedIndex = selectedIndex
+        _selectedIndex = selectedIndex
     }
-    
+
     public var body: some View {
         HStack(spacing: 0) {
-            ForEach(0..<tabs.count, id: \.self) { index in
+            ForEach(0 ..< tabs.count, id: \.self) { index in
                 Button(action: { selectedIndex = index }) {
                     VStack(spacing: 8) {
                         Text(tabs[index])
                             .font(themeManager.currentTheme.font(style: .subheadline))
                             .foregroundColor(selectedIndex == index ? themeManager.currentTheme.accentColor : themeManager.currentTheme.textSecondary)
-                        
+
                         Rectangle()
                             .fill(selectedIndex == index ? themeManager.currentTheme.accentColor : Color.clear)
                             .frame(height: 2)

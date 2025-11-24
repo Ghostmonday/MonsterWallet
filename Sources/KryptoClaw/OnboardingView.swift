@@ -3,26 +3,26 @@ import SwiftUI
 public struct OnboardingView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var wsm: WalletStateManager
-    
+
     let onComplete: () -> Void
-    
+
     @State private var isCreating = false
     @State private var isImporting = false
     @State private var importText = ""
     @State private var createdMnemonic: String? = nil
     @State private var showBackupSheet = false
-    
+
     public init(onComplete: @escaping () -> Void) {
         self.onComplete = onComplete
     }
-    
+
     public var body: some View {
         ZStack {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 Spacer()
-                
+
                 // Logo & Branding
                 VStack(spacing: 24) {
                     Image("AppIcon")
@@ -34,22 +34,22 @@ public struct OnboardingView: View {
                                 .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
                         )
                         .shadow(color: themeManager.currentTheme.accentColor.opacity(0.3), radius: 20, x: 0, y: 0)
-                    
+
                     VStack(spacing: 8) {
                         Text("KRYPTOCLAW")
                             .font(themeManager.currentTheme.font(style: .largeTitle))
                             .tracking(2)
                             .foregroundColor(themeManager.currentTheme.textPrimary)
-                        
+
                         Text("ELITE. SECURE. UNTRACEABLE.")
                             .font(themeManager.currentTheme.font(style: .caption))
                             .tracking(4)
                             .foregroundColor(themeManager.currentTheme.accentColor)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 // Actions
                 VStack(spacing: 20) {
                     KryptoButton(
@@ -58,7 +58,7 @@ public struct OnboardingView: View {
                         action: { createWallet() },
                         isPrimary: true
                     )
-                    
+
                     KryptoButton(
                         title: "RECOVER ASSETS",
                         icon: "arrow.down.doc.fill",
@@ -69,7 +69,6 @@ public struct OnboardingView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 20)
 
-                // Footer (Compliance)
                 VStack(spacing: 12) {
                     Text("By proceeding, you agree to our Terms of Service.")
                         .font(themeManager.currentTheme.font(style: .caption))
@@ -98,7 +97,7 @@ public struct OnboardingView: View {
             }
         }
     }
-    
+
     func createWallet() {
         Task {
             if let mnemonic = await wsm.createWallet(name: "Main Wallet") {
@@ -107,18 +106,16 @@ public struct OnboardingView: View {
             }
         }
     }
-    
+
     func importWallet(seed: String) {
         Task {
-            // Real Import Logic
             if MnemonicService.validate(mnemonic: seed) {
-                // We assume WSM has 'importWallet' method now
                 await wsm.importWallet(mnemonic: seed)
                 completeOnboarding()
             }
         }
     }
-    
+
     func completeOnboarding() {
         UserDefaults.standard.set(true, forKey: "hasOnboarded")
         withAnimation {
@@ -132,25 +129,25 @@ struct ImportWalletView: View {
     var onImport: (String) -> Void
     @State private var seedText = ""
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     var body: some View {
         NavigationView {
             ZStack {
                 themeManager.currentTheme.backgroundMain.ignoresSafeArea()
-                
+
                 VStack(spacing: 32) {
                     VStack(spacing: 8) {
                         Text("RECOVERY SEQUENCE")
                             .font(themeManager.currentTheme.font(style: .headline))
                             .tracking(2)
                             .foregroundColor(themeManager.currentTheme.textPrimary)
-                        
+
                         Text("Enter your 12 or 24 word phrase")
                             .font(themeManager.currentTheme.font(style: .caption))
                             .foregroundColor(themeManager.currentTheme.textSecondary)
                     }
                     .padding(.top, 32)
-                    
+
                     TextEditor(text: $seedText)
                         .frame(height: 160)
                         .padding()
@@ -163,7 +160,7 @@ struct ImportWalletView: View {
                         .foregroundColor(themeManager.currentTheme.textPrimary)
                         .font(themeManager.currentTheme.addressFont)
                         .padding(.horizontal)
-                    
+
                     KryptoButton(
                         title: "EXECUTE RECOVERY",
                         icon: "checkmark.circle.fill",
@@ -174,7 +171,7 @@ struct ImportWalletView: View {
                         isPrimary: true
                     )
                     .padding(.horizontal)
-                    
+
                     Spacer()
                 }
             }

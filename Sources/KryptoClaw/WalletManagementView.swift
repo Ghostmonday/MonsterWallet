@@ -4,13 +4,13 @@ struct WalletManagementView: View {
     @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.presentationMode) var presentationMode
-    
+
     @State private var showingCreate = false
-    
+
     var body: some View {
         ZStack {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 KryptoHeader(
                     title: "Wallets",
@@ -18,7 +18,7 @@ struct WalletManagementView: View {
                     actionIcon: "plus",
                     onAction: { showingCreate = true }
                 )
-                
+
                 List {
                     ForEach(wsm.wallets) { wallet in
                         WalletRow(wallet: wallet, isSelected: wsm.currentAddress == wallet.id)
@@ -31,7 +31,12 @@ struct WalletManagementView: View {
                             }
                     }
                     .onDelete { indexSet in
-                        // Implement delete logic
+                        for index in indexSet {
+                            let wallet = wsm.wallets[index]
+                            Task {
+                                await wsm.deleteWallet(id: wallet.id)
+                            }
+                        }
                     }
                 }
                 .listStyle(.plain)
@@ -50,33 +55,38 @@ struct WalletRow: View {
     let wallet: WalletInfo
     let isSelected: Bool
     @EnvironmentObject var themeManager: ThemeManager
-    
+
+    // Parse colorTheme string to SwiftUI Color
+    private var walletColor: Color {
+        parseColorTheme(wallet.colorTheme)
+    }
+
     var body: some View {
         KryptoCard {
             HStack {
                 Circle()
-                    .fill(Color.blue) // Parse colorTheme in real app
+                    .fill(walletColor)
                     .frame(width: 40, height: 40)
                     .overlay(
                         Text(wallet.name.prefix(1).uppercased())
                             .foregroundColor(.white)
                             .font(.headline)
                     )
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(wallet.name)
                         .font(themeManager.currentTheme.font(style: .headline))
                         .foregroundColor(themeManager.currentTheme.textPrimary)
-                    
+
                     if isSelected {
                         Text("Active")
                             .font(themeManager.currentTheme.font(style: .caption))
                             .foregroundColor(themeManager.currentTheme.successColor)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(themeManager.currentTheme.successColor)
@@ -85,21 +95,89 @@ struct WalletRow: View {
         }
         .padding(.vertical, 4)
     }
+
+    // MARK: - Color Theme Parsing Helper
+
+    /// Parses a colorTheme string (hex color or named color) into a SwiftUI Color
+    /// Supports formats: "#FF0000", "FF0000", "red", "blue", etc.
+    private func parseColorTheme(_ colorTheme: String) -> Color {
+        let trimmed = colorTheme.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+
+        // Try hex color parsing (with or without #)
+        if trimmed.hasPrefix("#") {
+            let hex = String(trimmed.dropFirst())
+            if let color = parseHexColor(hex) {
+                return color
+            }
+        } else if trimmed.count == 6 || trimmed.count == 8 {
+            // Assume hex without #
+            if let color = parseHexColor(trimmed) {
+                return color
+            }
+        }
+
+        // Try named colors
+        switch trimmed {
+        case "red": return .red
+        case "blue": return .blue
+        case "green": return .green
+        case "purple": return .purple
+        case "orange": return .orange
+        case "pink": return .pink
+        case "yellow": return .yellow
+        case "cyan": return .cyan
+        case "mint": return .mint
+        case "teal": return .teal
+        case "indigo": return .indigo
+        case "brown": return .brown
+        case "gray", "grey": return .gray
+        default:
+            // Fallback to accent color from theme
+            return themeManager.currentTheme.accentColor
+        }
+    }
+
+    /// Parses a hex color string (RRGGBB or RRGGBBAA) into a SwiftUI Color
+    private func parseHexColor(_ hex: String) -> Color? {
+        let hex = hex.uppercased()
+        var rgbValue: UInt64 = 0
+
+        guard Scanner(string: hex).scanHexInt64(&rgbValue) else {
+            return nil
+        }
+
+        if hex.count == 6 {
+            // RRGGBB format
+            let red = Double((rgbValue & 0xFF0000) >> 16) / 255.0
+            let green = Double((rgbValue & 0x00FF00) >> 8) / 255.0
+            let blue = Double(rgbValue & 0x0000FF) / 255.0
+            return Color(red: red, green: green, blue: blue)
+        } else if hex.count == 8 {
+            // RRGGBBAA format
+            let red = Double((rgbValue & 0xFF00_0000) >> 24) / 255.0
+            let green = Double((rgbValue & 0x00FF_0000) >> 16) / 255.0
+            let blue = Double((rgbValue & 0x0000_FF00) >> 8) / 255.0
+            let alpha = Double(rgbValue & 0x0000_00FF) / 255.0
+            return Color(red: red, green: green, blue: blue, opacity: alpha)
+        }
+
+        return nil
+    }
 }
 
 struct WalletCreationView: View {
     @Binding var isPresented: Bool
     @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     @State private var name = ""
-    @State private var step = 0 // 0: Name, 1: Seed, 2: Verify
-    
+    @State private var step = 0
+
     var body: some View {
         NavigationView {
             ZStack {
                 themeManager.currentTheme.backgroundMain.ignoresSafeArea()
-                
+
                 VStack(spacing: 24) {
                     if step == 0 {
                         // Step 1: Name
@@ -111,48 +189,48 @@ struct WalletCreationView: View {
                         Text("Secret Recovery Phrase")
                             .font(themeManager.currentTheme.font(style: .headline))
                             .foregroundColor(themeManager.currentTheme.textPrimary)
-                        
+
                         Text("apple banana cherry date elder fig grape honeydew igloo jackfruit kiwi lemon")
                             .padding()
                             .background(themeManager.currentTheme.backgroundSecondary)
                             .cornerRadius(8)
                             .foregroundColor(themeManager.currentTheme.textPrimary)
-                        
+
                         Text("Write this down. We cannot recover it.")
                             .font(themeManager.currentTheme.font(style: .caption))
                             .foregroundColor(themeManager.currentTheme.errorColor)
-                        
+
                         Spacer()
-                        
+
                         KryptoButton(title: "I have saved it", icon: "checkmark", action: { step = 2 }, isPrimary: true)
                     } else {
                         // Step 3: Verify (Skipped for V1 UI Demo)
                         Text("Verification Complete")
                             .foregroundColor(themeManager.currentTheme.successColor)
-                        
+
                         Spacer()
-                        
+
                         KryptoButton(title: "Create Wallet", icon: "lock.fill", action: createWallet, isPrimary: true)
                     }
                 }
                 .padding()
                 .navigationTitle(stepTitle)
                 #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
+                    .navigationBarTitleDisplayMode(.inline)
                 #endif
             }
         }
     }
-    
+
     var stepTitle: String {
         switch step {
-        case 0: return "Name Wallet"
-        case 1: return "Backup Seed"
-        case 2: return "Verify"
-        default: return ""
+        case 0: "Name Wallet"
+        case 1: "Backup Seed"
+        case 2: "Verify"
+        default: ""
         }
     }
-    
+
     func createWallet() {
         KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "CreateWallet tapped", metadata: ["view": "WalletManagement"])
         Task {
@@ -161,4 +239,3 @@ struct WalletCreationView: View {
         }
     }
 }
-

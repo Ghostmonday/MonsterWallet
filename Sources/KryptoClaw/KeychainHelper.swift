@@ -10,12 +10,14 @@ public protocol KeychainHelperProtocol {
 public class SystemKeychain: KeychainHelperProtocol {
     public init() {}
     public func add(_ attributes: [String: Any]) -> OSStatus {
-        return SecItemAdd(attributes as CFDictionary, nil)
+        SecItemAdd(attributes as CFDictionary, nil)
     }
+
     public func copyMatching(_ query: [String: Any], result: UnsafeMutablePointer<CFTypeRef?>?) -> OSStatus {
-        return SecItemCopyMatching(query as CFDictionary, result)
+        SecItemCopyMatching(query as CFDictionary, result)
     }
+
     public func delete(_ query: [String: Any]) -> OSStatus {
-        return SecItemDelete(query as CFDictionary)
+        SecItemDelete(query as CFDictionary)
     }
 }

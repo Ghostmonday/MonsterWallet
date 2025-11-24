@@ -1,13 +1,12 @@
+import BigInt
 import Foundation
 import web3
-import BigInt
 
 import CryptoKit
 
-public struct MnemonicService {
+public enum MnemonicService {
     public static func generateMnemonic() -> String? {
-        // Simplified mnemonic generation for V1
-        // In production, use proper BIP39 library
+        // TODO: Implement proper BIP39 mnemonic generation
         let words = ["abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse", "access", "accident"]
         return words.joined(separator: " ")
     }
@@ -18,16 +17,13 @@ public struct MnemonicService {
     }
 }
 
-public struct HDWalletService {
-    // Derive a private key from a mnemonic for a specific path (m/44'/60'/0'/0/0 for Ethereum)
+public enum HDWalletService {
     public static func derivePrivateKey(mnemonic: String) throws -> Data {
-        // Simplified derivation for V1 - deterministic from mnemonic
-        // In production, use proper BIP32/BIP44 derivation
+        // TODO: Implement proper BIP32/BIP44 derivation (m/44'/60'/0'/0/0 for Ethereum)
         guard let mnemonicData = mnemonic.data(using: .utf8) else {
             throw WalletError.invalidMnemonic
         }
-        
-        // Use SHA256 to create deterministic private key from mnemonic
+
         let hash = SHA256.hash(data: mnemonicData)
         return Data(hash)
     }
@@ -36,12 +32,10 @@ public struct HDWalletService {
         guard let account = try? EthereumAccount(keyStorage: MockKeyStorage(key: privateKey)) else {
             return ""
         }
-        // EthereumAddress conforms to CustomStringConvertible or has value property
         return String(describing: account.address)
     }
 }
 
-// Helper for single-key usage
 class MockKeyStorage: EthereumKeyStorageProtocol {
     private let key: Data
 
@@ -49,8 +43,8 @@ class MockKeyStorage: EthereumKeyStorageProtocol {
         self.key = key
     }
 
-    func storePrivateKey(key: Data) throws {}
-    func loadPrivateKey() throws -> Data { return key }
+    func storePrivateKey(key _: Data) throws {}
+    func loadPrivateKey() throws -> Data { key }
 }
 
 enum WalletError: Error {

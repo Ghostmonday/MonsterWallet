@@ -5,14 +5,13 @@ struct SettingsView: View {
     @EnvironmentObject var wsm: WalletStateManager
     @Environment(\.presentationMode) var presentationMode
     @State private var showResetConfirmation = false
-    
+
     var body: some View {
         ZStack {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
-            
+
             ScrollView {
                 VStack(spacing: 24) {
-                    // Header
                     HStack {
                         Text("Settings")
                             .font(themeManager.currentTheme.font(style: .title2))
@@ -25,8 +24,7 @@ struct SettingsView: View {
                         }
                     }
                     .padding()
-                    
-                    // Theme Selector
+
                     KryptoCard {
                         VStack(alignment: .leading, spacing: 16) {
                             NavigationLink(destination: WalletManagementView()) {
@@ -39,7 +37,7 @@ struct SettingsView: View {
                                 }
                             }
                             Divider().background(themeManager.currentTheme.borderColor)
-                            
+
                             NavigationLink(destination: AddressBookView()) {
                                 HStack {
                                     Text("Address Book")
@@ -52,14 +50,13 @@ struct SettingsView: View {
                         }
                     }
                     .padding(.horizontal)
-                    
-                    // Theme Selector
+
                     KryptoCard {
                         VStack(alignment: .leading, spacing: 16) {
                             Text("Appearance")
                                 .font(themeManager.currentTheme.font(style: .headline))
                                 .foregroundColor(themeManager.currentTheme.textPrimary)
-                            
+
                             VStack(spacing: 0) {
                                 ForEach(ThemeType.allCases) { themeType in
                                     ThemeRow(name: themeType.name, isSelected: themeManager.currentTheme.id == themeType.id) {
@@ -74,8 +71,7 @@ struct SettingsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal)
-                    
-                    // Compliance Links
+
                     KryptoCard {
                         VStack(alignment: .leading, spacing: 16) {
                             Link(destination: AppConfig.privacyPolicyURL) {
@@ -87,9 +83,9 @@ struct SettingsView: View {
                                         .foregroundColor(themeManager.currentTheme.textSecondary)
                                 }
                             }
-                            
+
                             Divider().background(themeManager.currentTheme.textSecondary)
-                            
+
                             Link(destination: AppConfig.supportURL) {
                                 HStack {
                                     Text("Support")
@@ -103,8 +99,7 @@ struct SettingsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal)
-                    
-                    // Destructive / Account Deletion (Compliance)
+
                     KryptoCard {
                         Button(action: {
                             showResetConfirmation = true
@@ -124,17 +119,15 @@ struct SettingsView: View {
                             title: Text("Delete Wallet?"),
                             message: Text("This action is irreversible. Ensure you have backed up your Seed Phrase. All data will be wiped."),
                             primaryButton: .destructive(Text("Delete"), action: {
-                                 // Wipe Data
-                                 wsm.deleteAllData()
-                                 // Force exit or restart (simplest for V1)
-                                 exit(0)
+                                wsm.deleteAllData()
+                                exit(0)
                             }),
                             secondaryButton: .cancel()
                         )
                     }
 
                     Spacer()
-                    
+
                     Text("Version 1.0.0 (Build 1)")
                         .font(themeManager.currentTheme.font(style: .caption))
                         .foregroundColor(themeManager.currentTheme.textSecondary)
@@ -151,7 +144,7 @@ struct ThemeRow: View {
     let isSelected: Bool
     let action: () -> Void
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     var body: some View {
         Button(action: action) {
             HStack {

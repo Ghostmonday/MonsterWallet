@@ -4,36 +4,20 @@ import SwiftUI
 public struct KryptoClawApp: App {
     @StateObject var wsm: WalletStateManager
     @StateObject var themeManager = ThemeManager()
-    
+
     public init() {
-        // Initialize Core Dependencies (Dependency Injection Root)
-        
-        // 1. Foundation
         let keychain = SystemKeychain()
         let keyStore = SecureEnclaveKeyStore(keychain: keychain)
         let session = URLSession.shared
-
-        // V2 Update: Use MultiChainProvider instead of ModularHTTPProvider
-        // This enables BTC/SOL support.
         let provider = MultiChainProvider(session: session)
-        
-        // 2. Logic
         let simulator = LocalSimulator(provider: provider, session: session)
         let router = BasicGasRouter(provider: provider)
         let securityPolicy = BasicHeuristicAnalyzer()
-        
-        // V2 Update: Use Real NFT Provider
         let nftProvider = HTTPNFTProvider(session: session, apiKey: AppConfig.openseaAPIKey)
-        
-        // V2 Security
         let poisoningDetector = AddressPoisoningDetector()
         let clipboardGuard = ClipboardGuard()
-
-        // 3. Signer (Requires KeyStore)
-        // For V1.0 Single Account, we use a fixed ID.
         let signer = SimpleP2PSigner(keyStore: keyStore, keyId: "primary_account")
-        
-        // 4. State Manager (The Brain)
+
         let stateManager = WalletStateManager(
             keyStore: keyStore,
             blockchainProvider: provider,
@@ -45,17 +29,17 @@ public struct KryptoClawApp: App {
             poisoningDetector: poisoningDetector,
             clipboardGuard: clipboardGuard
         )
-        
+
         _wsm = StateObject(wrappedValue: stateManager)
     }
-    
+
     @AppStorage("hasOnboarded") var hasOnboarded: Bool = false
     @State private var showingSplash: Bool = true
-    
+
     public var body: some Scene {
         WindowGroup {
             ZStack {
-                if hasOnboarded && !showingSplash {
+                if hasOnboarded, !showingSplash {
                     HomeView()
                         .environmentObject(wsm)
                         .environmentObject(themeManager)
@@ -64,7 +48,6 @@ public struct KryptoClawApp: App {
                     OnboardingView(onComplete: {
                         hasOnboarded = true
                         Task {
-                            // Create initial wallet if needed
                             await wsm.createWallet(name: "Main Wallet")
                         }
                     })
@@ -72,7 +55,6 @@ public struct KryptoClawApp: App {
                     .environmentObject(themeManager)
                     .transition(.opacity)
                 } else {
-                    // Splash screen for returning users
                     SplashScreenView()
                         .environmentObject(themeManager)
                         .transition(.opacity)
@@ -81,7 +63,6 @@ public struct KryptoClawApp: App {
             .animation(.easeInOut(duration: 0.5), value: showingSplash)
             .onAppear {
                 if hasOnboarded {
-                    // Show splash for 2 seconds on every launch
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         withAnimation {
                             showingSplash = false

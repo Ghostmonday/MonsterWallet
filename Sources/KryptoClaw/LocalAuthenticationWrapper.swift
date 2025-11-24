@@ -7,7 +7,7 @@ public protocol LocalAuthenticationProtocol {
 
 public class BiometricAuthenticator: LocalAuthenticationProtocol {
     public init() {}
-    
+
     public func evaluatePolicy(_ policy: LAPolicy, localizedReason: String) async throws -> Bool {
         let context = LAContext()
         return try await context.evaluatePolicy(policy, localizedReason: localizedReason)

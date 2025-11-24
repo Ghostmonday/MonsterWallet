@@ -7,21 +7,21 @@ public enum Chain: String, CaseIterable, Codable, Hashable {
 
     public var displayName: String {
         switch self {
-        case .ethereum: return "Ethereum"
-        case .bitcoin: return "Bitcoin"
-        case .solana: return "Solana"
+        case .ethereum: "Ethereum"
+        case .bitcoin: "Bitcoin"
+        case .solana: "Solana"
         }
     }
 
     public var nativeCurrency: String {
-        return self.rawValue
+        rawValue
     }
 
     public var decimals: Int {
         switch self {
-        case .ethereum: return 18
-        case .bitcoin: return 8
-        case .solana: return 9
+        case .ethereum: 18
+        case .bitcoin: 8
+        case .solana: 9
         }
     }
 }
@@ -31,7 +31,7 @@ public struct Balance: Codable, Equatable {
     public let currency: String
     public let decimals: Int
     public let usdValue: Decimal? // Added for V2 Portfolio
-    
+
     public init(amount: String, currency: String, decimals: Int, usdValue: Decimal? = nil) {
         self.amount = amount
         self.currency = currency
@@ -47,7 +47,7 @@ public struct TransactionSummary: Codable, Equatable {
     public let value: String
     public let timestamp: Date
     public let chain: Chain
-    
+
     public init(hash: String, from: String, to: String, value: String, timestamp: Date, chain: Chain) {
         self.hash = hash
         self.from = from
@@ -60,7 +60,7 @@ public struct TransactionSummary: Codable, Equatable {
 
 public struct TransactionHistory: Codable, Equatable {
     public let transactions: [TransactionSummary]
-    
+
     public init(transactions: [TransactionSummary]) {
         self.transactions = transactions
     }

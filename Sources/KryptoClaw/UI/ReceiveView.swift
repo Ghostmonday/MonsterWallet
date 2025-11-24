@@ -1,6 +1,6 @@
 import SwiftUI
 #if canImport(UIKit)
-import UIKit
+    import UIKit
 #endif
 import CoreImage.CIFilterBuiltins
 
@@ -14,30 +14,28 @@ struct ReceiveView: View {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
 
             VStack(spacing: 30) {
-                // Header
                 Text("Receive Assets")
                     .font(themeManager.currentTheme.font(style: .title2))
                     .foregroundColor(themeManager.currentTheme.textPrimary)
                     .padding(.top, 40)
 
-                // QR Code
                 if let address = wsm.currentAddress {
                     VStack(spacing: 20) {
                         #if canImport(UIKit)
-                        Image(uiImage: generateQRCode(from: address))
-                            .resizable()
-                            .interpolation(.none)
-                            .scaledToFit()
-                            .frame(width: 200, height: 200)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(12)
+                            Image(uiImage: generateQRCode(from: address))
+                                .resizable()
+                                .interpolation(.none)
+                                .scaledToFit()
+                                .frame(width: 200, height: 200)
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(12)
                         #else
-                        Image(systemName: "qrcode")
-                            .font(.system(size: 200))
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(12)
+                            Image(systemName: "qrcode")
+                                .font(.system(size: 200))
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(12)
                         #endif
 
                         Text("Scan to send ETH or ERC-20 tokens")
@@ -45,7 +43,6 @@ struct ReceiveView: View {
                             .foregroundColor(themeManager.currentTheme.textSecondary)
                     }
 
-                    // Address & Copy
                     Button(action: {
                         wsm.copyCurrentAddress()
                         withAnimation {
@@ -75,7 +72,6 @@ struct ReceiveView: View {
                     }
                     .padding(.horizontal)
 
-                    // Share Sheet
                     ShareLink(item: address, subject: Text("My Wallet Address"), message: Text("Here is my wallet address: \(address)")) {
                         Label("Share Address", systemImage: "square.and.arrow.up")
                     }
@@ -91,21 +87,21 @@ struct ReceiveView: View {
     }
 
     #if canImport(UIKit)
-    func generateQRCode(from string: String) -> UIImage {
-        let context = CIContext()
-        let filter = CIFilter.qrCodeGenerator()
-        filter.message = Data(string.utf8)
+        func generateQRCode(from string: String) -> UIImage {
+            let context = CIContext()
+            let filter = CIFilter.qrCodeGenerator()
+            filter.message = Data(string.utf8)
 
-        if let outputImage = filter.outputImage {
-            if let cgimg = context.createCGImage(outputImage, from: outputImage.extent) {
-                return UIImage(cgImage: cgimg)
+            if let outputImage = filter.outputImage {
+                if let cgimg = context.createCGImage(outputImage, from: outputImage.extent) {
+                    return UIImage(cgImage: cgimg)
+                }
             }
+            return UIImage(systemName: "xmark.circle") ?? UIImage()
         }
-        return UIImage(systemName: "xmark.circle") ?? UIImage()
-    }
     #else
-    func generateQRCode(from string: String) -> some View {
-        return Image(systemName: "qrcode")
-    }
+        func generateQRCode(from _: String) -> some View {
+            Image(systemName: "qrcode")
+        }
     #endif
 }

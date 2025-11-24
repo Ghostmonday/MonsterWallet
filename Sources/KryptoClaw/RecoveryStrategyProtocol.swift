@@ -4,7 +4,7 @@ public struct RecoveryShare: Codable, Equatable {
     public let id: Int
     public let data: String
     public let threshold: Int
-    
+
     public init(id: Int, data: String, threshold: Int) {
         self.id = id
         self.data = data

@@ -3,15 +3,12 @@ import SwiftUI
 public struct HomeView: View {
     @EnvironmentObject var walletState: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
-    
-    // Navigation State
+
     @State private var showingSend = false
     @State private var showingReceive = false
     @State private var showingSwap = false
     @State private var showingSettings = false
-    
-    // For V2: Track selected chain/asset for detail view
-    // TODO: Implement ChainDetailView navigation
+
     @State private var selectedChain: Chain?
 
     public init() {}
@@ -20,11 +17,9 @@ public struct HomeView: View {
         let theme = themeManager.currentTheme
 
         ZStack {
-            // Background
             theme.backgroundMain.edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 0) {
-                // Header
                 HStack {
                     Image(systemName: theme.iconShield)
                         .foregroundColor(theme.accentColor)
@@ -49,11 +44,8 @@ public struct HomeView: View {
                 }
                 .padding()
 
-                // Clipboard Guard Copy Trigger (Hidden or integrated)
-                // For now, we integrate it into the header for the current address if available
                 if let address = walletState.currentAddress {
                     Button(action: {
-                        // Trigger Security Feature (ClipboardGuard)
                         walletState.copyCurrentAddress()
                     }) {
                         HStack {
@@ -73,14 +65,12 @@ public struct HomeView: View {
 
                 ScrollView {
                     VStack(spacing: 20) {
-
-                        // Total Balance Card
                         VStack(spacing: 10) {
                             Text("Total Portfolio Value")
                                 .font(theme.font(style: .subheadline))
                                 .foregroundColor(theme.textSecondary)
-                            
-                            if case .loaded(let balances) = walletState.state {
+
+                            if case let .loaded(balances) = walletState.state {
                                 let totalUSD = calculateTotalUSD(balances: balances)
                                 Text(walletState.isPrivacyModeEnabled ? "****" : totalUSD)
                                     .font(theme.balanceFont)
@@ -95,7 +85,6 @@ public struct HomeView: View {
                         }
                         .padding(30)
 
-                        // Action Buttons
                         HStack(spacing: 20) {
                             ActionButton(icon: theme.iconSend, label: "Send", theme: theme) {
                                 showingSend = true
@@ -110,8 +99,7 @@ public struct HomeView: View {
                             }
                         }
                         .padding(.horizontal)
-                        
-                        // Multi-Chain Assets List
+
                         VStack(alignment: .leading, spacing: 15) {
                             Text("Assets")
                                 .font(theme.font(style: .title3))
@@ -119,7 +107,7 @@ public struct HomeView: View {
                                 .foregroundColor(theme.textPrimary)
                                 .padding(.horizontal)
 
-                            if case .loaded(let balances) = walletState.state {
+                            if case let .loaded(balances) = walletState.state {
                                 ForEach(Chain.allCases, id: \.self) { chain in
                                     if let balance = balances[chain] {
                                         AssetRow(chain: chain, balance: balance, theme: theme)
@@ -129,19 +117,19 @@ public struct HomeView: View {
                                     }
                                 }
                             } else {
-                                // Shimmer or Skeleton
+                                // TODO: Implement shimmer/skeleton loading animation
                                 Text("Loading assets...")
                                     .foregroundColor(theme.textSecondary)
                                     .padding()
                             }
                         }
                     }
-                    .padding(.bottom, 100) // Space for TabBar
+                    .padding(.bottom, 100)
                 }
             }
         }
         .sheet(isPresented: $showingSend) {
-            SendView() // Assuming SendView exists and can handle context via environment or init
+            SendView()
         }
         .sheet(isPresented: $showingReceive) {
             ReceiveView()
@@ -151,6 +139,9 @@ public struct HomeView: View {
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+        }
+        .sheet(item: $selectedChain) { chain in
+            ChainDetailView(chain: chain)
         }
         .onAppear {
             Task {
@@ -209,11 +200,10 @@ struct AssetRow: View {
     let chain: Chain
     let balance: Balance
     let theme: ThemeProtocolV2
-    
+
     var body: some View {
         HStack {
-            // Icon
-            // Placeholder for Chain Logo (V2: Replace with Image(chain.logoName))
+            // TODO: Replace placeholder with actual chain logo image
             Circle()
                 .fill(Color.white.opacity(0.1))
                 .frame(width: 40, height: 40)
@@ -238,7 +228,7 @@ struct AssetRow: View {
                 Text(balance.amount)
                     .font(theme.font(style: .body))
                     .foregroundColor(theme.textPrimary)
-                
+
                 if let usd = balance.usdValue {
                     Text("$\(usd)")
                         .font(theme.font(style: .caption))
@@ -255,4 +245,8 @@ struct AssetRow: View {
         )
         .padding(.horizontal)
     }
+}
+
+extension Chain: Identifiable {
+    public var id: String { rawValue }
 }

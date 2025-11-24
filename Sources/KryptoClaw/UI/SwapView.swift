@@ -1,19 +1,19 @@
-import SwiftUI
 import BigInt
+import SwiftUI
 
 struct SwapView: View {
     @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
 
     @State private var fromAmount: String = ""
-    @State private var toAmount: String = "" // In real app, calculated via quote
+    @State private var toAmount: String = ""
     @State private var isCalculating = false
     @State private var slippage: Double = 0.5
     @State private var showError = false
     @State private var errorMessage = ""
 
     @State private var price: Decimal?
-    
+
     var body: some View {
         ZStack {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
@@ -24,33 +24,29 @@ struct SwapView: View {
                     .foregroundColor(themeManager.currentTheme.textPrimary)
                     .padding(.top)
 
-                // From Card
                 SwapInputCard(
                     title: "From",
                     amount: $fromAmount,
                     symbol: "ETH",
                     theme: themeManager.currentTheme
                 )
-                .onChange(of: fromAmount) { oldValue, newValue in
+                .onChange(of: fromAmount) { _, newValue in
                     Task {
                         await calculateQuote(input: newValue)
                     }
                 }
 
-                // Switcher
                 Image(systemName: "arrow.down.circle.fill")
                     .font(.title)
                     .foregroundColor(themeManager.currentTheme.accentColor)
 
-                // To Card
                 SwapInputCard(
                     title: "To",
-                    amount: $toAmount, // Read only mostly
+                    amount: $toAmount,
                     symbol: "USDC",
                     theme: themeManager.currentTheme
                 )
 
-                // Settings
                 HStack {
                     Text("Slippage Tolerance")
                         .font(themeManager.currentTheme.font(style: .caption))
@@ -61,7 +57,7 @@ struct SwapView: View {
                         .foregroundColor(themeManager.currentTheme.accentColor)
                 }
                 .padding(.horizontal)
-                
+
                 if let p = price {
                     HStack {
                         Text("Price")
@@ -77,7 +73,6 @@ struct SwapView: View {
 
                 Spacer()
 
-                // Action
                 if isCalculating {
                     ProgressView()
                 } else {
@@ -89,10 +84,8 @@ struct SwapView: View {
                                 showError = true
                                 errorMessage = "Please create or import a wallet first."
                             } else if toAmount.isEmpty {
-                                // Do nothing
                             } else {
-                                // For V1, we don't have a real DEX aggregator yet.
-                                // But we have real prices.
+                                // TODO: Implement DEX aggregator integration for swap execution
                                 showError = true
                                 errorMessage = "Swap execution requires a DEX Aggregator API key (e.g. 1inch). Price feed is live."
                             }
@@ -122,7 +115,7 @@ struct SwapView: View {
     func calculateQuote(input: String) async {
         isCalculating = true
         defer { isCalculating = false }
-        
+
         guard let amount = Double(input), let currentPrice = price else {
             toAmount = ""
             return
@@ -133,7 +126,7 @@ struct SwapView: View {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 2
-        
+
         toAmount = formatter.string(from: NSDecimalNumber(decimal: quote)) ?? ""
     }
 }
@@ -154,9 +147,9 @@ struct SwapInputCard: View {
                 TextField("0.0", text: $amount)
                     .font(theme.font(style: .title))
                     .foregroundColor(theme.textPrimary)
-                    #if os(iOS)
+                #if os(iOS)
                     .keyboardType(.decimalPad)
-                    #endif
+                #endif
 
                 Text(symbol)
                     .fontWeight(.bold)

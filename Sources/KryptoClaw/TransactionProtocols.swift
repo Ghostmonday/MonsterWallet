@@ -10,7 +10,7 @@ public struct Transaction: Codable, Equatable {
     public let maxFeePerGas: String
     public let maxPriorityFeePerGas: String
     public let chainId: Int
-    
+
     public init(from: String, to: String, value: String, data: Data, nonce: UInt64, gasLimit: UInt64, maxFeePerGas: String, maxPriorityFeePerGas: String, chainId: Int) {
         self.from = from
         self.to = to
@@ -29,7 +29,7 @@ public struct SimulationResult: Codable, Equatable {
     public let estimatedGasUsed: UInt64
     public let balanceChanges: [String: String] // Address -> Delta
     public let error: String?
-    
+
     public init(success: Bool, estimatedGasUsed: UInt64, balanceChanges: [String: String], error: String?) {
         self.success = success
         self.estimatedGasUsed = estimatedGasUsed
@@ -48,7 +48,7 @@ public enum RiskLevel: String, Codable {
 public struct RiskAlert: Codable, Equatable {
     public let level: RiskLevel
     public let description: String
-    
+
     public init(level: RiskLevel, description: String) {
         self.level = level
         self.description = description
@@ -63,7 +63,7 @@ public struct GasEstimate: Codable, Equatable {
     public let gasLimit: UInt64
     public let maxFeePerGas: String
     public let maxPriorityFeePerGas: String
-    
+
     public init(gasLimit: UInt64, maxFeePerGas: String, maxPriorityFeePerGas: String) {
         self.gasLimit = gasLimit
         self.maxFeePerGas = maxFeePerGas

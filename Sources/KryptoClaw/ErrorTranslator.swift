@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ErrorTranslator {
+public enum ErrorTranslator {
     public static func userFriendlyMessage(for error: Error) -> String {
         if let blockchainError = error as? BlockchainError {
             switch blockchainError {
@@ -9,7 +9,6 @@ public struct ErrorTranslator {
             case .invalidAddress:
                 return "Invalid recipient address. Please check and try again."
             case .rpcError:
-                // Mask raw RPC errors
                 return "Transaction failed. The network rejected the request."
             case .parsingError:
                 return "Unable to process server response. Please try again."
@@ -19,8 +18,7 @@ public struct ErrorTranslator {
                 return "Insufficient funds to complete this transaction."
             }
         }
-        
-        // Handle WalletError
+
         if let walletError = error as? WalletError {
             switch walletError {
             case .invalidMnemonic:
@@ -29,8 +27,7 @@ public struct ErrorTranslator {
                 return "Failed to generate wallet. Please try again."
             }
         }
-        
-        // Handle KeyStoreError
+
         if let keyStoreError = error as? KeyStoreError {
             switch keyStoreError {
             case .itemNotFound:
@@ -43,8 +40,7 @@ public struct ErrorTranslator {
                 return "Key storage error. Please try again."
             }
         }
-        
-        // Handle RecoveryError
+
         if let recoveryError = error as? RecoveryError {
             switch recoveryError {
             case .invalidThreshold:
@@ -57,8 +53,7 @@ public struct ErrorTranslator {
                 return "Failed to reconstruct wallet. Please check your recovery shares."
             }
         }
-        
-        // Handle NFTError
+
         if let nftError = error as? NFTError {
             switch nftError {
             case .invalidContract:
@@ -69,18 +64,16 @@ public struct ErrorTranslator {
                 return "Request timed out. Please check your connection and try again."
             }
         }
-        
-        // Handle ValidationError
+
         if let validationError = error as? Contact.ValidationError {
             switch validationError {
-            case .invalidName(let message):
+            case let .invalidName(message):
                 return message
             case .invalidAddress:
                 return "Invalid address format. Please check and try again."
             }
         }
-        
-        // Fallback for unknown errors (Masking raw details)
+
         return "An unexpected error occurred. Please try again."
     }
 }

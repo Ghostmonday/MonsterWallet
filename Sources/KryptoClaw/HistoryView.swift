@@ -5,19 +5,19 @@ struct HistoryView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.openURL) var openURL
-    
+
     @State private var filter: TxFilter = .all
-    
+
     enum TxFilter: String, CaseIterable {
         case all = "All"
         case sent = "Sent"
         case received = "Received"
     }
-    
+
     var filteredTransactions: [TransactionSummary] {
         guard let currentAddress = wsm.currentAddress else { return [] }
         let all = wsm.history.transactions
-        
+
         switch filter {
         case .all:
             return all
@@ -27,20 +27,20 @@ struct HistoryView: View {
             return all.filter { $0.to.lowercased() == currentAddress.lowercased() }
         }
     }
-    
+
     var body: some View {
         ZStack {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 KryptoHeader(
                     title: "History",
                     onBack: { presentationMode.wrappedValue.dismiss() }
                 )
-                
+
                 // Filter Tabs
                 KryptoTab(
-                    tabs: TxFilter.allCases.map { $0.rawValue },
+                    tabs: TxFilter.allCases.map(\.rawValue),
                     selectedIndex: Binding(
                         get: {
                             TxFilter.allCases.firstIndex(of: filter) ?? 0
@@ -52,7 +52,7 @@ struct HistoryView: View {
                     )
                 )
                 .padding(.vertical)
-                
+
                 if filteredTransactions.isEmpty {
                     Spacer()
                     Text("No transactions found")
@@ -82,9 +82,9 @@ struct HistoryView: View {
             KryptoLogger.shared.log(level: .info, category: .lifecycle, message: "ViewDidAppear", metadata: ["view": "History"])
         }
     }
-    
+
     func openExplorer(hash: String) {
-        // Compliance: Must open in external Safari, not embedded WebView
+        // Note: Must open in external Safari for App Store compliance
         if let url = URL(string: "https://etherscan.io/tx/\(hash)") {
             KryptoLogger.shared.log(level: .info, category: .boundary, message: "Explorer Link Tapped", metadata: ["hash": hash, "view": "History"])
             openURL(url)
@@ -97,11 +97,11 @@ struct TransactionRow: View {
     let currentAddress: String
     @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     var isSent: Bool {
         tx.from.lowercased() == currentAddress.lowercased()
     }
-    
+
     var body: some View {
         KryptoListRow(
             title: isSent ? "Sent ETH" : "Received ETH",
@@ -111,7 +111,7 @@ struct TransactionRow: View {
             isSystemIcon: true
         )
     }
-    
+
     func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -119,4 +119,3 @@ struct TransactionRow: View {
         return formatter.string(from: date)
     }
 }
-

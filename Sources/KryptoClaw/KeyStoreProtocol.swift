@@ -6,7 +6,7 @@ public protocol KeyStoreProtocol {
     /// - Returns: The key data (or handle).
     /// - Throws: An error if the key cannot be retrieved or authentication fails.
     func getPrivateKey(id: String) throws -> Data
-    
+
     /// Stores a private key.
     /// - Parameters:
     ///   - key: The private key data to store.
@@ -14,14 +14,14 @@ public protocol KeyStoreProtocol {
     /// - Returns: True if storage was successful.
     /// - Throws: An error if storage fails.
     func storePrivateKey(key: Data, id: String) throws -> Bool
-    
+
     /// Checks if the store is protected (e.g. requires User Authentication).
     /// - Returns: True if protected.
     func isProtected() -> Bool
-    
+
     /// Deletes a specific key.
     func deleteKey(id: String) throws
-    
+
     /// Deletes all keys managed by this store.
     func deleteAll() throws
 }
