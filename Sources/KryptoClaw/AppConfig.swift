@@ -16,6 +16,13 @@ public enum AppConfig {
         return nil
     }()
 
+    // // B) IMPLEMENTATION INSTRUCTIONS
+    // The following keys are placeholders for future provider expansion (Phase 3).
+    // - alchemyAPIKey: Will replace LlamaRPC for higher reliability.
+    // - walletConnectProjectId: Required for WalletConnect V2 integration.
+    public static let alchemyAPIKey: String? = nil
+    public static let walletConnectProjectId: String? = nil
+
     // Feature Flags
     // V1.0 Compliance: Novel/Risky features DISABLED. Standard features ENABLED.
     public struct Features {

@@ -80,6 +80,12 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
     /// Trigger: FaceID/TouchID prompt.
     /// Unwraps the private key (mnemonic) using the Secure Enclave Master Key.
     /// Trigger: FaceID/TouchID prompt.
+    ///
+    /// // B) IMPLEMENTATION INSTRUCTIONS
+    /// - Verification Required: This logic uses the Secure Enclave and FaceID.
+    /// - It MUST be tested on a physical device. Simulators do not support full SE emulation.
+    /// - Verify: 1. Store Key. 2. Reset FaceID settings. 3. Try to Fetch Key.
+    /// - Expected Result: Fetch fails, and `deleteKey` (Wipe) is triggered.
     public func getPrivateKey(id: String) throws -> Data {
         // 1. Fetch the Encrypted Blob (Wrapped Key) from Keychain (RAM access only)
         let query: [String: Any] = [

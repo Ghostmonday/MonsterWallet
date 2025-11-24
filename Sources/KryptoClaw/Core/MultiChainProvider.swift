@@ -25,6 +25,11 @@ public class MultiChainProvider: BlockchainProviderProtocol {
     }
 
     private func fetchBitcoinBalance(address: String) async throws -> Balance {
+        // // B) IMPLEMENTATION INSTRUCTIONS
+        // Investigate `wallet.getBalance` from Trust Wallet Core (Phase 4).
+        // If it supports network calls, replace this custom RPC logic.
+        // Current implementation uses mempool.space for balance check.
+
         let urlString = "https://mempool.space/api/address/\(address)"
         guard let url = URL(string: urlString) else { throw BlockchainError.invalidAddress }
 
@@ -51,6 +56,11 @@ public class MultiChainProvider: BlockchainProviderProtocol {
     }
 
     private func fetchSolanaBalance(address: String) async throws -> Balance {
+        // // B) IMPLEMENTATION INSTRUCTIONS
+        // Investigate `wallet.getBalance` from Trust Wallet Core (Phase 4).
+        // If it supports network calls, replace this custom RPC logic.
+        // Current implementation uses Solana JSON-RPC.
+
         let url = URL(string: "https://api.mainnet-beta.solana.com")!
 
         let payload: [String: Any] = [
