@@ -5,16 +5,21 @@ import SwiftUI
 import CoreImage.CIFilterBuiltins
 
 struct ReceiveView: View {
+    let chain: Chain
     @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
     @State private var copied: Bool = false
+    
+    init(chain: Chain = .ethereum) {
+        self.chain = chain
+    }
 
     var body: some View {
         ZStack {
             themeManager.currentTheme.backgroundMain.ignoresSafeArea()
 
             VStack(spacing: 30) {
-                Text("Receive Assets")
+                Text("Receive \(chain.displayName)")
                     .font(themeManager.currentTheme.font(style: .title2))
                     .foregroundColor(themeManager.currentTheme.textPrimary)
                     .padding(.top, 40)
@@ -38,7 +43,7 @@ struct ReceiveView: View {
                                 .cornerRadius(12)
                         #endif
 
-                        Text("Scan to send ETH or ERC-20 tokens")
+                        Text("Scan to send \(chain.nativeCurrency)")
                             .font(themeManager.currentTheme.font(style: .caption))
                             .foregroundColor(themeManager.currentTheme.textSecondary)
                     }

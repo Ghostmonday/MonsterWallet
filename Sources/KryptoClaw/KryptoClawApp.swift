@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 @main
 public struct KryptoClawApp: App {
@@ -80,8 +83,13 @@ public struct KryptoClawApp: App {
                 ZStack {
                     if isPrivacyActive {
                         // Visual Blur
+                        #if os(iOS)
                         VisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
                             .ignoresSafeArea()
+                        #else
+                        Color.black.opacity(0.95)
+                            .ignoresSafeArea()
+                        #endif
 
                         // Icon Lock
                         VStack(spacing: 20) {
@@ -96,7 +104,7 @@ public struct KryptoClawApp: App {
                     }
                 }
             )
-            .onChange(of: scenePhase) { newPhase in
+            .onChange(of: scenePhase) { _, newPhase in
                 switch newPhase {
                 case .inactive, .background:
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -124,8 +132,10 @@ public struct KryptoClawApp: App {
 }
 
 // Helper for Blur Effect (UIViewRepresentable)
+#if os(iOS)
 struct VisualEffectView: UIViewRepresentable {
     var effect: UIVisualEffect?
     func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView { UIVisualEffectView() }
     func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
 }
+#endif

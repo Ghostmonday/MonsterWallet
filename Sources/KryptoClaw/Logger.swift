@@ -13,6 +13,7 @@ public enum LogCategory: String {
     case stateTransition = "State"
     case boundary = "Boundary"
     case error = "Error"
+    case security = "Security"
 }
 
 public protocol LoggerProtocol {

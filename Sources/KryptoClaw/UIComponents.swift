@@ -120,27 +120,6 @@ public struct KryptoCard<Content: View>: View {
     }
 }
 
-struct DiamondPattern: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let step: CGFloat = 10
-
-        for y in stride(from: 0, to: rect.height, by: step) {
-            for x in stride(from: 0, to: rect.width, by: step) {
-                let midX = x + step / 2
-                let midY = y + step / 2
-
-                path.move(to: CGPoint(x: midX, y: y))
-                path.addLine(to: CGPoint(x: x + step, y: midY))
-                path.addLine(to: CGPoint(x: midX, y: y + step))
-                path.addLine(to: CGPoint(x: x, y: midY))
-                path.closeSubpath()
-            }
-        }
-        return path
-    }
-}
-
 struct KryptoTextField: View {
     let placeholder: String
     @Binding var text: String

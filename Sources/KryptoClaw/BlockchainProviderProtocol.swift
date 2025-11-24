@@ -17,6 +17,22 @@ public enum Chain: String, CaseIterable, Codable, Hashable {
         rawValue
     }
 
+    public var logoName: String {
+        switch self {
+        case .ethereum: "eth_logo"
+        case .bitcoin: "btc_logo"
+        case .solana: "sol_logo"
+        }
+    }
+
+    public var logoURL: URL? {
+        switch self {
+        case .ethereum: URL(string: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png")
+        case .bitcoin: URL(string: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoin/info/logo.png")
+        case .solana: URL(string: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png")
+        }
+    }
+
     public var decimals: Int {
         switch self {
         case .ethereum: 18

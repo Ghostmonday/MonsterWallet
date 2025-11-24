@@ -12,11 +12,12 @@ public class LocalSimulator: TransactionSimulatorProtocol {
     }
 
     public func simulate(tx: Transaction) async throws -> SimulationResult {
-        // TODO: Implement full transaction trace simulation (Tenderly/Alchemy Simulate API)
-        // Current implementation uses eth_call for partial simulation
-
+        // Task 12: Full Transaction Trace Simulation
+        // Current implementation uses eth_call for partial simulation (revert check).
+        // For full balance changes and internal traces, we need an external Simulator API (Tenderly/Alchemy).
+        
+        // 1. Check for common scams (Address Poisoning / Infinite Approvals)
         if AppConfig.Features.isAddressPoisoningProtectionEnabled {
-            // Block infinite approvals (common scam pattern)
             if tx.data.count > 0, tx.data.hexString.contains("ffffffffffffffffffffffffffffffff") {
                 return SimulationResult(
                     success: false,
@@ -34,13 +35,14 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             .bitcoin
         }
 
+        // 2. Fetch Balance for Pre-check
         let balance = try await provider.fetchBalance(address: tx.from, chain: chain)
 
         guard chain == .ethereum else {
+            // Only ETH simulation supported in V1
             return SimulationResult(success: true, estimatedGasUsed: 21000, balanceChanges: [:], error: nil)
         }
 
-        // Note: balance.amount format varies by provider (decimal string or hex)
         let balanceBigInt = if balance.amount.hasPrefix("0x") {
             BigUInt(balance.amount.dropFirst(2), radix: 16) ?? BigUInt(0)
         } else {
@@ -58,15 +60,24 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             )
         }
 
+        // 3. Perform Simulation
+        // Attempt full trace via API if configured, otherwise fall back to eth_call
+        if let simulationAPI = AppConfig.simulationAPIURL {
+            return try await simulateViaExternalAPI(tx: tx, url: simulationAPI)
+        } else {
+            return try await simulateViaEthCall(tx: tx, value: txValue)
+        }
+    }
+    
+    private func simulateViaEthCall(tx: Transaction, value: BigUInt) async throws -> SimulationResult {
         let url = AppConfig.rpcURL
-
         let payload: [String: Any] = [
             "jsonrpc": "2.0",
             "method": "eth_call",
             "params": [[
                 "from": tx.from,
                 "to": tx.to,
-                "value": "0x" + String(txValue, radix: 16),
+                "value": "0x" + String(value, radix: 16),
                 "data": "0x" + tx.data.hexString,
             ], "latest"],
             "id": 1,
@@ -94,7 +105,7 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             return SimulationResult(
                 success: true,
                 estimatedGasUsed: tx.gasLimit,
-                balanceChanges: [:], // TODO: Balance changes require full trace simulation (not available in basic eth_call)
+                balanceChanges: [:], // eth_call doesn't provide balance changes
                 error: nil
             )
 
@@ -102,5 +113,18 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             KryptoLogger.shared.logError(module: "LocalSimulator", error: error)
             return SimulationResult(success: false, estimatedGasUsed: 0, balanceChanges: [:], error: "Network Error: \(ErrorTranslator.userFriendlyMessage(for: error))")
         }
+    }
+    
+    private func simulateViaExternalAPI(tx: Transaction, url: URL) async throws -> SimulationResult {
+        // Stub for Tenderly/Alchemy Simulate API integration
+        // Format: POST to /simulate with tx details
+        // Response: Trace, state diffs, etc.
+        
+        // TODO: Implement specific API client (Tenderly/Alchemy)
+        // This requires an API Key and proper request formatting per provider docs.
+        // Example for Tenderly:
+        // { "network_id": "1", "from": ..., "to": ..., "input": ..., "value": ..., "save": true }
+        
+        throw NSError(domain: "LocalSimulator", code: -1, userInfo: [NSLocalizedDescriptionKey: "External Simulation API not implemented"])
     }
 }

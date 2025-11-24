@@ -6,6 +6,8 @@ public enum AppConfig {
 
     // Infrastructure
     public static let rpcURL = URL(string: "https://eth.llamarpc.com")!
+    // Optional API for full transaction simulation (e.g. Tenderly)
+    public static let simulationAPIURL: URL? = nil
 
     public static let openseaAPIKey: String? = {
         if let envKey = ProcessInfo.processInfo.environment["OPENSEA_API_KEY"] {

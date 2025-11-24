@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#endif
 
 /// 🔒 COMPLIANCE: Security / Jailbreak Detection
 /// This module implements the "Foundation & Compliance" requirement 1.1.
@@ -118,9 +120,11 @@ public final class JailbreakDetector {
 
     /// Checks if the app can open URL schemes associated with jailbreak tools (e.g. Cydia).
     private static func canOpenSuspiciousProtocols() -> Bool {
+        #if canImport(UIKit)
         if let url = URL(string: "cydia://package/com.example.package") {
             return UIApplication.shared.canOpenURL(url)
         }
+        #endif
         return false
     }
 

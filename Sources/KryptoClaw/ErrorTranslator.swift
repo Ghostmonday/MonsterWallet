@@ -38,6 +38,8 @@ public enum ErrorTranslator {
                 return "Security setup failed. Please check your device settings."
             case .unhandledError:
                 return "Key storage error. Please try again."
+            default:
+                return "A key storage error occurred. Please try again."
             }
         }
 

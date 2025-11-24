@@ -17,7 +17,7 @@ public class DEXAggregator {
         try? await Task.sleep(nanoseconds: 100_000_000)
 
         let rate = Double.random(in: 0.95 ... 1.05)
-        let estimatedOutput = (Double(amount) ?? 0) * rate
+        _ = (Double(amount) ?? 0) * rate // Placeholder calculation
 
         return String(format: "Best Quote: 1 %@ ≈ %.4f %@ (via Uniswap V3)", from, rate, to)
     }

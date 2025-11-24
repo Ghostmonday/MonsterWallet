@@ -28,6 +28,11 @@ let package = Package(
                 "CryptoSwift",
                 .product(name: "web3.swift", package: "web3.swift"),
                 .product(name: "secp256k1", package: "secp256k1.swift")
+            ],
+            exclude: ["Info.plist"],
+            resources: [
+                .process("Resources/Assets.xcassets"),
+                .process("PrivacyInfo.xcprivacy")
             ]),
         .testTarget(
             name: "KryptoClawTests",

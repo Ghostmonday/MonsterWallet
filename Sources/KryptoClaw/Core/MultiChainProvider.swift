@@ -14,13 +14,13 @@ public class MultiChainProvider: BlockchainProviderProtocol {
     public func fetchBalance(address: String, chain: Chain) async throws -> Balance {
         switch chain {
         case .ethereum:
-            try await ethProvider.fetchBalance(address: address, chain: .ethereum)
+            return try await ethProvider.fetchBalance(address: address, chain: .ethereum)
 
         case .bitcoin:
-            try await fetchBitcoinBalance(address: address)
+            return try await fetchBitcoinBalance(address: address)
 
         case .solana:
-            try await fetchSolanaBalance(address: address)
+            return try await fetchSolanaBalance(address: address)
         }
     }
 
@@ -132,10 +132,10 @@ public class MultiChainProvider: BlockchainProviderProtocol {
     public func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate {
         switch chain {
         case .ethereum:
-            try await ethProvider.estimateGas(to: to, value: value, data: data, chain: .ethereum)
+            return try await ethProvider.estimateGas(to: to, value: value, data: data, chain: .ethereum)
         default:
             // Mock estimation for BTC/SOL
-            GasEstimate(gasLimit: 21000, maxFeePerGas: "1000", maxPriorityFeePerGas: "100")
+            return GasEstimate(gasLimit: 21000, maxFeePerGas: "1000", maxPriorityFeePerGas: "100")
         }
     }
 }

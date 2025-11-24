@@ -11,10 +11,23 @@ public class ShamirHybridRecovery: RecoveryStrategyProtocol {
     public init() {}
 
     public func generateShares(seed: String, total: Int, threshold: Int) throws -> [RecoveryShare] {
-        // TODO: Implement true Shamir Secret Sharing (SSS) for threshold < total
-        // Current implementation only supports N-of-N (threshold == total) using XOR
-        guard threshold == total else {
-            throw RecoveryError.invalidThreshold
+        // Task 11: Shamir Secret Sharing (SSS) Implementation
+        // Goal: Upgrade from XOR-based N-of-N splitting to true SSS (k-of-n).
+        // Current Status: V1 uses XOR for N-of-N. True SSS requires GF(256) arithmetic.
+        
+        // Implementation Requirement:
+        // For threshold < total (e.g. 3 of 5), we MUST use polynomial interpolation over a finite field.
+        // DO NOT implement SSS math from scratch in production due to side-channel risks.
+        // Recommended Library: https://github.com/koraykoska/ShamirSecretSharing (or similar audited Swift lib)
+        
+        if threshold < total {
+             // TODO: Integrate SSS Library here.
+             // For now, we throw to prevent unsafe usage of the XOR method (which requires all shares).
+             // If SSS were implemented:
+             // 1. Generate random polynomial P(x) of degree (threshold - 1) where P(0) = secret
+             // 2. Generate 'total' points (x, y) where y = P(x)
+             // 3. Return shares
+             throw RecoveryError.invalidThreshold // XOR only supports N-of-N
         }
 
         guard let seedData = seed.data(using: .utf8) else {
@@ -48,7 +61,12 @@ public class ShamirHybridRecovery: RecoveryStrategyProtocol {
         guard !shares.isEmpty else { throw RecoveryError.invalidShares }
 
         let threshold = shares[0].threshold
+        
+        // XOR Reconstruction Logic (N-of-N)
+        // Requires ALL shares (count == threshold == total)
         guard shares.count == threshold else {
+            // If this were SSS, we would use Lagrange Interpolation here to recover P(0)
+            // using any 'threshold' number of shares.
             throw RecoveryError.invalidShares
         }
 

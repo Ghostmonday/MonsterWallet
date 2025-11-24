@@ -5,6 +5,9 @@ struct ChainDetailView: View {
     @EnvironmentObject var walletState: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.presentationMode) var presentationMode
+    
+    @State private var showingSend = false
+    @State private var showingReceive = false
 
     var body: some View {
         let theme = themeManager.currentTheme
@@ -45,7 +48,7 @@ struct ChainDetailView: View {
                                     .multilineTextAlignment(.center)
 
                                 if let usd = balance.usdValue {
-                                    Text("$\(usd)")
+                                    Text(usd, format: .currency(code: "USD"))
                                         .font(theme.font(style: .title2))
                                         .foregroundColor(theme.textSecondary)
                                 }
@@ -58,8 +61,7 @@ struct ChainDetailView: View {
 
                         HStack(spacing: 30) {
                             VStack {
-                                // TODO: Implement navigation to SendView with chain pre-selected
-                                Button(action: {}) {
+                                Button(action: { showingSend = true }) {
                                     ZStack {
                                         Circle()
                                             .fill(theme.accentColor)
@@ -75,8 +77,7 @@ struct ChainDetailView: View {
                             }
 
                             VStack {
-                                // TODO: Implement navigation to ReceiveView with chain pre-selected
-                                Button(action: {}) {
+                                Button(action: { showingReceive = true }) {
                                     ZStack {
                                         Circle()
                                             .fill(theme.backgroundSecondary)
@@ -110,6 +111,12 @@ struct ChainDetailView: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $showingSend) {
+            SendView(chain: chain)
+        }
+        .sheet(isPresented: $showingReceive) {
+            ReceiveView(chain: chain)
         }
     }
 }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SendView: View {
+    let chain: Chain
     @EnvironmentObject var wsm: WalletStateManager
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.presentationMode) var presentationMode
@@ -9,6 +10,10 @@ struct SendView: View {
     @State private var amount: String = ""
     @State private var isSimulating = false
     @State private var showConfirmation = false
+    
+    init(chain: Chain = .ethereum) {
+        self.chain = chain
+    }
 
     private var hasCriticalRisk: Bool {
         wsm.riskAlerts.contains { $0.level == .critical }
@@ -20,7 +25,7 @@ struct SendView: View {
 
             VStack(spacing: 24) {
                 HStack {
-                    Text("Send Crypto")
+                    Text("Send \(chain.displayName)")
                         .font(themeManager.currentTheme.font(style: .title2))
                         .foregroundColor(themeManager.currentTheme.textPrimary)
                     Spacer()
@@ -95,7 +100,7 @@ struct SendView: View {
                         KryptoButton(title: isSimulating ? "Simulating..." : "Simulate Transaction", icon: "play.fill", action: {
                             Task {
                                 isSimulating = true
-                                await wsm.prepareTransaction(to: toAddress, value: amount)
+                                await wsm.prepareTransaction(to: toAddress, value: amount, chain: chain)
                                 isSimulating = false
                             }
                         }, isPrimary: true)
@@ -109,7 +114,7 @@ struct SendView: View {
 
                         KryptoButton(title: "Confirm & Send", icon: themeManager.currentTheme.iconSend, action: {
                             Task {
-                                await wsm.confirmTransaction(to: toAddress, value: amount)
+                                await wsm.confirmTransaction(to: toAddress, value: amount, chain: chain)
                                 presentationMode.wrappedValue.dismiss()
                             }
                         }, isPrimary: true)

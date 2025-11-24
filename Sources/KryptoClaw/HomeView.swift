@@ -10,6 +10,7 @@ public struct HomeView: View {
     @State private var showingSettings = false
 
     @State private var selectedChain: Chain?
+    @State private var showCopyFeedback = false
 
     public init() {}
 
@@ -47,18 +48,32 @@ public struct HomeView: View {
                 if let address = walletState.currentAddress {
                     Button(action: {
                         walletState.copyCurrentAddress()
+                        withAnimation { showCopyFeedback = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation { showCopyFeedback = false }
+                        }
                     }) {
                         HStack {
                             Text(shorten(address))
                                 .font(theme.addressFont)
                                 .foregroundColor(theme.textSecondary)
-                            Image(systemName: "doc.on.doc")
-                                .font(.caption)
-                                .foregroundColor(theme.accentColor)
+                            
+                            if showCopyFeedback {
+                                Image(systemName: "shield.check.fill")
+                                    .font(.caption)
+                                    .foregroundColor(theme.successColor)
+                                    .transition(.scale)
+                            } else {
+                                Image(systemName: "doc.on.doc")
+                                    .font(.caption)
+                                    .foregroundColor(theme.accentColor)
+                                    .transition(.scale)
+                            }
                         }
                         .padding(8)
                         .background(theme.backgroundSecondary.opacity(0.5))
                         .cornerRadius(8)
+                        .accessibilityLabel(showCopyFeedback ? "Address copied and clipboard protected" : "Copy address to clipboard")
                     }
                     .padding(.bottom, 10)
                 }
@@ -117,10 +132,10 @@ public struct HomeView: View {
                                     }
                                 }
                             } else {
-                                // TODO: Implement shimmer/skeleton loading animation
-                                Text("Loading assets...")
-                                    .foregroundColor(theme.textSecondary)
-                                    .padding()
+                                // Skeleton loading state
+                                ForEach(0..<3) { _ in
+                                    SkeletonRow(theme: theme)
+                                }
                             }
                         }
                     }
@@ -203,15 +218,32 @@ struct AssetRow: View {
 
     var body: some View {
         HStack {
-            // TODO: Replace placeholder with actual chain logo image
-            Circle()
-                .fill(Color.white.opacity(0.1))
-                .frame(width: 40, height: 40)
-                .overlay(
-                    Text(chain.nativeCurrency.prefix(1))
-                        .fontWeight(.bold)
-                        .foregroundColor(theme.textPrimary)
-                )
+            AsyncImage(url: chain.logoURL) { phase in
+                switch phase {
+                case .empty:
+                    Circle()
+                        .fill(theme.backgroundSecondary)
+                        .frame(width: 40, height: 40)
+                        .overlay(ProgressView())
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 40, height: 40)
+                        .clipShape(Circle())
+                case .failure:
+                    Circle()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            Text(chain.nativeCurrency.prefix(1))
+                                .fontWeight(.bold)
+                                .foregroundColor(theme.textPrimary)
+                        )
+                @unknown default:
+                    EmptyView()
+                }
+            }
 
             VStack(alignment: .leading) {
                 Text(chain.displayName)
@@ -230,7 +262,7 @@ struct AssetRow: View {
                     .foregroundColor(theme.textPrimary)
 
                 if let usd = balance.usdValue {
-                    Text("$\(usd)")
+                    Text(usd, format: .currency(code: "USD"))
                         .font(theme.font(style: .caption))
                         .foregroundColor(theme.textSecondary)
                 }
@@ -244,6 +276,49 @@ struct AssetRow: View {
                 .stroke(theme.borderColor, lineWidth: 1)
         )
         .padding(.horizontal)
+    }
+}
+
+struct SkeletonRow: View {
+    let theme: ThemeProtocolV2
+    @State private var isAnimating = false
+
+    var body: some View {
+        HStack {
+            Circle()
+                .fill(theme.textSecondary.opacity(0.2))
+                .frame(width: 40, height: 40)
+            
+            VStack(alignment: .leading, spacing: 8) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(theme.textSecondary.opacity(0.2))
+                    .frame(width: 100, height: 16)
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(theme.textSecondary.opacity(0.2))
+                    .frame(width: 60, height: 12)
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 8) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(theme.textSecondary.opacity(0.2))
+                    .frame(width: 80, height: 16)
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(theme.textSecondary.opacity(0.2))
+                    .frame(width: 50, height: 12)
+            }
+        }
+        .padding()
+        .background(theme.cardBackground)
+        .cornerRadius(theme.cornerRadius)
+        .padding(.horizontal)
+        .opacity(isAnimating ? 0.5 : 1.0)
+        .onAppear {
+            withAnimation(Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                isAnimating = true
+            }
+        }
     }
 }
 
