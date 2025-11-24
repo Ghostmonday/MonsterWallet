@@ -13,14 +13,15 @@ import Foundation
 /// 3. Sign the transaction payload.
 /// 4. IMMEDIATE WIPING: Overwrite the mnemonic in memory.
 ///
-/// // <<<<<<!!!!!JULES!!!!!!>>>>>>>>:
+/// // <<<<<<!!!!!!!JULES!!!!!!>>>>>>>>>>:
 /// - Security Requirement: Transaction Simulation (Phase 4) MUST happen BEFORE this method is called.
 /// - This method is the "Point of No Return".
+/// - SecureBytes Status: ✅ Implemented in Core/Security/SecureBytes.swift - Integration pending (Phase 4)
 ///
 /// // REF: COLLABORATION GUIDE
-/// - Status: 📝 Phase 3/4 Planned.
-/// - Objective: Securely unwrap, sign, and wipe.
-/// - Critical: Implement `SecureBytes` or similar memory-safe wrapper to ensure decrypted keys are overwritten (`memset`) immediately after use.
+/// - Status: 📝 Phase 3/4 Planned - Mock implementation only
+/// - Objective: Securely unwrap, sign, and wipe
+/// - Next Step: Integrate SecureBytes wrapper for RAM safety + real chain signers
 public class TransactionSigner {
 
     private let keyStore: KeyStoreProtocol
