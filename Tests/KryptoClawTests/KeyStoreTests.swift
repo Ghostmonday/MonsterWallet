@@ -51,11 +51,13 @@ final class KeyStoreTests: XCTestCase {
     
     var keyStore: SecureEnclaveKeyStore!
     var mockKeychain: MockKeychain!
+    var mockSE: MockSecureEnclave!
     
     override func setUp() {
         super.setUp()
         mockKeychain = MockKeychain()
-        keyStore = SecureEnclaveKeyStore(keychain: mockKeychain)
+        mockSE = MockSecureEnclave()
+        keyStore = SecureEnclaveKeyStore(keychain: mockKeychain, seHelper: mockSE)
     }
     
     func testStoreAndRetrieve() throws {
