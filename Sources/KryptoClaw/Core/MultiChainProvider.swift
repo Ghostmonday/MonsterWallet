@@ -332,3 +332,4 @@ public class MultiChainProvider: BlockchainProviderProtocol {
         
         return try await session.data(for: request)
     }
+}
