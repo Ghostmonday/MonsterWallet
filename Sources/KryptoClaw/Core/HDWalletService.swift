@@ -46,8 +46,8 @@ public enum HDWalletService {
         #endif
     }
     
-    /// Derives BIP44 private key from mnemonic.
-    public static func derivePrivateKey(mnemonic: String, for coin: Chain = .ethereum, accountIndex: UInt32 = 0) throws -> Data {
+    /// Derives a private key from a mnemonic using a specific BIP44 derivation path.
+    public static func derivePrivateKey(mnemonic: String, for coin: Chain, account: UInt32 = 0, change: UInt32 = 0, addressIndex: UInt32 = 0) throws -> Data {
         guard MnemonicService.validate(mnemonic: mnemonic) else {
              throw WalletError.invalidMnemonic
         }
@@ -57,15 +57,44 @@ public enum HDWalletService {
             throw WalletError.derivationFailed
         }
         
-        // Derivation path standard: m/44'/coin_type'/account'/change/address_index
-        let privateKey = wallet.getKeyForCoin(coin: coin.coinType)
+        // Construct standard BIP44 path: m/44'/coin_type'/account'/change/address_index
+        let coinTypeInt: UInt32
+        switch coin {
+        case .ethereum: coinTypeInt = 60
+        case .bitcoin: coinTypeInt = 0
+        case .solana: coinTypeInt = 501
+        }
+        
+        // Note: Solana usually uses hardened account and no change/address index for simple wallets (m/44'/501'/0')
+        // But for standard BIP44 structure:
+        let path = "m/44'/\(coinTypeInt)'/\(account)'/\(change)/\(addressIndex)"
+        
+        let privateKey = wallet.getKey(coin: coin.coinType, derivationPath: path)
+        return privateKey.data
+        #else
+        throw WalletError.derivationFailed
+        #endif
+    }
+    
+    /// Derives a private key from a custom derivation path string (e.g., "m/44'/60'/0'/0/0")
+    public static func derivePrivateKey(mnemonic: String, path: String, for coin: Chain) throws -> Data {
+        guard MnemonicService.validate(mnemonic: mnemonic) else {
+             throw WalletError.invalidMnemonic
+        }
+        
+        #if canImport(WalletCore)
+        guard let wallet = HDWallet(mnemonic: mnemonic, passphrase: "") else {
+            throw WalletError.derivationFailed
+        }
+        
+        let privateKey = wallet.getKey(coin: coin.coinType, derivationPath: path)
         return privateKey.data
         #else
         throw WalletError.derivationFailed
         #endif
     }
 
-    public static func address(from privateKeyData: Data, for coin: Chain = .ethereum) -> String {
+    public static func address(from privateKeyData: Data, for coin: Chain) -> String {
         #if canImport(WalletCore)
         guard let privateKey = PrivateKey(data: privateKeyData) else {
             return ""

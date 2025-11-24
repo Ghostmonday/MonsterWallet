@@ -23,6 +23,7 @@ public class WalletStateManager: ObservableObject {
     // V2 Security Dependencies
     private let poisoningDetector: AddressPoisoningDetector?
     private let clipboardGuard: ClipboardGuard?
+    private let dexAggregator = DEXAggregator()
 
     // State
     @Published public var state: AppState = .idle
@@ -148,6 +149,10 @@ public class WalletStateManager: ObservableObject {
 
     public func fetchPrice(chain: Chain) async throws -> Decimal {
         try await blockchainProvider.fetchPrice(chain: chain)
+    }
+
+    public func getSwapQuote(from: String, to: String, amount: String, chain: HDWalletService.Chain) async throws -> SwapQuote {
+        try await dexAggregator.getQuote(from: from, to: to, amount: amount, chain: chain)
     }
 
     public func prepareTransaction(to: String, value: String, chain: Chain = .ethereum, data: Data? = nil) async {
@@ -288,8 +293,8 @@ public class WalletStateManager: ObservableObject {
         }
 
         do {
-            let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic)
-            let address = HDWalletService.address(from: privateKey)
+            let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .ethereum)
+            let address = HDWalletService.address(from: privateKey, for: .ethereum)
 
             // Store the key securely
             _ = try keyStore.storePrivateKey(key: privateKey, id: address)
@@ -309,8 +314,8 @@ public class WalletStateManager: ObservableObject {
 
     public func importWallet(mnemonic: String) async {
         do {
-            let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic)
-            let address = HDWalletService.address(from: privateKey)
+            let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .ethereum)
+            let address = HDWalletService.address(from: privateKey, for: .ethereum)
 
             // Check if already exists? (Optional)
 
