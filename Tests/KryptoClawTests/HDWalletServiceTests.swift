@@ -24,7 +24,7 @@ final class HDWalletServiceTests: XCTestCase {
         let expectedAddress = "0x9858Effd23299953a0242c4c0E75A638A106Ab67"
         
         // Ensure derivePrivateKey doesn't throw
-        let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .ethereum, accountIndex: 0)
+        let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .ethereum, account: 0)
         
         XCTAssertEqual(privateKey.count, 32, "Private key should be 32 bytes")
         
@@ -42,7 +42,7 @@ final class HDWalletServiceTests: XCTestCase {
         // Expected Address (Legacy P2PKH): 1LqBGSKuX5yYUonjxT5qGfpUsXKJYmLMpV
         // (Note: WalletCore default might be Segwit or Legacy depending on implementation, let's verify usually it's Legacy for CoinType.bitcoin or Segwit for bitcoinSegwit)
         
-        let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .bitcoin, accountIndex: 0)
+        let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .bitcoin, account: 0)
         XCTAssertEqual(privateKey.count, 32, "Bitcoin private key should be 32 bytes")
         
         let address = HDWalletService.address(from: privateKey, for: .bitcoin)
@@ -54,7 +54,7 @@ final class HDWalletServiceTests: XCTestCase {
         let mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
         // Path: m/44'/501'/0'/0' (Solana default)
         
-        let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .solana, accountIndex: 0)
+        let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .solana, account: 0)
         XCTAssertEqual(privateKey.count, 32, "Solana private key should be 32 bytes")
         
         let address = HDWalletService.address(from: privateKey, for: .solana)
@@ -64,7 +64,7 @@ final class HDWalletServiceTests: XCTestCase {
     func testInvalidMnemonic() {
         let invalidMnemonic = "invalid mnemonic phrase that is definitely not bip39 compliant"
         
-        XCTAssertThrowsError(try HDWalletService.derivePrivateKey(mnemonic: invalidMnemonic)) { error in
+        XCTAssertThrowsError(try HDWalletService.derivePrivateKey(mnemonic: invalidMnemonic, for: .ethereum)) { error in
             guard let walletError = error as? WalletError else {
                 XCTFail("Wrong error type")
                 return
