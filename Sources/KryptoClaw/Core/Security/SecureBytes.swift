@@ -1,4 +1,9 @@
 import Foundation
+#if os(Linux)
+import Glibc
+#else
+import Darwin
+#endif
 
 /// A wrapper around Data that securely wipes its memory when deallocated.
 /// Used for sensitive information like private keys and mnemonics.
