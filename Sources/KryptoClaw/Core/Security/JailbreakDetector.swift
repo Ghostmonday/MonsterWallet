@@ -15,10 +15,11 @@ import UIKit
 /// // B) IMPLEMENTATION INSTRUCTIONS
 /// - If `isJailbroken()` returns true, the app MUST enter a "Lockdown Mode".
 /// - Lockdown Mode: Disable all signing, clear RAM, show blocking UI.
-/// - <<<<<<!!!!!JULES!!!!!!>>>>>>>>: App Store Reviewers often reject apps that crash intentionally. Show a friendly "Security Violation" screen instead.
+/// - <<<<<<!!!!!!!JULES!!!!!!>>>>>>>>>>: App Store Reviewers often reject apps that crash intentionally. Show a friendly "Security Violation" screen instead. ⏳ PENDING - Detection implemented, lockdown UI not yet added (Phase 2)
 ///
 /// // REF: COLLABORATION GUIDE
-/// - Status: ✅ Phase 1 Complete.
+/// - Status: ✅ Phase 1 Complete - Detection Logic Implemented
+/// - Next Step: Implement lockdown UI screen (Phase 2)
 /// - Objective: Prevent key extraction on compromised devices.
 public final class JailbreakDetector {
 
