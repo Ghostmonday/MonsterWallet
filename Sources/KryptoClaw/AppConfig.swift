@@ -14,10 +14,14 @@ public enum AppConfig {
         return nil
     }()
 
-    public enum Features {
-        public static let isMultiChainEnabled = true
-        public static let isSwapEnabled = true
-        public static let isAddressPoisoningProtectionEnabled = true
+    // Feature Flags
+    // V1.0 Compliance: Novel/Risky features DISABLED. Standard features ENABLED.
+    public struct Features {
+        // Standard in Top-Tier Wallets
+        // DISABLED for V1 Submission to ensure stability (Pending full implementation)
+        public static let isMultiChainEnabled = false
+        public static let isSwapEnabled = false // Standard interface, non-custodial
+        public static let isAddressPoisoningProtectionEnabled = true // Enhanced Security
 
         public static let isMPCEnabled = false
         public static let isGhostModeEnabled = false

@@ -4,6 +4,36 @@ import SwiftUI
     import UIKit
 #endif
 
+// MARK: - Shapes & Patterns
+
+/// A diamond pattern shape for "Elite" themes.
+public struct DiamondPattern: Shape {
+    public func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let size: CGFloat = 20 // Size of each diamond
+        let rows = Int(rect.height / size) + 1
+        let cols = Int(rect.width / size) + 1
+
+        for r in 0..<rows {
+            for c in 0..<cols {
+                let x = CGFloat(c) * size
+                let y = CGFloat(r) * size
+                let offset = (r % 2 == 0) ? 0 : size / 2
+
+                let centerX = x + offset
+                let centerY = y
+
+                path.move(to: CGPoint(x: centerX, y: centerY - size/4))
+                path.addLine(to: CGPoint(x: centerX + size/4, y: centerY))
+                path.addLine(to: CGPoint(x: centerX, y: centerY + size/4))
+                path.addLine(to: CGPoint(x: centerX - size/4, y: centerY))
+                path.closeSubpath()
+            }
+        }
+        return path
+    }
+}
+
 public struct KryptoButton: View {
     let title: String
     let icon: String
@@ -82,9 +112,9 @@ public struct KryptoCard<Content: View>: View {
                     }
                 }
             )
-            .cornerRadius(2)
+            .cornerRadius(themeManager.currentTheme.cornerRadius)
             .overlay(
-                RoundedRectangle(cornerRadius: 2)
+                RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
                     .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
             )
     }
@@ -120,10 +150,10 @@ struct KryptoTextField: View {
         TextField(placeholder, text: $text)
             .padding()
             .background(themeManager.currentTheme.backgroundSecondary)
-            .cornerRadius(2)
+            .cornerRadius(themeManager.currentTheme.cornerRadius)
             .foregroundColor(themeManager.currentTheme.textPrimary)
             .overlay(
-                RoundedRectangle(cornerRadius: 2)
+                RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
                     .stroke(themeManager.currentTheme.borderColor.opacity(0.5), lineWidth: 1)
             )
             .font(themeManager.currentTheme.addressFont)
