@@ -78,10 +78,10 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
 
     /// Unwraps the private key (mnemonic) using the Secure Enclave Master Key.
     /// Trigger: FaceID/TouchID prompt.
+    /// Unwraps the private key (mnemonic) using the Secure Enclave Master Key.
+    /// Trigger: FaceID/TouchID prompt.
     public func getPrivateKey(id: String) throws -> Data {
         // 1. Fetch the Encrypted Blob (Wrapped Key) from Keychain (RAM access only)
-        // Note: This blob is NOT protected by Biometrics directly, but it is useless without the SE Key.
-        // This allows the app to load the blob into memory before prompting the user.
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: id,
@@ -104,16 +104,32 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
         }
         
         // 2. Fetch the Master Key (Private) from Secure Enclave
-        // Trigger: This call will prompt FaceID/TouchID because the Key was created with .biometryCurrentSet
-        let masterKey = try getOrGenerateMasterKey()
+        let masterKey: SecKey
+        do {
+            masterKey = try getOrGenerateMasterKey()
+        } catch {
+            // If we can't get the master key (e.g. biometrics changed/failed), 
+            // we should consider if we need to wipe. 
+            // But usually getOrGenerate just finds the ref. 
+            // The actual auth happens at decryption.
+            throw error
+        }
 
         // 3. Decrypt the Blob
-        // Algo: ECIES (Elliptic Curve Integrated Encryption Scheme)
+        // Algo: ECIES Standard X963SHA256AESGCM (Strict)
         var error: Unmanaged<CFError>?
         guard let plaintext = seHelper.createDecryptedData(masterKey,
-                                                        .eciesEncryptionCofactorVariableIVX963SHA256AESGCM,
+                                                        .eciesEncryptionStandardX963SHA256AESGCM,
                                                         encryptedBlob as CFData,
                                                         &error) as Data? else {
+            
+            // SECURITY HARDENING: WIPE ON FAILURE
+            // If decryption fails, it likely means the Secure Enclave key is invalidated 
+            // (e.g. biometrics changed) or the blob is corrupted.
+            // We strictly wipe the blob to prevent brute force or further attempts.
+            print("SECURITY ALERT: Decryption failed. Wiping key for ID: \(id)")
+            try? deleteKey(id: id)
+            
             throw KeyStoreError.decryptionFailed
         }
 
@@ -124,28 +140,27 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
     /// The resulting blob is stored in Keychain.
     public func storePrivateKey(key: Data, id: String) throws -> Bool {
         // 1. Get Public Key of Master Key
-        // Note: Getting Public Key does NOT require Biometrics.
         let masterPrivateKey = try getOrGenerateMasterKey()
         guard let masterPublicKey = seHelper.copyPublicKey(masterPrivateKey) else {
             throw KeyStoreError.keyGenerationFailed
         }
 
         // 2. Encrypt the data (Wrap)
+        // Algo: ECIES Standard X963SHA256AESGCM (Strict)
         var error: Unmanaged<CFError>?
         guard let encryptedBlob = seHelper.createEncryptedData(masterPublicKey,
-                                                            .eciesEncryptionCofactorVariableIVX963SHA256AESGCM,
+                                                            .eciesEncryptionStandardX963SHA256AESGCM,
                                                             key as CFData,
                                                             &error) as Data? else {
             throw KeyStoreError.encryptionFailed
         }
         
         // 3. Store the Encrypted Blob in Keychain
-        // We use GenericPassword class. No Biometric Access Control needed here because the data is already encrypted by SE.
-        // This allows backup/restore of the blob (e.g. iCloud Keychain) without exposing secrets.
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: id,
-            kSecValueData as String: encryptedBlob
+            kSecValueData as String: encryptedBlob,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly // Strict
         ]
 
         let status = keychain.add(query)

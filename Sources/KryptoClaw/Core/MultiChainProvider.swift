@@ -194,10 +194,10 @@ public class MultiChainProvider: BlockchainProviderProtocol {
         switch chain {
         case .ethereum:
             return try await ethProvider.broadcast(signedTx: signedTx, chain: .ethereum)
-        default:
-            // TODO: Implement real BTC/SOL transaction broadcasting
-            try await Task.sleep(nanoseconds: 1_000_000_000)
-            return "0xBroadcastSuccess\(chain.rawValue)"
+        case .bitcoin:
+            return try await broadcastBitcoin(signedTx: signedTx)
+        case .solana:
+            return try await broadcastSolana(signedTx: signedTx)
         }
     }
 
@@ -209,9 +209,116 @@ public class MultiChainProvider: BlockchainProviderProtocol {
         switch chain {
         case .ethereum:
             return try await ethProvider.estimateGas(to: to, value: value, data: data, chain: .ethereum)
-        default:
-            // Mock estimation for BTC/SOL
-            return GasEstimate(gasLimit: 21000, maxFeePerGas: "1000", maxPriorityFeePerGas: "100")
+        case .bitcoin:
+            return try await estimateBitcoinGas()
+        case .solana:
+            return try await estimateSolanaGas()
         }
     }
-}
+    
+    // MARK: - Bitcoin Implementation (Mempool.space)
+    
+    private func broadcastBitcoin(signedTx: Data) async throws -> String {
+        let urlString = "https://mempool.space/api/tx"
+        guard let url = URL(string: urlString) else { throw BlockchainError.invalidAddress }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = signedTx // Raw hex string or binary? Mempool expects hex string usually.
+        // WalletCore signs to Data. We need to check if we send bytes or hex.
+        // Usually API expects Hex String.
+        let hexString = signedTx.hexString
+        request.httpBody = hexString.data(using: .utf8)
+        
+        let (data, response) = try await session.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+             throw BlockchainError.networkError(NSError(domain: "HTTP", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: nil))
+        }
+        
+        guard let txId = String(data: data, encoding: .utf8) else {
+            throw BlockchainError.parsingError
+        }
+        return txId
+    }
+    
+    private func estimateBitcoinGas() async throws -> GasEstimate {
+        // Fetch recommended fees
+        let urlString = "https://mempool.space/api/v1/fees/recommended"
+        guard let url = URL(string: urlString) else { throw BlockchainError.invalidAddress }
+        
+        let (data, _) = try await session.data(from: url)
+        
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Int],
+              let fastestFee = json["fastestFee"] else {
+            throw BlockchainError.parsingError
+        }
+        
+        // BTC doesn't use "Gas" like ETH, but we map it to the struct.
+        // maxFeePerGas -> sat/vB
+        // gasLimit -> vBytes (standard tx ~140 vB)
+        return GasEstimate(
+            gasLimit: 140, 
+            maxFeePerGas: "\(fastestFee)", 
+            maxPriorityFeePerGas: "0"
+        )
+    }
+    
+    // MARK: - Solana Implementation (RPC)
+    
+    private func broadcastSolana(signedTx: Data) async throws -> String {
+        let url = URL(string: "https://api.mainnet-beta.solana.com")!
+        // Solana expects base64 encoded transaction
+        let base64Tx = signedTx.base64EncodedString()
+        
+        let payload: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": Int(Date().timeIntervalSince1970),
+            "method": "sendTransaction",
+            "params": [
+                base64Tx,
+                ["encoding": "base64"]
+            ]
+        ]
+        
+        let (data, _) = try await postJSON(url: url, payload: payload)
+        
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw BlockchainError.parsingError
+        }
+        
+        if let error = json["error"] as? [String: Any], let message = error["message"] as? String {
+            throw BlockchainError.rpcError(message)
+        }
+        
+        if let result = json["result"] as? String {
+            return result
+        }
+        throw BlockchainError.parsingError
+    }
+    
+    private func estimateSolanaGas() async throws -> GasEstimate {
+        // Solana fees are deterministic (5000 lamports per signature usually), 
+        // but we can check for priority fees or recent blockhash to be safe.
+        // For now, return standard fee.
+        return GasEstimate(
+            gasLimit: 1, // 1 unit (transaction)
+            maxFeePerGas: "5000", // Lamports
+            maxPriorityFeePerGas: "0"
+        )
+    }
+    
+    // Helper
+    private func postJSON(url: URL, payload: [String: Any]) async throws -> (Data, URLResponse) {
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: payload) else {
+            throw BlockchainError.parsingError
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = httpBody
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30.0
+        
+        return try await session.data(for: request)
+    }

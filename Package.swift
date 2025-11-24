@@ -21,7 +21,7 @@ let package = Package(
         .package(url: "https://github.com/Boilertalk/secp256k1.swift.git", from: "0.1.7"),
         // TrustWalletCore is the fallback. It is heavy but guaranteed to work and safe.
         // We will use a specific version to try and minimize impact or just accept the bloat for now as per "Gold Standard".
-        .package(url: "https://github.com/trustwallet/wallet-core", exact: "4.4.2")
+        .package(url: "https://github.com/trustwallet/wallet-core", exact: "4.3.23")
     ],
     targets: [
         .target(
@@ -41,6 +41,10 @@ let package = Package(
             ]),
         .testTarget(
             name: "KryptoClawTests",
-            dependencies: ["KryptoClaw"]),
+            dependencies: [
+                "KryptoClaw",
+                .product(name: "WalletCore", package: "wallet-core"),
+                .product(name: "WalletCoreSwiftProtobuf", package: "wallet-core")
+            ]),
     ]
 )

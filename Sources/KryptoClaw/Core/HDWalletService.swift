@@ -15,7 +15,7 @@ public enum MnemonicService {
         }
         return wallet.mnemonic
         #else
-        return nil // Or throw fatalError("WalletCore not available")
+        return nil
         #endif
     }
 
@@ -58,11 +58,6 @@ public enum HDWalletService {
         }
         
         // Derivation path standard: m/44'/coin_type'/account'/change/address_index
-        // WalletCore defaults:
-        // Ethereum: m/44'/60'/0'/0/0
-        // Bitcoin: m/44'/0'/0'/0/0
-        // Solana: m/44'/501'/0'/0' (Solana uses different path sometimes, but WalletCore handles defaults)
-        
         let privateKey = wallet.getKeyForCoin(coin: coin.coinType)
         return privateKey.data
         #else
