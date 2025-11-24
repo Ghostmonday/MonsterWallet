@@ -18,7 +18,7 @@ let package = Package(
         // Downgrading to a version that doesn't use the C-module secp256k1 directly or handles it better.
         // Or sticking with 1.1.0 but acknowledging the manual fix required for C headers until we can properly migrate.
         .package(url: "https://github.com/argentlabs/web3.swift.git", exact: "1.1.0"),
-        .package(url: "https://github.com/Boilertalk/secp256k1.swift.git", exact: "0.1.0")
+        .package(url: "https://github.com/Boilertalk/secp256k1.swift.git", from: "0.1.7")
     ],
     targets: [
         .target(

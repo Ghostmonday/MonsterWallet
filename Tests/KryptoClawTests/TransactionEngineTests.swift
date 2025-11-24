@@ -15,6 +15,14 @@ class TEMockBlockchainProvider: BlockchainProviderProtocol {
     func broadcast(signedTx: Data, chain: Chain) async throws -> String {
         return "0xHash"
     }
+    
+    func fetchPrice(chain: Chain) async throws -> Decimal {
+        return Decimal(2000)
+    }
+    
+    func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate {
+        return GasEstimate(gasLimit: 21000, maxFeePerGas: "20000000000", maxPriorityFeePerGas: "1000000000")
+    }
 }
 
 

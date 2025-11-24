@@ -156,7 +156,7 @@ struct WalletCreationView: View {
     func createWallet() {
         KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "CreateWallet tapped", metadata: ["view": "WalletManagement"])
         Task {
-            await wsm.createWallet(name: name)
+            _ = await wsm.createWallet(name: name)
             isPresented = false
         }
     }

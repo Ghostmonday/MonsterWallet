@@ -1,4 +1,5 @@
 import Foundation
+import BigInt
 
 public class ModularHTTPProvider: BlockchainProviderProtocol {
     
@@ -28,7 +29,7 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         
         // Real Broadcast Logic
         // `signedTx` is confirmed to be RLP-encoded data from `SimpleP2PSigner` (via web3.swift).
-        let txHex = signedTx.toHexString()
+        let txHex = signedTx.hexString
         
         let url = AppConfig.rpcURL
         
@@ -165,8 +166,8 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
             "method": "eth_estimateGas",
             "params": [[
                 "to": to,
-                "value": "0x" + (BigUInt(value)?.toString(radix: 16) ?? "0"),
-                "data": "0x" + data.toHexString()
+                "value": "0x" + (BigUInt(value).map { String($0, radix: 16) } ?? "0"),
+                "data": "0x" + data.hexString
             ]],
             "id": 1
         ]

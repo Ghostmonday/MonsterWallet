@@ -13,11 +13,21 @@ class MockBlockchainProvider: BlockchainProviderProtocol {
     func broadcast(signedTx: Data, chain: Chain) async throws -> String {
         return "0xMockHash"
     }
+    
+    func fetchPrice(chain: Chain) async throws -> Decimal {
+        return Decimal(2000) // Mock price
+    }
+    
+    func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate {
+        return GasEstimate(gasLimit: 21000, maxFeePerGas: "20000000000", maxPriorityFeePerGas: "1000000000")
+    }
 }
 
 class MockKeyStore: KeyStoreProtocol {
     func storePrivateKey(key: Data, id: String) throws -> Bool { return true }
     func getPrivateKey(id: String) throws -> Data { return Data() }
+    func deleteKey(id: String) throws {}
+    func deleteAll() throws {}
     func isProtected() -> Bool { return true }
 }
 

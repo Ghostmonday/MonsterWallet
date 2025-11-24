@@ -47,7 +47,7 @@ public class LocalSimulator: TransactionSimulatorProtocol {
         // 3. Real Check via eth_call
         guard chain == .ethereum else {
              // Fallback for non-EVM mock
-             return SimulationResult(success: true, estimatedGasUsed: 21000, balanceChanges: [:])
+             return SimulationResult(success: true, estimatedGasUsed: 21000, balanceChanges: [:], error: nil)
         }
         
         // Safe Math: We use BigUInt to prevent overflow (Jules Mandate).
@@ -73,7 +73,7 @@ public class LocalSimulator: TransactionSimulatorProtocol {
                  error: "Insufficient Funds: Balance is lower than transaction value."
              )
         }
-
+        
         let url = AppConfig.rpcURL
         
         let payload: [String: Any] = [
@@ -82,8 +82,8 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             "params": [[
                 "from": tx.from,
                 "to": tx.to,
-                "value": "0x" + txValue.toString(radix: 16),
-                "data": "0x" + tx.data.toHexString()
+                "value": "0x" + String(txValue, radix: 16),
+                "data": "0x" + tx.data.hexString
             ], "latest"],
             "id": 1
         ]

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var wsm: WalletStateManager
     @Environment(\.presentationMode) var presentationMode
     @State private var showResetConfirmation = false
     

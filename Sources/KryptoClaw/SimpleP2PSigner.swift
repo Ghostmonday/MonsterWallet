@@ -18,38 +18,30 @@ public class SimpleP2PSigner: SignerProtocol {
         let privateKeyData = try keyStore.getPrivateKey(id: keyId)
         
         // 2. Construct Ethereum Transaction
-        // Assuming 'tx' struct fields map to standard params.
         // Using web3.swift structures.
         
         guard let valueBig = BigUInt(tx.value) else { throw BlockchainError.parsingError }
         guard let gasPriceBig = BigUInt(tx.maxFeePerGas) else { throw BlockchainError.parsingError }
-        guard let gasLimitBig = BigUInt(tx.gasLimit) else { throw BlockchainError.parsingError }
         
-        // Fix: EthereumAddress init is failable
-        let toAddress = EthereumAddress(tx.to) ?? EthereumAddress("0x0000000000000000000000000000000000000000")
+        let toAddress = EthereumAddress(tx.to)
+        let fromAddress = try EthereumAccount(keyStorage: MockKeyStorage(key: privateKeyData)).address
         
         let ethereumTx = EthereumTransaction(
-            nonce: BigUInt(tx.nonce),
-            gasPrice: gasPriceBig,
-            gasLimit: gasLimitBig,
+            from: fromAddress,
             to: toAddress,
             value: valueBig,
             data: tx.data,
-            v: 0, r: 0, s: 0 // Will be set by signing
+            nonce: Int(tx.nonce),
+            gasPrice: gasPriceBig,
+            gasLimit: BigUInt(exactly: tx.gasLimit) ?? BigUInt(21000),
+            chainId: tx.chainId
         )
         
         // 3. Sign with Real ECDSA (secp256k1)
         let account = try EthereumAccount(keyStorage: MockKeyStorage(key: privateKeyData))
 
-        // Determine ChainID (Default Mainnet=1)
-        let chainId = BigUInt(tx.chainId)
-
         // Web3.swift handles RLP encoding + Hashing + ECDSA Signing
-        // Note: Check exact API of the version we imported.
-        // Usually: `try account.sign(transaction: ethereumTx, chainId: chainId)`
-
-        // Assuming we use the imported library's sign method:
-        let signedTx = try account.sign(tx: ethereumTx, chainId: chainId)
+        let signedTx = try account.sign(transaction: ethereumTx)
 
         // 4. Get RLP encoded data
         guard let rawTx = signedTx.raw else {
@@ -57,7 +49,7 @@ public class SimpleP2PSigner: SignerProtocol {
         }
 
         // 5. Get Tx Hash
-        let txHash = signedTx.hash?.toHexString() ?? ""
+        let txHash = signedTx.hash?.hexString ?? ""
 
         // 6. Return
         // We assume 'signature' field in SignedData is just for reference or legacy,

@@ -71,7 +71,7 @@ public struct ErrorTranslator {
         }
         
         // Handle ValidationError
-        if let validationError = error as? ValidationError {
+        if let validationError = error as? Contact.ValidationError {
             switch validationError {
             case .invalidName(let message):
                 return message

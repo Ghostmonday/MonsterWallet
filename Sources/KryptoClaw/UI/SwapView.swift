@@ -31,7 +31,7 @@ struct SwapView: View {
                     symbol: "ETH",
                     theme: themeManager.currentTheme
                 )
-                .onChange(of: fromAmount) { newValue in
+                .onChange(of: fromAmount) { oldValue, newValue in
                     Task {
                         await calculateQuote(input: newValue)
                     }
@@ -154,7 +154,9 @@ struct SwapInputCard: View {
                 TextField("0.0", text: $amount)
                     .font(theme.font(style: .title))
                     .foregroundColor(theme.textPrimary)
+                    #if os(iOS)
                     .keyboardType(.decimalPad)
+                    #endif
 
                 Text(symbol)
                     .fontWeight(.bold)

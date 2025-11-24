@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 import CoreImage.CIFilterBuiltins
 
 struct ReceiveView: View {
@@ -20,6 +23,7 @@ struct ReceiveView: View {
                 // QR Code
                 if let address = wsm.currentAddress {
                     VStack(spacing: 20) {
+                        #if canImport(UIKit)
                         Image(uiImage: generateQRCode(from: address))
                             .resizable()
                             .interpolation(.none)
@@ -28,6 +32,13 @@ struct ReceiveView: View {
                             .padding()
                             .background(Color.white)
                             .cornerRadius(12)
+                        #else
+                        Image(systemName: "qrcode")
+                            .font(.system(size: 200))
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(12)
+                        #endif
 
                         Text("Scan to send ETH or ERC-20 tokens")
                             .font(themeManager.currentTheme.font(style: .caption))
@@ -79,6 +90,7 @@ struct ReceiveView: View {
         }
     }
 
+    #if canImport(UIKit)
     func generateQRCode(from string: String) -> UIImage {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
@@ -91,4 +103,9 @@ struct ReceiveView: View {
         }
         return UIImage(systemName: "xmark.circle") ?? UIImage()
     }
+    #else
+    func generateQRCode(from string: String) -> some View {
+        return Image(systemName: "qrcode")
+    }
+    #endif
 }
