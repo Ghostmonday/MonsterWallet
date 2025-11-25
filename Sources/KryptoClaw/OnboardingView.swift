@@ -11,6 +11,7 @@ public struct OnboardingView: View {
     @State private var importText = ""
     @State private var createdMnemonic: String? = nil
     @State private var showBackupSheet = false
+    @State private var showHSKFlow = false
 
     public init(onComplete: @escaping () -> Void) {
         self.onComplete = onComplete
@@ -68,6 +69,16 @@ public struct OnboardingView: View {
                         action: { isImporting = true },
                         isPrimary: false
                     )
+                    
+                    // HSK Wallet Option
+                    if #available(iOS 15.0, macOS 12.0, *) {
+                        KryptoButton(
+                            title: "USE HARDWARE KEY",
+                            icon: "key.horizontal.fill",
+                            action: { showHSKFlow = true },
+                            isPrimary: false
+                        )
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 20)
@@ -97,6 +108,17 @@ public struct OnboardingView: View {
                 BackupMnemonicView(mnemonic: mnemonic) {
                     completeOnboarding()
                 }
+            }
+        }
+        .sheet(isPresented: $showHSKFlow) {
+            if #available(iOS 15.0, macOS 12.0, *) {
+                HSKFlowView(mode: .createNewWallet) { address in
+                    Task {
+                        await wsm.loadAccount(id: address)
+                        completeOnboarding()
+                    }
+                }
+                .environmentObject(themeManager)
             }
         }
         .alert(isPresented: $showError) {

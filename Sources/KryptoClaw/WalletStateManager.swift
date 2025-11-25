@@ -35,6 +35,7 @@ public class WalletStateManager: ObservableObject {
     @Published public var isPrivacyModeEnabled: Bool = false
     @Published public var nfts: [NFTMetadata] = []
     @Published public var wallets: [WalletInfo] = []
+    @Published public var hskBoundWallets: [HSKBoundWallet] = []
 
     // Transaction Flow State
     @Published public var pendingTransaction: Transaction?
@@ -80,6 +81,12 @@ public class WalletStateManager: ObservableObject {
             wallets = try persistence.load([WalletInfo].self, from: PersistenceService.walletsFile)
         } catch {
             wallets = []
+        }
+        
+        do {
+            hskBoundWallets = try persistence.load([HSKBoundWallet].self, from: PersistenceService.hskBindingsFile)
+        } catch {
+            hskBoundWallets = []
         }
 
         // Fallback for fresh install if no wallets found
@@ -372,6 +379,7 @@ public class WalletStateManager: ObservableObject {
         do {
             try keyStore.deleteAll()
             wallets.removeAll()
+            hskBoundWallets.removeAll()
             currentAddress = nil
             contacts.removeAll()
             // Clear UserDefaults
@@ -379,6 +387,89 @@ public class WalletStateManager: ObservableObject {
             // Clear persisted files
             try persistence.delete(filename: PersistenceService.contactsFile)
             try persistence.delete(filename: PersistenceService.walletsFile)
+            try persistence.delete(filename: PersistenceService.hskBindingsFile)
+        } catch {
+            KryptoLogger.shared.logError(module: "WalletStateManager", error: error)
+        }
+    }
+    
+    // MARK: - HSK Wallet Management
+    
+    /// Create a new HSK-bound wallet
+    @available(iOS 15.0, macOS 12.0, *)
+    public func createHSKBoundWallet(hskId: String, derivedKeyHandle: Data, address: String) async throws {
+        let binding = HSKBoundWallet(
+            hskId: hskId,
+            derivedKeyHandle: derivedKeyHandle,
+            address: address
+        )
+        
+        // Store the key
+        _ = try keyStore.storePrivateKey(key: derivedKeyHandle, id: address)
+        
+        // Add to bindings
+        hskBoundWallets.append(binding)
+        saveHSKBindings()
+        
+        // Add as a wallet
+        let newWallet = WalletInfo(id: address, name: "HSK Wallet", colorTheme: "gold")
+        wallets.append(newWallet)
+        saveWallets()
+        
+        await loadAccount(id: address)
+        
+        KryptoLogger.shared.log(
+            level: .info,
+            category: .stateTransition,
+            message: "HSK-bound wallet created",
+            metadata: ["address": address]
+        )
+    }
+    
+    /// Bind an HSK to an existing wallet
+    @available(iOS 15.0, macOS 12.0, *)
+    public func bindHSKToWallet(walletId: String, hskId: String, derivedKeyHandle: Data) async throws {
+        // Check if already bound
+        if isWalletHSKBound(walletId) {
+            throw HSKError.bindingFailed("Wallet is already bound to a hardware key")
+        }
+        
+        let binding = HSKBoundWallet(
+            hskId: hskId,
+            derivedKeyHandle: derivedKeyHandle,
+            address: walletId
+        )
+        
+        hskBoundWallets.append(binding)
+        saveHSKBindings()
+        
+        KryptoLogger.shared.log(
+            level: .info,
+            category: .stateTransition,
+            message: "HSK bound to wallet",
+            metadata: ["walletId": walletId]
+        )
+    }
+    
+    /// Check if a wallet is HSK-bound
+    public func isWalletHSKBound(_ address: String) -> Bool {
+        hskBoundWallets.contains { $0.address == address }
+    }
+    
+    /// Get HSK binding for a wallet
+    public func getHSKBinding(for address: String) -> HSKBoundWallet? {
+        hskBoundWallets.first { $0.address == address }
+    }
+    
+    /// Remove HSK binding from a wallet
+    public func removeHSKBinding(for address: String) {
+        hskBoundWallets.removeAll { $0.address == address }
+        saveHSKBindings()
+    }
+    
+    private func saveHSKBindings() {
+        do {
+            try persistence.save(hskBoundWallets, to: PersistenceService.hskBindingsFile)
         } catch {
             KryptoLogger.shared.logError(module: "WalletStateManager", error: error)
         }

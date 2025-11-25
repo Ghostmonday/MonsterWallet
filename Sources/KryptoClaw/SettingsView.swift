@@ -5,6 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject var wsm: WalletStateManager
     @Environment(\.presentationMode) var presentationMode
     @State private var showResetConfirmation = false
+    @State private var showHSKBinding = false
 
     var body: some View {
         ZStack {
@@ -47,6 +48,23 @@ struct SettingsView: View {
                                     Spacer()
                                     Image(systemName: "chevron.right")
                                         .foregroundColor(themeManager.currentTheme.textSecondary)
+                                }
+                            }
+                            
+                            // HSK Binding Option
+                            if #available(iOS 15.0, macOS 12.0, *) {
+                                Divider().background(themeManager.currentTheme.borderColor)
+                                
+                                Button(action: { showHSKBinding = true }) {
+                                    HStack {
+                                        Image(systemName: "key.horizontal.fill")
+                                            .foregroundColor(themeManager.currentTheme.accentColor)
+                                        Text("Bind Hardware Key")
+                                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .foregroundColor(themeManager.currentTheme.textSecondary)
+                                    }
                                 }
                             }
                         }
@@ -126,6 +144,16 @@ struct SettingsView: View {
                             }),
                             secondaryButton: .cancel()
                         )
+                    }
+                    .sheet(isPresented: $showHSKBinding) {
+                        if #available(iOS 15.0, macOS 12.0, *) {
+                            if let walletId = wsm.currentAddress {
+                                HSKFlowView(mode: .bindToExistingWallet(walletId: walletId)) { _ in
+                                    showHSKBinding = false
+                                }
+                                .environmentObject(themeManager)
+                            }
+                        }
                     }
 
                     Spacer()
