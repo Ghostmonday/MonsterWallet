@@ -59,19 +59,8 @@ public struct KryptoButton: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 56)
-            .background(isPrimary ? themeManager.currentTheme.accentColor : Color.clear)
-            .foregroundColor(isPrimary ? .white : themeManager.currentTheme.textPrimary)
-            .cornerRadius(themeManager.currentTheme.cornerRadius)
-            .overlay(
-                RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
-                    .stroke(themeManager.currentTheme.borderColor, lineWidth: isPrimary ? 0 : 2)
-            )
-            .shadow(color: isHovering ? themeManager.currentTheme.accentColor.opacity(0.8) : .clear, radius: 10, x: 0, y: 0)
-            .onHover { hovering in
-                isHovering = hovering
-            }
+            .themedButton(theme: themeManager.currentTheme, isPrimary: isPrimary)
         }
-        .buttonStyle(SquishButtonStyle())
     }
 }
 
@@ -93,30 +82,7 @@ public struct KryptoCard<Content: View>: View {
 
     public var body: some View {
         content
-            .padding(20)
-            .background(
-                ZStack {
-                    if themeManager.currentTheme.glassEffectOpacity > 0 {
-                        Rectangle()
-                            .fill(themeManager.currentTheme.materialStyle)
-                            .opacity(themeManager.currentTheme.glassEffectOpacity)
-                    } else {
-                        themeManager.currentTheme.cardBackground
-                    }
-
-                    if themeManager.currentTheme.showDiamondPattern {
-                        DiamondPattern()
-                            .stroke(themeManager.currentTheme.borderColor.opacity(0.05), lineWidth: 1)
-                            .background(Color.black.opacity(0.2))
-                            .mask(Rectangle())
-                    }
-                }
-            )
-            .cornerRadius(themeManager.currentTheme.cornerRadius)
-            .overlay(
-                RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
-                    .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
-            )
+            .themedCard(theme: themeManager.currentTheme)
     }
 }
 

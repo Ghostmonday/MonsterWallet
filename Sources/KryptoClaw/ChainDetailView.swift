@@ -103,7 +103,7 @@ struct ChainDetailView: View {
                                     .font(theme.font(style: .headline))
                                     .foregroundColor(theme.textPrimary)
 
-                                KryptoListRow(title: "Network Status", value: "Operational", icon: "checkmark.shield.fill", isSystemIcon: true)
+                                KryptoListRow(title: "Network Status", value: "Operational", icon: theme.iconShield, isSystemIcon: true)
                                 KryptoListRow(title: "Block Height", value: "Latest", icon: "cube.fill", isSystemIcon: true)
                             }
                         }

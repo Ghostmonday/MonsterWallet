@@ -38,7 +38,7 @@ struct SwapView: View {
                     }
                 }
 
-                Image(systemName: "arrow.down.circle.fill")
+                Image(systemName: themeManager.currentTheme.iconReceive) // Using receive icon as a downward indicator or similar
                     .font(.title)
                     .foregroundColor(themeManager.currentTheme.accentColor)
 
@@ -80,7 +80,7 @@ struct SwapView: View {
                 } else {
                     KryptoButton(
                         title: fromAmount.isEmpty ? "ENTER AMOUNT" : "REVIEW SWAP",
-                        icon: "arrow.right.arrow.left",
+                        icon: themeManager.currentTheme.iconSwap,
                         action: {
                             if wsm.currentAddress == nil {
                                 showError = true

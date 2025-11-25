@@ -7,6 +7,7 @@ public struct ThemedContainerModifier: ViewModifier {
     let theme: ThemeProtocolV2
     let showPattern: Bool
     let applyAnimation: Bool
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
     
     public init(theme: ThemeProtocolV2, showPattern: Bool = true, applyAnimation: Bool = true) {
         self.theme = theme
@@ -29,7 +30,7 @@ public struct ThemedContainerModifier: ViewModifier {
                     }
                     
                     // Theme-specific background animation
-                    if applyAnimation {
+                    if applyAnimation && !reduceMotion {
                         switch theme.backgroundAnimation {
                         case .liquidRefraction:
                             LiquidRefractionBackground(theme: theme)

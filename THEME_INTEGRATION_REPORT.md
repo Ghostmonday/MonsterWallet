@@ -158,6 +158,17 @@ Sources/KryptoClaw/
 - iconSend, iconReceive, iconSwap, iconSettings, iconShield
 ```
 
+## Refinements & Optimization (Post-Integration)
+
+### 1. Accessibility
+- **Reduce Motion Support**: Added `@Environment(\.accessibilityReduceMotion)` check to `ThemedContainerModifier`. Background animations (Liquid, Fire, Water) now automatically pause/hide when the user has "Reduce Motion" enabled in system settings.
+
+### 2. Code Refactoring
+- **Unified UIComponents**: Refactored `KryptoButton` and `KryptoCard` to use the new `ThemeViewModifiers` internally. This removed ~50 lines of duplicated styling code and ensures that any change to the theme system automatically propagates to all core components.
+
+### 3. Icon Consistency
+- **Dynamic Icons**: Replaced hardcoded SF Symbols in `SwapView` and `ChainDetailView` with theme-specific properties (e.g., `theme.iconSwap`, `theme.iconShield`), ensuring icons match the active theme's aesthetic.
+
 ## Build Status
 ✅ **Build Successful** - All files compile without errors
 ✅ **No Code Duplication** - Theme structs exist only in dedicated files
