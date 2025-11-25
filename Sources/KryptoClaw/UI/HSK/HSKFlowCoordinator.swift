@@ -1,4 +1,5 @@
 import Combine
+import CryptoKit
 import SwiftUI
 import CommonCrypto
 
@@ -25,6 +26,7 @@ public class HSKFlowCoordinator: ObservableObject {
     public var onComplete: ((String) -> Void)?
     public var onCancel: (() -> Void)?
     
+    /// SECURITY: Stores the full derivation result including security metadata
     private var pendingDerivationResult: HSKDerivationResult?
     
     // MARK: - Initialization
@@ -177,6 +179,11 @@ public class HSKFlowCoordinator: ObservableObject {
         }
     }
     
+    /// SECURITY: Store the derivation result for use in wallet binding
+    internal func setDerivationResult(_ result: HSKDerivationResult) {
+        pendingDerivationResult = result
+    }
+    
     private func finalizeWalletCreation(keyData: Data) async {
         do {
             // SECURITY: Validate key data length before proceeding
@@ -192,8 +199,14 @@ public class HSKFlowCoordinator: ObservableObject {
                 throw HSKError.derivationFailed("Invalid address format generated")
             }
             
-            // Create HSK ID from key data
-            let hskId = keyData.prefix(16).base64EncodedString()
+            // Create HSK ID from key data (using hash for privacy)
+            let hskIdHash = Data(SHA256.hash(data: keyData.prefix(16)))
+            let hskId = hskIdHash.prefix(16).base64EncodedString()
+            
+            // SECURITY: Extract derivation metadata from result if available
+            let derivationStrategy = pendingDerivationResult?.derivationStrategy ?? .signatureBased
+            let derivationSalt = pendingDerivationResult?.derivationSalt
+            let credentialIdHash = pendingDerivationResult?.publicKey // This is already a hash
             
             // Complete binding based on mode
             switch mode {
@@ -202,7 +215,9 @@ public class HSKFlowCoordinator: ObservableObject {
                     hskId: hskId,
                     derivedKeyHandle: keyData,
                     address: address,
-                    credentialId: nil
+                    credentialIdHash: credentialIdHash,
+                    derivationStrategy: derivationStrategy,
+                    derivationSalt: derivationSalt
                 )
                 
             case .bindToExistingWallet(let walletId):
@@ -214,9 +229,14 @@ public class HSKFlowCoordinator: ObservableObject {
                     walletId: walletId,
                     hskId: hskId,
                     derivedKeyHandle: keyData,
-                    credentialId: nil
+                    credentialIdHash: credentialIdHash,
+                    derivationStrategy: derivationStrategy,
+                    derivationSalt: derivationSalt
                 )
             }
+            
+            // SECURITY: Clear pending result after successful binding
+            pendingDerivationResult = nil
             
             await MainActor.run {
                 derivedAddress = address
@@ -227,7 +247,17 @@ public class HSKFlowCoordinator: ObservableObject {
                 }
             }
             
+            KryptoLogger.shared.log(
+                level: .info,
+                category: .security,
+                message: "HSK wallet binding completed",
+                metadata: ["strategy": derivationStrategy.rawValue]
+            )
+            
         } catch {
+            // SECURITY: Clear pending result on error
+            pendingDerivationResult = nil
+            
             await MainActor.run {
                 if let hskError = error as? HSKError {
                     handleError(hskError)
