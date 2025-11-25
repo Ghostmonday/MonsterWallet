@@ -9,13 +9,20 @@ public struct SplashScreenView: View {
 
     public var body: some View {
         ZStack {
-            themeManager.currentTheme.backgroundMain
+            Color.clear
+                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
             VStack(spacing: 20) {
-                Image(systemName: "lock.shield.fill")
-                    .font(.system(size: 100))
-                    .foregroundColor(themeManager.currentTheme.accentColor)
+                Image("Logo")
+                    .resizable()
+                    .frame(width: 120, height: 120)
+                    .cornerRadius(themeManager.currentTheme.cornerRadius)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
+                            .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
+                    )
+                    .shadow(color: themeManager.currentTheme.accentColor.opacity(0.3), radius: 20, x: 0, y: 0)
                     .scaleEffect(logoScale)
                     .opacity(logoOpacity)
 

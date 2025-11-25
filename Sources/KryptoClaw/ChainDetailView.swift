@@ -13,7 +13,9 @@ struct ChainDetailView: View {
         let theme = themeManager.currentTheme
 
         ZStack {
-            theme.backgroundMain.ignoresSafeArea()
+            Color.clear
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 KryptoHeader(

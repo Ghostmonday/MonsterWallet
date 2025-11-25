@@ -21,7 +21,9 @@ struct SendView: View {
 
     var body: some View {
         ZStack {
-            themeManager.currentTheme.backgroundMain.ignoresSafeArea()
+            Color.clear
+                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .ignoresSafeArea()
 
             VStack(spacing: 24) {
                 HStack {

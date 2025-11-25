@@ -8,7 +8,9 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            themeManager.currentTheme.backgroundMain.ignoresSafeArea()
+            Color.clear
+                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 24) {

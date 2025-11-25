@@ -65,8 +65,8 @@ public struct KryptoClawApp: App {
                 } else if !hasOnboarded {
                     OnboardingView(onComplete: {
                         hasOnboarded = true
-                        Task {
-                            await wsm.createWallet(name: "Main Wallet")
+                        withAnimation {
+                            showingSplash = false
                         }
                     })
                     .environmentObject(wsm)

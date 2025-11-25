@@ -18,14 +18,16 @@ public struct OnboardingView: View {
 
     public var body: some View {
         ZStack {
-            themeManager.currentTheme.backgroundMain.ignoresSafeArea()
+            Color.clear
+                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
 
                 // Logo & Branding
                 VStack(spacing: 24) {
-                    Image("AppIcon")
+                    Image("Logo")
                         .resizable()
                         .frame(width: 100, height: 100)
                         .cornerRadius(themeManager.currentTheme.cornerRadius)
@@ -150,7 +152,9 @@ struct ImportWalletView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                themeManager.currentTheme.backgroundMain.ignoresSafeArea()
+                Color.clear
+                    .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                    .ignoresSafeArea()
 
                 VStack(spacing: 32) {
                     VStack(spacing: 8) {
@@ -206,7 +210,9 @@ struct BackupMnemonicView: View {
 
     var body: some View {
         ZStack {
-            themeManager.currentTheme.backgroundMain.ignoresSafeArea()
+            Color.clear
+                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .ignoresSafeArea()
 
             VStack(spacing: 24) {
                 Text("SECRET KEY")

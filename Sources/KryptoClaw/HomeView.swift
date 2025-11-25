@@ -18,7 +18,9 @@ public struct HomeView: View {
         let theme = themeManager.currentTheme
 
         ZStack {
-            theme.backgroundMain.edgesIgnoringSafeArea(.all)
+            Color.clear
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
+                .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 0) {
                 HStack {
