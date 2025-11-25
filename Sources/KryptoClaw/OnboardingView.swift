@@ -48,6 +48,9 @@ public struct OnboardingView: View {
                             .font(themeManager.currentTheme.font(style: .caption))
                             .tracking(4)
                             .foregroundColor(themeManager.currentTheme.accentColor)
+                        
+                        SecurityBadge(level: .secureEnclave)
+                            .padding(.top, 8)
                     }
                 }
 

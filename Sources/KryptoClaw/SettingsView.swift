@@ -27,6 +27,16 @@ struct SettingsView: View {
                         }
                     }
                     .padding()
+                    
+                    // Security Badge Header
+                    if let address = wsm.currentAddress {
+                        HStack {
+                            Spacer()
+                            SecurityBadge(level: wsm.isWalletHSKBound(address) ? .hardwareKey : .secureEnclave)
+                            Spacer()
+                        }
+                        .padding(.bottom, 8)
+                    }
 
                     KryptoCard {
                         VStack(alignment: .leading, spacing: 16) {
@@ -51,19 +61,53 @@ struct SettingsView: View {
                                 }
                             }
                             
+
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    // Security Center
+                    KryptoCard {
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Security Center")
+                                .font(themeManager.currentTheme.font(style: .headline))
+                                .foregroundColor(themeManager.currentTheme.secureEnclaveColor)
+                            
+                            BiometricStatusView()
+                            
+                            Divider().background(themeManager.currentTheme.borderColor)
+                            
                             // HSK Binding Option
                             if #available(iOS 15.0, macOS 12.0, *) {
-                                Divider().background(themeManager.currentTheme.borderColor)
-                                
                                 Button(action: { showHSKBinding = true }) {
                                     HStack {
                                         Image(systemName: "key.horizontal.fill")
                                             .foregroundColor(themeManager.currentTheme.accentColor)
-                                        Text("Bind Hardware Key")
-                                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                                        
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Hardware Security Key")
+                                                .foregroundColor(themeManager.currentTheme.textPrimary)
+                                            
+                                            if let address = wsm.currentAddress, wsm.isWalletHSKBound(address) {
+                                                Text("Active & Bound")
+                                                    .font(themeManager.currentTheme.font(style: .caption))
+                                                    .foregroundColor(themeManager.currentTheme.successColor)
+                                            } else {
+                                                Text("Tap to Bind")
+                                                    .font(themeManager.currentTheme.font(style: .caption))
+                                                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                                            }
+                                        }
+                                        
                                         Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(themeManager.currentTheme.textSecondary)
+                                        
+                                        if let address = wsm.currentAddress, wsm.isWalletHSKBound(address) {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundColor(themeManager.currentTheme.successColor)
+                                        } else {
+                                            Image(systemName: "chevron.right")
+                                                .foregroundColor(themeManager.currentTheme.textSecondary)
+                                        }
                                     }
                                 }
                             }

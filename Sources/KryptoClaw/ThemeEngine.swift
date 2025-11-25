@@ -24,6 +24,7 @@ public protocol ThemeProtocolV2 {
     var backgroundAnimation: BackgroundAnimationType { get }
     var chartGradientColors: [Color] { get }
     var securityWarningColor: Color { get } // For poisoning alerts
+    var secureEnclaveColor: Color { get } // For hardware-backed security indicators
 
     var cornerRadius: CGFloat { get }
 
@@ -49,6 +50,7 @@ public extension ThemeProtocolV2 {
     var materialStyle: Material { .regular }
     var showDiamondPattern: Bool { false }
     var backgroundAnimation: BackgroundAnimationType { .none }
+    var secureEnclaveColor: Color { successColor } // Default to success color
     
     // Backward compatibility: hasDiamondTexture maps to showDiamondPattern
     var hasDiamondTexture: Bool { showDiamondPattern }
@@ -172,6 +174,7 @@ public struct EliteDarkTheme: ThemeProtocolV2 {
         Color(red: 0.45, green: 0.48, blue: 0.52)
     ]
     public let securityWarningColor = Color(red: 0.95, green: 0.15, blue: 0.25)
+    public let secureEnclaveColor = Color(red: 0.0, green: 0.85, blue: 0.65) // Neon Mint for Elite Dark
 
     public let cornerRadius: CGFloat = 2.0 // Razor-sharp precision
 
@@ -216,6 +219,7 @@ public struct CyberPunkTheme: ThemeProtocolV2 {
         Color(red: 0.3, green: 0.95, blue: 0.95)
     ]
     public let securityWarningColor = Color(red: 0.95, green: 0.2, blue: 0.3)
+    public let secureEnclaveColor = Color(red: 0.0, green: 1.0, blue: 0.9) // Cyber Cyan
 
     public let cornerRadius: CGFloat = 3.0
 
@@ -304,6 +308,7 @@ public struct LuxuryMonogramTheme: ThemeProtocolV2 {
         Color(red: 0.62, green: 0.52, blue: 0.32)
     ]
     public let securityWarningColor = Color(red: 0.78, green: 0.25, blue: 0.22)
+    public let secureEnclaveColor = Color(red: 0.85, green: 0.70, blue: 0.25) // Gold
 
     public let cornerRadius: CGFloat = 10.0
 
