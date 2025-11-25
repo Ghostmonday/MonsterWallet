@@ -61,9 +61,9 @@ public struct KryptoButton: View {
             .frame(height: 56)
             .background(isPrimary ? themeManager.currentTheme.accentColor : Color.clear)
             .foregroundColor(isPrimary ? .white : themeManager.currentTheme.textPrimary)
-            .cornerRadius(2)
+            .cornerRadius(themeManager.currentTheme.cornerRadius)
             .overlay(
-                RoundedRectangle(cornerRadius: 2)
+                RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
                     .stroke(themeManager.currentTheme.borderColor, lineWidth: isPrimary ? 0 : 2)
             )
             .shadow(color: isHovering ? themeManager.currentTheme.accentColor.opacity(0.8) : .clear, radius: 10, x: 0, y: 0)

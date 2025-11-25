@@ -195,16 +195,20 @@ struct ActionButton: View {
         Button(action: action) {
             VStack {
                 ZStack {
-                    Circle()
-                        .fill(theme.accentColor.opacity(0.2))
+                    RoundedRectangle(cornerRadius: theme.cornerRadius * 4) // Slightly softer than main cards
+                        .fill(theme.accentColor.opacity(0.1)) // More subtle fill
                         .frame(width: 60, height: 60)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: theme.cornerRadius * 4)
+                                .stroke(theme.accentColor.opacity(0.5), lineWidth: 1)
+                        )
 
                     Image(systemName: icon)
                         .font(.system(size: 24))
                         .foregroundColor(theme.accentColor)
                 }
                 Text(label)
-                    .font(theme.font(style: .caption))
+                    .font(theme.font(style: .caption).bold()) // Bolder text
                     .foregroundColor(theme.textPrimary)
             }
         }
@@ -221,7 +225,7 @@ struct AssetRow: View {
             AsyncImage(url: chain.logoURL) { phase in
                 switch phase {
                 case .empty:
-                    Circle()
+                    RoundedRectangle(cornerRadius: theme.cornerRadius)
                         .fill(theme.backgroundSecondary)
                         .frame(width: 40, height: 40)
                         .overlay(ProgressView())
@@ -230,7 +234,11 @@ struct AssetRow: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 40, height: 40)
-                        .clipShape(Circle())
+                        .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: theme.cornerRadius)
+                                .stroke(theme.borderColor, lineWidth: 0.5)
+                        )
                 case .failure:
                     Circle()
                         .fill(Color.white.opacity(0.1))

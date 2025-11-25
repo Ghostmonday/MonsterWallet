@@ -151,37 +151,38 @@ public struct EliteDarkTheme: ThemeProtocolV2 {
     public let name = "Elite Dark"
 
     public let backgroundMain = KryptoColors.pitchBlack
-    public let backgroundSecondary = KryptoColors.deepSpace
-    public let textPrimary = KryptoColors.white
-    public let textSecondary = Color.gray
-    public let accentColor = KryptoColors.cyberBlue
+    public let backgroundSecondary = Color(red: 0.03, green: 0.03, blue: 0.05) // Deep black-metal
+    public let textPrimary = Color(white: 0.95) // Bright chrome
+    public let textSecondary = Color(white: 0.5) // Brushed steel
+    public let accentColor = Color(red: 0.8, green: 0.85, blue: 0.9) // Metallic Silver (Logo match)
     public let successColor = KryptoColors.neonGreen
     public let errorColor = KryptoColors.neonRed
     public let warningColor = KryptoColors.warningOrange
-    public let cardBackground = KryptoColors.bunkerGray
-    public let borderColor = Color.white.opacity(0.1)
+    public let cardBackground = Color(white: 0.05) // Almost pitch black
+    public let borderColor = Color(white: 0.3).opacity(0.5) // Chrome rim
 
-    public let glassEffectOpacity = 0.8
+    public let glassEffectOpacity = 0.95
     public let materialStyle: Material = .ultraThin
     public let showDiamondPattern = true
-    public let backgroundAnimation: BackgroundAnimationType = .liquidRefraction
-    public let chartGradientColors = [KryptoColors.cyberBlue, KryptoColors.weaponizedPurple]
+    public let backgroundAnimation: BackgroundAnimationType = .none // Static, serious
+    public let chartGradientColors = [Color(white: 0.8), Color(white: 0.4)] // Silver gradient
     public let securityWarningColor = KryptoColors.neonRed
 
-    public let cornerRadius: CGFloat = 20.0
+    // SHARP EDGES to match the spiky logo
+    public let cornerRadius: CGFloat = 2.0 
 
-    public let balanceFont = Font.system(size: 36, weight: .bold, design: .rounded)
-    public let addressFont = Font.system(size: 14, weight: .medium, design: .monospaced)
+    public let balanceFont = Font.system(size: 40, weight: .black, design: .rounded) // Bolder
+    public let addressFont = Font.system(size: 13, weight: .bold, design: .monospaced)
 
     public func font(style: Font.TextStyle) -> Font {
-        Font.system(style, design: .default)
+        Font.system(style, design: .default).weight(.medium)
     }
 
-    public let iconSend = "arrow.up.circle.fill"
-    public let iconReceive = "arrow.down.circle.fill"
-    public let iconSwap = "arrow.triangle.2.circlepath.circle.fill"
+    public let iconSend = "arrow.up.forward.circle.fill" // More dynamic arrow
+    public let iconReceive = "arrow.down.left.circle.fill"
+    public let iconSwap = "arrow.triangle.2.circlepath"
     public let iconSettings = "gearshape.fill"
-    public let iconShield = "shield.checkerboard"
+    public let iconShield = "shield.fill"
 }
 
 public struct CyberPunkTheme: ThemeProtocolV2 {

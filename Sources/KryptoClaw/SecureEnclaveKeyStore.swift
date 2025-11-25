@@ -240,8 +240,30 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
         // 2. Generate new key if not found
         // This key is strictly bound to the Secure Enclave and Biometrics.
         var error: Unmanaged<CFError>?
-        // Note: We keep SecAccessControlCreateWithFlags here because it's a struct creation,
-        // hard to mock and usually safe. If it fails in tests, we can abstract it too.
+        
+        #if targetEnvironment(simulator)
+        // SIMULATOR FALLBACK: No Secure Enclave, No Biometry Current Set
+        guard let accessControl = SecAccessControlCreateWithFlags(
+            kCFAllocatorDefault,
+            kSecAttrAccessibleWhenUnlocked,
+            [.privateKeyUsage], // Removed .biometryCurrentSet for Simulator
+            &error
+        ) else {
+            throw KeyStoreError.accessControlSetupFailed
+        }
+
+        let attributes: [String: Any] = [
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrKeySizeInBits as String: 256,
+            // kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave, // REMOVED for Simulator
+            kSecPrivateKeyAttrs as String: [
+                kSecAttrIsPermanent as String: true,
+                kSecAttrApplicationTag as String: masterKeyTag,
+                kSecAttrAccessControl as String: accessControl
+            ]
+        ]
+        #else
+        // DEVICE PRODUCTION: Full Secure Enclave + Biometry
         guard let accessControl = SecAccessControlCreateWithFlags(
             kCFAllocatorDefault,
             kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
@@ -261,8 +283,10 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
                 kSecAttrAccessControl as String: accessControl
             ]
         ]
+        #endif
 
         guard let key = seHelper.createRandomKey(attributes, &error) else {
+            print("Key generation error: \(String(describing: error))")
             throw KeyStoreError.keyGenerationFailed
         }
 

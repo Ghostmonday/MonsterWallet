@@ -15,7 +15,8 @@ public enum MnemonicService {
         }
         return wallet.mnemonic
         #else
-        return nil
+        // Fallback for Simulator/Debug without WalletCore
+        return "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
         #endif
     }
 

@@ -64,7 +64,7 @@ struct WalletRow: View {
     var body: some View {
         KryptoCard {
             HStack {
-                Circle()
+                RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
                     .fill(walletColor)
                     .frame(width: 40, height: 40)
                     .overlay(
@@ -200,7 +200,7 @@ struct WalletCreationView: View {
                         Text(seedPhrase)
                             .padding()
                             .background(themeManager.currentTheme.backgroundSecondary)
-                            .cornerRadius(8)
+                            .cornerRadius(themeManager.currentTheme.cornerRadius)
                             .foregroundColor(themeManager.currentTheme.textPrimary)
                             .multilineTextAlignment(.center)
 
@@ -245,12 +245,12 @@ struct WalletCreationView: View {
                                     .frame(height: 100)
                                     .padding(8)
                                     .background(themeManager.currentTheme.backgroundSecondary)
-                                    .cornerRadius(8)
+                                    .cornerRadius(themeManager.currentTheme.cornerRadius)
                                     .foregroundColor(themeManager.currentTheme.textPrimary)
                                     // Prevent capitalization and autocorrect for seed phrases usually
                                     .disableAutocorrection(true)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
+                                        RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
                                             .stroke(verificationError != nil ? themeManager.currentTheme.errorColor : Color.clear, lineWidth: 1)
                                     )
                                     .accessibilityLabel("Recovery Phrase Verification Input")

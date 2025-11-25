@@ -28,9 +28,9 @@ public struct OnboardingView: View {
                     Image("AppIcon")
                         .resizable()
                         .frame(width: 100, height: 100)
-                        .cornerRadius(2)
+                        .cornerRadius(themeManager.currentTheme.cornerRadius)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 2)
+                            RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
                                 .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
                         )
                         .shadow(color: themeManager.currentTheme.accentColor.opacity(0.3), radius: 20, x: 0, y: 0)
@@ -53,11 +53,12 @@ public struct OnboardingView: View {
                 // Actions
                 VStack(spacing: 20) {
                     KryptoButton(
-                        title: "INITIATE PROTOCOL",
-                        icon: "terminal.fill",
+                        title: isCreating ? "INITIALIZING..." : "INITIATE PROTOCOL",
+                        icon: isCreating ? "hourglass" : "terminal.fill",
                         action: { createWallet() },
                         isPrimary: true
                     )
+                    .disabled(isCreating)
 
                     KryptoButton(
                         title: "RECOVER ASSETS",
@@ -96,14 +97,30 @@ public struct OnboardingView: View {
                 }
             }
         }
+        .alert(isPresented: $showError) {
+            Alert(title: Text("Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+        }
     }
 
+    @State private var showError = false
+    @State private var errorMessage = ""
+
     func createWallet() {
+        isCreating = true
         Task {
             if let mnemonic = await wsm.createWallet(name: "Main Wallet") {
                 createdMnemonic = mnemonic
                 showBackupSheet = true
+            } else {
+                // Handle error
+                if case let .error(msg) = wsm.state {
+                    errorMessage = msg
+                } else {
+                    errorMessage = "Failed to create wallet. Please try again."
+                }
+                showError = true
             }
+            isCreating = false
         }
     }
 
@@ -152,9 +169,9 @@ struct ImportWalletView: View {
                         .frame(height: 160)
                         .padding()
                         .background(themeManager.currentTheme.backgroundSecondary)
-                        .cornerRadius(2) // Razor-edged
+                        .cornerRadius(themeManager.currentTheme.cornerRadius) // Razor-edged
                         .overlay(
-                            RoundedRectangle(cornerRadius: 2)
+                            RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
                                 .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
                         )
                         .foregroundColor(themeManager.currentTheme.textPrimary)
@@ -208,7 +225,7 @@ struct BackupMnemonicView: View {
                     .foregroundColor(themeManager.currentTheme.textPrimary)
                     .padding()
                     .background(themeManager.currentTheme.backgroundSecondary)
-                    .cornerRadius(8)
+                    .cornerRadius(themeManager.currentTheme.cornerRadius)
                     .padding(.horizontal)
 
                 Spacer()

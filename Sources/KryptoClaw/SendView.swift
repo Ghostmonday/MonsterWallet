@@ -75,7 +75,7 @@ struct SendView: View {
                                     }
                                     .padding(alert.level == .critical ? 8 : 0)
                                     .background(alert.level == .critical ? themeManager.currentTheme.errorColor : Color.clear)
-                                    .cornerRadius(4)
+                                    .cornerRadius(themeManager.currentTheme.cornerRadius)
                                 }
                             }
 
@@ -146,9 +146,9 @@ struct KryptoInput: View {
                 .foregroundColor(themeManager.currentTheme.textPrimary)
                 .padding()
                 .background(themeManager.currentTheme.cardBackground)
-                .cornerRadius(2)
+                .cornerRadius(themeManager.currentTheme.cornerRadius)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 2)
+                    RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
                         .stroke(themeManager.currentTheme.borderColor, lineWidth: 2)
                 )
         }
