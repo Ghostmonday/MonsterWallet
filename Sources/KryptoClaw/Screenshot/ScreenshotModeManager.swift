@@ -85,8 +85,13 @@ public final class ScreenshotModeManager: ObservableObject {
     // MARK: - Initialization
     
     private init() {
+        // Auto-enable when compiled with SCREENSHOT_MODE flag
+        #if SCREENSHOT_MODE
+        isEnabled = true
+        animationsEnabled = false
+        KryptoLogger.shared.log(level: .info, category: .lifecycle, message: "Screenshot Mode auto-enabled via compiler flag")
+        #elseif DEBUG
         // Check for screenshot mode launch argument or environment variable
-        #if DEBUG
         checkForScreenshotMode()
         #endif
     }

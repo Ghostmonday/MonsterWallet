@@ -530,8 +530,13 @@ public actor BiometricAuthManager {
             return .canceled
         case .notInteractive:
             return .unknown(underlying: error)
+        #if os(iOS)
+        case .biometryNotPaired, .biometryDisconnected, .invalidDimensions:
+            return .notAvailable
+        #elseif os(macOS)
         case .watchNotAvailable, .biometryNotPaired, .biometryDisconnected, .invalidDimensions:
             return .notAvailable
+        #endif
         @unknown default:
             return .unknown(underlying: error)
         }

@@ -86,33 +86,41 @@ public struct KryptoClawApp: App {
     
     public var body: some Scene {
         WindowGroup {
-            ZStack {
-                if showingSplash {
-                    SplashScreenView()
+            Group {
+                // Check for screenshot mode first
+                if ScreenshotModeManager.shared.isEnabled {
+                    ScreenshotContainer()
                         .environmentObject(themeManager)
-                        .transition(.opacity.combined(with: .scale(scale: 1.1)))
-                } else if !hasOnboarded {
-                    OnboardingContainerView(onComplete: handleOnboardingComplete)
-                        .environmentObject(walletStateManager)
-                        .environmentObject(themeManager)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .trailing),
-                            removal: .move(edge: .leading)
-                        ))
                 } else {
-                    MainAppView()
-                        .environmentObject(walletStateManager)
-                        .environmentObject(themeManager)
-                        .environment(router)
-                        .transition(.opacity)
+                    ZStack {
+                        if showingSplash {
+                            SplashScreenView()
+                                .environmentObject(themeManager)
+                                .transition(.opacity.combined(with: .scale(scale: 1.1)))
+                        } else if !hasOnboarded {
+                            OnboardingContainerView(onComplete: handleOnboardingComplete)
+                                .environmentObject(walletStateManager)
+                                .environmentObject(themeManager)
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .trailing),
+                                    removal: .move(edge: .leading)
+                                ))
+                        } else {
+                            MainAppView()
+                                .environmentObject(walletStateManager)
+                                .environmentObject(themeManager)
+                                .environment(router)
+                                .transition(.opacity)
+                        }
+                    }
+                    .animation(.easeInOut(duration: 0.5), value: showingSplash)
+                    .animation(.easeInOut(duration: 0.4), value: hasOnboarded)
+                    .deviceSecured(showLockIcon: true)
+                    .onAppear(perform: handleAppear)
+                    .onChange(of: scenePhase, handleScenePhaseChange)
+                    .onOpenURL(perform: handleDeepLink)
                 }
             }
-            .animation(.easeInOut(duration: 0.5), value: showingSplash)
-            .animation(.easeInOut(duration: 0.4), value: hasOnboarded)
-            .deviceSecured(showLockIcon: true)
-            .onAppear(perform: handleAppear)
-            .onChange(of: scenePhase, handleScenePhaseChange)
-            .onOpenURL(perform: handleDeepLink)
         }
     }
     
