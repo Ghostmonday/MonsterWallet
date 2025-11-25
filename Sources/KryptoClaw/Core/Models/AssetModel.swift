@@ -423,6 +423,11 @@ public struct TokenList: Codable, Sendable {
 // MARK: - Extensions
 
 extension Asset {
+    /// Native coins convenience accessors
+    public static let ethereum = Asset.native(chain: .ethereum)
+    public static let bitcoin = Asset.native(chain: .bitcoin)
+    public static let solana = Asset.native(chain: .solana)
+    
     /// Common stablecoins on Ethereum
     public static let usdc = Asset(
         id: "ethereum:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",

@@ -10,12 +10,12 @@ public struct SwapQuote: Codable {
     public let data: Data? // Transaction data for the swap
 }
 
-public protocol SwapProvider {
+public protocol SwapProviderProtocol {
     func getQuote(from: String, to: String, amount: String) async throws -> SwapQuote
 }
 
 // MARK: - Jupiter (Solana)
-public class JupiterSwapProvider: SwapProvider {
+public class JupiterSwapProvider: SwapProviderProtocol {
     private let baseURL = "https://quote-api.jup.ag/v6"
     
     public init() {}
@@ -74,7 +74,7 @@ public class JupiterSwapProvider: SwapProvider {
 }
 
 // MARK: - 1inch (Ethereum)
-public class OneInchSwapProvider: SwapProvider {
+public class OneInchSwapProvider: SwapProviderProtocol {
     private let baseURL = "https://api.1inch.dev/swap/v5.2/1"
     private let apiKey = "YOUR_1INCH_API_KEY" // Placeholder
     
