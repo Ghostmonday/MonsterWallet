@@ -11,67 +11,67 @@ struct RecoveryView: View {
     let mockSeed = ["witch", "collapse", "practice", "feed", "shame", "open", "despair", "creek", "road", "again", "ice", "least"]
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
+            VStack(spacing: theme.spacingXL) {
                 HStack {
                     Text("Backup Wallet")
-                        .font(themeManager.currentTheme.font(style: .title2).weight(.bold))
-                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                        .font(theme.font(style: .title2).weight(.bold))
+                        .foregroundColor(theme.textPrimary)
                     Spacer()
-                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(themeManager.currentTheme.textSecondary)
-                            .font(.title2)
+                    KryptoCloseButton {
+                        presentationMode.wrappedValue.dismiss()
                     }
                 }
                 .padding()
 
                 KryptoCard {
-                    HStack(alignment: .top, spacing: 12) {
-                        Image(systemName: themeManager.currentTheme.iconShield)
-                            .foregroundColor(themeManager.currentTheme.warningColor)
+                    HStack(alignment: .top, spacing: theme.spacingM) {
+                        Image(systemName: theme.iconShield)
+                            .foregroundColor(theme.warningColor)
                             .font(.title2)
 
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: theme.spacingXS) {
                             Text("Secret Recovery Phrase")
-                                .font(themeManager.currentTheme.font(style: .headline).weight(.bold))
-                                .foregroundColor(themeManager.currentTheme.textPrimary)
+                                .font(theme.font(style: .headline).weight(.bold))
+                                .foregroundColor(theme.textPrimary)
                             Text("This is the ONLY way to recover your wallet. Write it down and keep it safe.")
-                                .font(themeManager.currentTheme.font(style: .caption).weight(.regular))
-                                .foregroundColor(themeManager.currentTheme.textSecondary)
+                                .font(theme.font(style: .caption).weight(.regular))
+                                .foregroundColor(theme.textSecondary)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(.horizontal)
 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: theme.spacingM) {
                     ForEach(0 ..< 12, id: \.self) { index in
                         HStack {
                             Text("\(index + 1).")
-                                .font(themeManager.currentTheme.font(style: .caption).weight(.medium))
-                                .foregroundColor(themeManager.currentTheme.textSecondary)
+                                .font(theme.font(style: .caption).weight(.medium))
+                                .foregroundColor(theme.textSecondary)
 
                             Text(isRevealed ? mockSeed[index] : "••••")
-                                .font(themeManager.currentTheme.font(style: .body).weight(.bold))
-                                .foregroundColor(themeManager.currentTheme.textPrimary)
+                                .font(theme.font(style: .body).weight(.bold))
+                                .foregroundColor(theme.textPrimary)
                                 .blur(radius: isRevealed ? 0 : 4)
                         }
-                        .padding(8)
+                        .padding(theme.spacingS)
                         .frame(maxWidth: .infinity)
-                        .background(themeManager.currentTheme.backgroundSecondary)
-                        .cornerRadius(8)
+                        .background(theme.backgroundSecondary)
+                        .cornerRadius(theme.cornerRadius)
                     }
                 }
                 .padding(.horizontal)
 
                 Spacer()
 
-                VStack(spacing: 16) {
+                VStack(spacing: theme.spacingL) {
                     KryptoButton(title: isRevealed ? "Hide Phrase" : "Reveal Phrase", icon: isRevealed ? "eye.slash.fill" : "eye.fill", action: {
                         withAnimation {
                             isRevealed.toggle()

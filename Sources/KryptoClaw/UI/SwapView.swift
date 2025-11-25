@@ -19,6 +19,7 @@ import SwiftUI
 struct SwapViewV2: View {
     @StateObject private var viewModel: SwapViewModel
     @EnvironmentObject var wsm: WalletStateManager
+    @EnvironmentObject var themeManager: ThemeManager
     
     @State private var showFromAssetPicker = false
     @State private var showToAssetPicker = false
@@ -39,8 +40,10 @@ struct SwapViewV2: View {
     }
     
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: theme.spacingL) {
                 headerSection
                 
                 fromAssetSection
@@ -61,7 +64,7 @@ struct SwapViewV2: View {
                 
                 actionButton
                 
-                Spacer(minLength: 20)
+                Spacer(minLength: theme.spacingXL)
             }
             .padding()
         }
@@ -98,20 +101,24 @@ struct SwapViewV2: View {
     // MARK: - Header Section
     
     private var headerSection: some View {
-        HStack {
+        let theme = themeManager.currentTheme
+        
+        return HStack {
             Text("Swap")
-                .font(.title2)
+                .font(theme.font(style: .title2))
                 .fontWeight(.bold)
+                .foregroundColor(theme.textPrimary)
             
             Spacer()
             
             Button {
                 showSlippageSettings = true
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: theme.spacingXS) {
                     Image(systemName: "gearshape")
                     Text(viewModel.formattedSlippage)
                 }
+                .foregroundColor(theme.accentColor)
             }
         }
     }
@@ -119,14 +126,18 @@ struct SwapViewV2: View {
     // MARK: - From Asset Section
     
     private var fromAssetSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let theme = themeManager.currentTheme
+        
+        return VStack(alignment: .leading, spacing: theme.spacingS) {
             Text("From")
-                .font(.caption)
+                .font(theme.captionFont)
+                .foregroundColor(theme.textSecondary)
             
             HStack {
                 // Amount Input
                 TextField("0.0", text: $viewModel.inputAmount)
-                    .font(.title)
+                    .font(theme.font(style: .title))
+                    .foregroundColor(theme.textPrimary)
                     #if os(iOS)
                     .keyboardType(.decimalPad)
                     #endif
@@ -141,39 +152,45 @@ struct SwapViewV2: View {
                         if let asset = viewModel.fromAsset {
                             Text(asset.symbol)
                                 .fontWeight(.semibold)
+                                .foregroundColor(theme.textPrimary)
                         } else {
                             Text("Select")
+                                .foregroundColor(theme.textSecondary)
                         }
                         Image(systemName: "chevron.down")
+                            .foregroundColor(theme.textSecondary)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.secondary.opacity(0.1))
-                    .cornerRadius(8)
+                    .padding(.horizontal, theme.spacingM)
+                    .padding(.vertical, theme.spacingS)
+                    .background(theme.backgroundSecondary)
+                    .cornerRadius(theme.cornerRadius)
                 }
             }
             
             if let asset = viewModel.fromAsset {
                 Text(asset.chain.displayName)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(theme.captionFont)
+                    .foregroundColor(theme.textSecondary)
             }
         }
         .padding()
-        .background(Color.secondary.opacity(0.05))
-        .cornerRadius(12)
+        .background(theme.cardBackground)
+        .cornerRadius(theme.cornerRadius)
     }
     
     // MARK: - Swap Direction Button
     
     private var swapDirectionButton: some View {
-        Button {
+        let theme = themeManager.currentTheme
+        
+        return Button {
             viewModel.swapAssets()
         } label: {
             Image(systemName: "arrow.up.arrow.down")
                 .font(.title2)
-                .padding(12)
-                .background(Color.secondary.opacity(0.1))
+                .foregroundColor(theme.accentColor)
+                .padding(theme.spacingM)
+                .background(theme.backgroundSecondary)
                 .clipShape(Circle())
         }
     }
@@ -181,19 +198,23 @@ struct SwapViewV2: View {
     // MARK: - To Asset Section
     
     private var toAssetSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let theme = themeManager.currentTheme
+        
+        return VStack(alignment: .leading, spacing: theme.spacingS) {
             Text("To")
-                .font(.caption)
+                .font(theme.captionFont)
+                .foregroundColor(theme.textSecondary)
             
             HStack {
                 // Output Amount (read-only)
                 if let quote = viewModel.state.currentQuote {
                     Text(quote.formattedOutputAmount)
-                        .font(.title)
+                        .font(theme.font(style: .title))
+                        .foregroundColor(theme.textPrimary)
                 } else {
                     Text("0.0")
-                        .font(.title)
-                        .foregroundColor(.secondary)
+                        .font(theme.font(style: .title))
+                        .foregroundColor(theme.textSecondary)
                 }
                 
                 Spacer()
@@ -206,49 +227,55 @@ struct SwapViewV2: View {
                         if let asset = viewModel.toAsset {
                             Text(asset.symbol)
                                 .fontWeight(.semibold)
+                                .foregroundColor(theme.textPrimary)
                         } else {
                             Text("Select")
+                                .foregroundColor(theme.textSecondary)
                         }
                         Image(systemName: "chevron.down")
+                            .foregroundColor(theme.textSecondary)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.secondary.opacity(0.1))
-                    .cornerRadius(8)
+                    .padding(.horizontal, theme.spacingM)
+                    .padding(.vertical, theme.spacingS)
+                    .background(theme.backgroundSecondary)
+                    .cornerRadius(theme.cornerRadius)
                 }
             }
             
             if let asset = viewModel.toAsset {
                 Text(asset.chain.displayName)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(theme.captionFont)
+                    .foregroundColor(theme.textSecondary)
             }
         }
         .padding()
-        .background(Color.secondary.opacity(0.05))
-        .cornerRadius(12)
+        .background(theme.cardBackground)
+        .cornerRadius(theme.cornerRadius)
     }
     
     // MARK: - Quote Details Section
     
     private var quoteDetailsSection: some View {
-        VStack(spacing: 12) {
+        let theme = themeManager.currentTheme
+        
+        return VStack(spacing: theme.spacingM) {
             if let quote = viewModel.state.currentQuote {
                 // Exchange Rate
                 HStack {
                     Text("Rate")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(theme.textSecondary)
                     Spacer()
                     Text(quote.formattedRate)
+                        .foregroundColor(theme.textPrimary)
                 }
                 
-                Divider()
+                KryptoDivider()
                 
                 // Price Impact
                 if let impact = quote.priceImpact {
                     HStack {
                         Text("Price Impact")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(theme.textSecondary)
                         Spacer()
                         Text("\(NSDecimalNumber(decimal: impact).stringValue)%")
                             .foregroundColor(priceImpactColor)
@@ -258,77 +285,85 @@ struct SwapViewV2: View {
                 // Minimum Received
                 HStack {
                     Text("Minimum Received")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(theme.textSecondary)
                     Spacer()
                     Text("\(quote.formattedMinimumOutput) \(quote.toAsset.symbol)")
+                        .foregroundColor(theme.textPrimary)
                 }
                 
-                Divider()
+                KryptoDivider()
                 
                 // Network Fee
                 HStack {
                     Text("Network Fee")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(theme.textSecondary)
                     Spacer()
                     if let feeUSD = quote.networkFeeUSD {
                         Text("~$\(NSDecimalNumber(decimal: feeUSD).stringValue)")
+                            .foregroundColor(theme.textPrimary)
                     } else {
                         Text(quote.networkFeeEstimate)
+                            .foregroundColor(theme.textPrimary)
                     }
                 }
                 
                 // Provider
                 HStack {
                     Text("Provider")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(theme.textSecondary)
                     Spacer()
                     Text(quote.provider.displayName)
+                        .foregroundColor(theme.textPrimary)
                 }
                 
                 // Route
                 if !quote.routePath.isEmpty {
                     HStack {
                         Text("Route")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(theme.textSecondary)
                         Spacer()
                         Text(quote.routePath.joined(separator: " → "))
-                            .font(.caption)
+                            .font(theme.captionFont)
+                            .foregroundColor(theme.textPrimary)
                     }
                 }
                 
                 // Quote Expiration
                 HStack {
                     Text("Quote expires in")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(theme.textSecondary)
                     Spacer()
                     Text(viewModel.formattedTimeRemaining)
-                        .foregroundColor(viewModel.quoteTimeRemaining < 10 ? .red : .primary)
+                        .foregroundColor(viewModel.quoteTimeRemaining < 10 ? theme.errorColor : theme.textPrimary)
                 }
             }
         }
-        .font(.subheadline)
+        .font(theme.bodyFont)
         .padding()
-        .background(Color.secondary.opacity(0.05))
-        .cornerRadius(12)
+        .background(theme.cardBackground)
+        .cornerRadius(theme.cornerRadius)
     }
     
     private var priceImpactColor: Color {
+        let theme = themeManager.currentTheme
         switch viewModel.priceImpactLevel {
         case .low:
-            return .green
+            return theme.successColor
         case .medium:
-            return .primary
+            return theme.textPrimary
         case .high:
-            return .orange
+            return theme.warningColor
         case .veryHigh:
-            return .red
+            return theme.errorColor
         }
     }
     
     // MARK: - Simulation Status Section
     
     private var simulationStatusSection: some View {
-        Group {
+        let theme = themeManager.currentTheme
+        
+        return Group {
             switch viewModel.state {
             case .idle:
                 EmptyView()
@@ -337,40 +372,45 @@ struct SwapViewV2: View {
                 HStack {
                     ProgressView()
                     Text("Fetching quotes...")
+                        .foregroundColor(theme.textSecondary)
                 }
                 
             case .reviewing:
                 HStack {
                     Image(systemName: "checkmark.circle")
-                        .foregroundColor(.green)
+                        .foregroundColor(theme.successColor)
                     Text("Quote ready. Tap to simulate.")
+                        .foregroundColor(theme.textPrimary)
                 }
                 
             case .simulating:
                 HStack {
                     ProgressView()
                     Text("Simulating transaction...")
+                        .foregroundColor(theme.textSecondary)
                 }
                 
             case .readyToSwap(_, let receipt):
-                VStack(spacing: 8) {
+                VStack(spacing: theme.spacingS) {
                     HStack {
                         Image(systemName: "checkmark.shield.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(theme.successColor)
                         Text("Simulation passed")
+                            .foregroundColor(theme.successColor)
                     }
                     
                     Text("Gas estimate: \(receipt.gasEstimate)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(theme.captionFont)
+                        .foregroundColor(theme.textSecondary)
                     
                     if viewModel.requiresApproval {
                         HStack {
                             Image(systemName: "exclamationmark.triangle")
-                                .foregroundColor(.orange)
+                                .foregroundColor(theme.warningColor)
                             Text("Token approval required")
+                                .foregroundColor(theme.warningColor)
                         }
-                        .font(.caption)
+                        .font(theme.captionFont)
                     }
                 }
                 
@@ -378,18 +418,21 @@ struct SwapViewV2: View {
                 HStack {
                     ProgressView()
                     Text("Processing swap...")
+                        .foregroundColor(theme.textSecondary)
                 }
                 
             case .success(let txHash):
-                VStack(spacing: 8) {
+                VStack(spacing: theme.spacingS) {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                            .foregroundColor(theme.successColor)
                         Text("Swap successful!")
+                            .foregroundColor(theme.successColor)
                     }
                     
                     Text("Tx: \(txHash)")
-                        .font(.caption)
+                        .font(theme.captionFont)
+                        .foregroundColor(theme.textSecondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                 }
@@ -402,30 +445,34 @@ struct SwapViewV2: View {
             if let warning = viewModel.priceImpactLevel.warningMessage {
                 HStack {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
+                        .foregroundColor(theme.warningColor)
                     Text(warning)
-                        .font(.caption)
+                        .font(theme.captionFont)
+                        .foregroundColor(theme.textPrimary)
                 }
                 .padding()
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(8)
+                .background(theme.warningColor.opacity(0.1))
+                .cornerRadius(theme.cornerRadius)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, theme.spacingS)
     }
     
     // MARK: - Alternative Quotes Section
     
     private var alternativeQuotesSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let theme = themeManager.currentTheme
+        
+        return VStack(alignment: .leading, spacing: theme.spacingS) {
             HStack {
                 Text("All Quotes")
-                    .font(.subheadline)
+                    .font(theme.bodyFont)
                     .fontWeight(.semibold)
+                    .foregroundColor(theme.textPrimary)
                 Spacer()
                 Text("\(viewModel.allQuotes.count) providers")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(theme.captionFont)
+                    .foregroundColor(theme.textSecondary)
             }
             
             ForEach(viewModel.allQuotes) { quote in
@@ -434,17 +481,19 @@ struct SwapViewV2: View {
                 } label: {
                     HStack {
                         Text(quote.provider.displayName)
+                            .foregroundColor(theme.textPrimary)
                         Spacer()
                         Text(quote.formattedOutputAmount)
+                            .foregroundColor(theme.textPrimary)
                         Text(quote.toAsset.symbol)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(theme.textSecondary)
                         
                         if quote.id == viewModel.state.currentQuote?.id {
                             Image(systemName: "checkmark")
-                                .foregroundColor(.green)
+                                .foregroundColor(theme.successColor)
                         }
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, theme.spacingXS)
                 }
                 .buttonStyle(.plain)
             }
@@ -452,19 +501,21 @@ struct SwapViewV2: View {
             // Show provider errors
             if !viewModel.providerErrors.isEmpty {
                 Text("Failed providers: \(viewModel.providerErrors.keys.map(\.displayName).joined(separator: ", "))")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(theme.captionFont)
+                    .foregroundColor(theme.textSecondary)
             }
         }
         .padding()
-        .background(Color.secondary.opacity(0.05))
-        .cornerRadius(12)
+        .background(theme.cardBackground)
+        .cornerRadius(theme.cornerRadius)
     }
     
     // MARK: - Action Button
     
     private var actionButton: some View {
-        Button {
+        let theme = themeManager.currentTheme
+        
+        return Button {
             Task {
                 await handleAction()
             }
@@ -472,7 +523,7 @@ struct SwapViewV2: View {
             HStack {
                 if viewModel.state.isLoading {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .progressViewStyle(CircularProgressViewStyle(tint: theme.qrBackgroundColor))
                 }
                 
                 Text(actionButtonTitle)
@@ -480,9 +531,9 @@ struct SwapViewV2: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(actionButtonEnabled ? Color.blue : Color.gray)
-            .foregroundColor(.white)
-            .cornerRadius(12)
+            .background(actionButtonEnabled ? theme.accentColor : theme.disabledColor)
+            .foregroundColor(theme.qrBackgroundColor)
+            .cornerRadius(theme.cornerRadius)
         }
         .disabled(!actionButtonEnabled)
     }
@@ -562,8 +613,11 @@ struct AssetPickerView: View {
     let excludedAsset: Asset?
     let title: String
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var themeManager: ThemeManager
     
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         NavigationView {
             List {
                 ForEach(SwapViewModel.availableAssets.filter { $0.id != excludedAsset?.id }, id: \.id) { asset in
@@ -575,23 +629,21 @@ struct AssetPickerView: View {
                             VStack(alignment: .leading) {
                                 Text(asset.symbol)
                                     .fontWeight(.semibold)
+                                    .foregroundColor(theme.textPrimary)
                                 Text(asset.name)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .font(theme.captionFont)
+                                    .foregroundColor(theme.textSecondary)
                             }
                             
                             Spacer()
                             
                             Text(asset.chain.displayName)
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.secondary.opacity(0.1))
-                                .cornerRadius(4)
+                                .font(theme.captionFont)
+                                .themedBadge(theme: theme)
                             
                             if asset.id == selectedAsset?.id {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(theme.accentColor)
                             }
                         }
                     }
@@ -607,6 +659,7 @@ struct AssetPickerView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(theme.accentColor)
                 }
             }
         }
@@ -618,34 +671,38 @@ struct AssetPickerView: View {
 struct SlippageSettingsView: View {
     @Binding var slippage: Decimal
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var themeManager: ThemeManager
     
     private let presets: [Decimal] = [0.1, 0.5, 1.0, 3.0]
     @State private var customSlippage: String = ""
     
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         NavigationView {
-            VStack(spacing: 20) {
+            VStack(spacing: theme.spacingXL) {
                 Text("Slippage Tolerance")
-                    .font(.headline)
+                    .font(theme.headlineFont)
+                    .foregroundColor(theme.textPrimary)
                 
                 Text("Your transaction will revert if the price changes unfavorably by more than this percentage.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(theme.captionFont)
+                    .foregroundColor(theme.textSecondary)
                     .multilineTextAlignment(.center)
                 
                 // Preset buttons
-                HStack(spacing: 12) {
+                HStack(spacing: theme.spacingM) {
                     ForEach(presets, id: \.self) { preset in
                         Button {
                             slippage = preset
                             customSlippage = ""
                         } label: {
                             Text("\(NSDecimalNumber(decimal: preset).stringValue)%")
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(slippage == preset ? Color.blue : Color.secondary.opacity(0.1))
-                                .foregroundColor(slippage == preset ? .white : .primary)
-                                .cornerRadius(8)
+                                .padding(.horizontal, theme.spacingL)
+                                .padding(.vertical, theme.spacingS)
+                                .background(slippage == preset ? theme.accentColor : theme.backgroundSecondary)
+                                .foregroundColor(slippage == preset ? theme.qrBackgroundColor : theme.textPrimary)
+                                .cornerRadius(theme.cornerRadius)
                         }
                     }
                 }
@@ -663,6 +720,7 @@ struct SlippageSettingsView: View {
                             }
                         }
                     Text("%")
+                        .foregroundColor(theme.textSecondary)
                 }
                 .padding(.horizontal)
                 
@@ -670,13 +728,14 @@ struct SlippageSettingsView: View {
                 if slippage > SwapConfiguration.highPriceImpactThreshold {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
+                            .foregroundColor(theme.warningColor)
                         Text("High slippage increases the risk of unfavorable trades.")
-                            .font(.caption)
+                            .font(theme.captionFont)
+                            .foregroundColor(theme.textPrimary)
                     }
                     .padding()
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(8)
+                    .background(theme.warningColor.opacity(0.1))
+                    .cornerRadius(theme.cornerRadius)
                 }
                 
                 Spacer()
@@ -691,6 +750,7 @@ struct SlippageSettingsView: View {
                     Button("Done") {
                         dismiss()
                     }
+                    .foregroundColor(theme.accentColor)
                 }
             }
         }
@@ -714,22 +774,24 @@ struct SwapView: View {
     @State private var price: Decimal?
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
-            VStack(spacing: 20) {
+            VStack(spacing: theme.spacingXL) {
                 Text("Swap")
-                    .font(themeManager.currentTheme.font(style: .title2))
-                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .font(theme.font(style: .title2))
+                    .foregroundColor(theme.textPrimary)
                     .padding(.top)
 
                 SwapInputCard(
                     title: "From",
                     amount: $fromAmount,
                     symbol: "ETH",
-                    theme: themeManager.currentTheme
+                    theme: theme
                 )
                 .onChange(of: fromAmount) { _, newValue in
                     Task {
@@ -737,37 +799,37 @@ struct SwapView: View {
                     }
                 }
 
-                Image(systemName: themeManager.currentTheme.iconReceive)
+                Image(systemName: theme.iconReceive)
                     .font(.title)
-                    .foregroundColor(themeManager.currentTheme.accentColor)
+                    .foregroundColor(theme.accentColor)
 
                 SwapInputCard(
                     title: "To",
                     amount: $toAmount,
                     symbol: "USDC",
-                    theme: themeManager.currentTheme
+                    theme: theme
                 )
 
                 HStack {
                     Text("Slippage Tolerance")
-                        .font(themeManager.currentTheme.font(style: .caption))
-                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                        .font(theme.font(style: .caption))
+                        .foregroundColor(theme.textSecondary)
                     Spacer()
                     Text("\(String(format: "%.1f", slippage))%")
-                        .font(themeManager.currentTheme.font(style: .caption))
-                        .foregroundColor(themeManager.currentTheme.accentColor)
+                        .font(theme.font(style: .caption))
+                        .foregroundColor(theme.accentColor)
                 }
                 .padding(.horizontal)
 
                 if let p = price {
                     HStack {
                         Text("Price")
-                            .font(themeManager.currentTheme.font(style: .caption))
-                            .foregroundColor(themeManager.currentTheme.textSecondary)
+                            .font(theme.font(style: .caption))
+                            .foregroundColor(theme.textSecondary)
                         Spacer()
                         Text("1 ETH ≈ $\(NSDecimalNumber(decimal: p).stringValue)")
-                            .font(themeManager.currentTheme.font(style: .caption))
-                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                            .font(theme.font(style: .caption))
+                            .foregroundColor(theme.textPrimary)
                     }
                     .padding(.horizontal)
                 }
@@ -779,7 +841,7 @@ struct SwapView: View {
                 } else {
                     KryptoButton(
                         title: fromAmount.isEmpty ? "ENTER AMOUNT" : "REVIEW SWAP",
-                        icon: themeManager.currentTheme.iconSwap,
+                        icon: theme.iconSwap,
                         action: {
                             if wsm.currentAddress == nil {
                                 showError = true
@@ -837,7 +899,7 @@ struct SwapInputCard: View {
     let theme: ThemeProtocolV2
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: theme.spacingS) {
             Text(title)
                 .font(theme.font(style: .caption))
                 .foregroundColor(theme.textSecondary)
@@ -853,9 +915,9 @@ struct SwapInputCard: View {
                 Text(symbol)
                     .fontWeight(.bold)
                     .foregroundColor(theme.textPrimary)
-                    .padding(8)
+                    .padding(theme.spacingS)
                     .background(theme.backgroundMain)
-                    .cornerRadius(8)
+                    .cornerRadius(theme.cornerRadius)
             }
         }
         .padding()
@@ -868,4 +930,3 @@ struct SwapInputCard: View {
         .padding(.horizontal)
     }
 }
-

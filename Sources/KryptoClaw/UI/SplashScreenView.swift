@@ -8,32 +8,36 @@ public struct SplashScreenView: View {
     public init() {}
 
     public var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
-            VStack(spacing: 20) {
+            VStack(spacing: theme.spacingXL) {
                 Image("Logo")
                     .resizable()
                     .frame(width: 120, height: 120)
-                    .cornerRadius(themeManager.currentTheme.cornerRadius)
+                    .cornerRadius(theme.cornerRadius)
                     .overlay(
-                        RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
-                            .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: theme.cornerRadius)
+                            .stroke(theme.borderColor, lineWidth: 1)
                     )
-                    .shadow(color: themeManager.currentTheme.accentColor.opacity(0.3), radius: 20, x: 0, y: 0)
+                    .shadow(color: theme.accentColor.opacity(0.3), radius: 20, x: 0, y: 0)
                     .scaleEffect(logoScale)
                     .opacity(logoOpacity)
 
                 Text("KRYPTOCLAW")
-                    .font(.system(size: 36, weight: .black, design: .rounded))
-                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .font(theme.titleFont)
+                    .fontWeight(.black)
+                    .foregroundColor(theme.textPrimary)
                     .opacity(logoOpacity)
 
                 Text("Secure • Simple • Sovereign")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                    .font(theme.captionFont)
+                    .fontWeight(.medium)
+                    .foregroundColor(theme.textSecondary)
                     .opacity(logoOpacity)
             }
         }

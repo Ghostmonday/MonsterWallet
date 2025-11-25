@@ -8,62 +8,62 @@ struct SettingsView: View {
     @State private var showHSKBinding = false
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: theme.spacingXL) {
                     HStack {
                         Text("Settings")
-                            .font(themeManager.currentTheme.font(style: .title2))
-                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                            .font(theme.font(style: .title2))
+                            .foregroundColor(theme.textPrimary)
                         Spacer()
-                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(themeManager.currentTheme.textSecondary)
-                                .font(.title2)
+                        KryptoCloseButton {
+                            presentationMode.wrappedValue.dismiss()
                         }
                     }
                     .padding()
 
                     KryptoCard {
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: theme.spacingL) {
                             NavigationLink(destination: WalletManagementView()) {
                                 HStack {
                                     Text("Manage Wallets")
-                                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                                        .foregroundColor(theme.textPrimary)
                                     Spacer()
                                     Image(systemName: "chevron.right")
-                                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                                        .foregroundColor(theme.textSecondary)
                                 }
                             }
-                            Divider().background(themeManager.currentTheme.borderColor)
+                            KryptoDivider()
 
                             NavigationLink(destination: AddressBookView()) {
                                 HStack {
                                     Text("Address Book")
-                                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                                        .foregroundColor(theme.textPrimary)
                                     Spacer()
                                     Image(systemName: "chevron.right")
-                                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                                        .foregroundColor(theme.textSecondary)
                                 }
                             }
                             
                             // HSK Binding Option
                             if #available(iOS 15.0, macOS 12.0, *) {
-                                Divider().background(themeManager.currentTheme.borderColor)
+                                KryptoDivider()
                                 
                                 Button(action: { showHSKBinding = true }) {
                                     HStack {
                                         Image(systemName: "key.horizontal.fill")
-                                            .foregroundColor(themeManager.currentTheme.accentColor)
+                                            .foregroundColor(theme.accentColor)
                                         Text("Bind Hardware Key")
-                                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                                            .foregroundColor(theme.textPrimary)
                                         Spacer()
                                         Image(systemName: "chevron.right")
-                                            .foregroundColor(themeManager.currentTheme.textSecondary)
+                                            .foregroundColor(theme.textSecondary)
                                     }
                                 }
                             }
@@ -72,10 +72,10 @@ struct SettingsView: View {
                     .padding(.horizontal)
 
                     KryptoCard {
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: theme.spacingL) {
                             Text("Appearance")
-                                .font(themeManager.currentTheme.font(style: .headline))
-                                .foregroundColor(themeManager.currentTheme.textPrimary)
+                                .font(theme.font(style: .headline))
+                                .foregroundColor(theme.textPrimary)
 
                             VStack(spacing: 0) {
                                 ForEach(ThemeType.allCases) { themeType in
@@ -83,7 +83,7 @@ struct SettingsView: View {
                                         themeManager.setTheme(type: themeType)
                                     }
                                     if themeType != ThemeType.allCases.last {
-                                        Divider().background(themeManager.currentTheme.borderColor)
+                                        KryptoDivider()
                                     }
                                 }
                             }
@@ -93,26 +93,26 @@ struct SettingsView: View {
                     .padding(.horizontal)
 
                     KryptoCard {
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: theme.spacingL) {
                             Link(destination: AppConfig.privacyPolicyURL) {
                                 HStack {
                                     Text("Privacy Policy")
-                                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                                        .foregroundColor(theme.textPrimary)
                                     Spacer()
                                     Image(systemName: "arrow.up.right.square")
-                                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                                        .foregroundColor(theme.textSecondary)
                                 }
                             }
 
-                            Divider().background(themeManager.currentTheme.textSecondary)
+                            KryptoDivider()
 
                             Link(destination: AppConfig.supportURL) {
                                 HStack {
                                     Text("Support")
-                                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                                        .foregroundColor(theme.textPrimary)
                                     Spacer()
                                     Image(systemName: "questionmark.circle")
-                                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                                        .foregroundColor(theme.textSecondary)
                                 }
                             }
                         }
@@ -126,10 +126,10 @@ struct SettingsView: View {
                         }) {
                             HStack {
                                 Text("Reset Wallet (Delete All Data)")
-                                    .foregroundColor(.red)
+                                    .foregroundColor(theme.destructiveColor)
                                 Spacer()
                                 Image(systemName: "trash")
-                                    .foregroundColor(.red)
+                                    .foregroundColor(theme.destructiveColor)
                             }
                         }
                     }
@@ -159,8 +159,8 @@ struct SettingsView: View {
                     Spacer()
 
                     Text("Version 1.0.0 (Build 1)")
-                        .font(themeManager.currentTheme.font(style: .caption))
-                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                        .font(theme.font(style: .caption))
+                        .foregroundColor(theme.textSecondary)
                         .padding(.bottom)
                 }
                 .padding(.horizontal)
@@ -176,18 +176,20 @@ struct ThemeRow: View {
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         Button(action: action) {
             HStack {
                 Text(name)
-                    .foregroundColor(themeManager.currentTheme.textPrimary)
-                    .font(themeManager.currentTheme.font(style: .body))
+                    .foregroundColor(theme.textPrimary)
+                    .font(theme.font(style: .body))
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(themeManager.currentTheme.accentColor)
+                        .foregroundColor(theme.accentColor)
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, theme.spacingM)
             .contentShape(Rectangle())
         }
     }

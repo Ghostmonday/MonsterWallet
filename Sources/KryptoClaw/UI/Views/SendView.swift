@@ -20,26 +20,26 @@ struct SendView: View {
     }
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
+            VStack(spacing: theme.spacingXL) {
                 HStack {
                     Text("Send \(chain.displayName)")
-                        .font(themeManager.currentTheme.font(style: .title2))
-                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                        .font(theme.font(style: .title2))
+                        .foregroundColor(theme.textPrimary)
                     Spacer()
-                    Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(themeManager.currentTheme.textSecondary)
-                            .font(.system(size: 32))
+                    KryptoCloseButton {
+                        presentationMode.wrappedValue.dismiss()
                     }
                 }
                 .padding()
 
-                VStack(spacing: 24) {
+                VStack(spacing: theme.spacingXL) {
                     KryptoInput(title: "To", placeholder: "0x...", text: $toAddress)
                     KryptoInput(title: "Amount", placeholder: "0.00", text: $amount)
                 }
@@ -47,20 +47,20 @@ struct SendView: View {
 
                 if let result = wsm.simulationResult {
                     KryptoCard {
-                        VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: theme.spacingM) {
                             HStack {
                                 Text("Simulation Result")
-                                    .font(themeManager.currentTheme.font(style: .headline))
-                                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                                    .font(theme.font(style: .headline))
+                                    .foregroundColor(theme.textPrimary)
                                 Spacer()
                                 if result.success {
                                     Text("PASSED")
-                                        .foregroundColor(themeManager.currentTheme.successColor)
-                                        .font(themeManager.currentTheme.font(style: .headline))
+                                        .foregroundColor(theme.successColor)
+                                        .font(theme.font(style: .headline))
                                 } else {
                                     Text("FAILED")
-                                        .foregroundColor(themeManager.currentTheme.errorColor)
-                                        .font(themeManager.currentTheme.font(style: .headline))
+                                        .foregroundColor(theme.errorColor)
+                                        .font(theme.font(style: .headline))
                                 }
                             }
 
@@ -68,26 +68,26 @@ struct SendView: View {
                                 ForEach(wsm.riskAlerts, id: \.description) { alert in
                                     HStack {
                                         Image(systemName: "exclamationmark.triangle.fill")
-                                            .foregroundColor(alert.level == .critical ? .white : themeManager.currentTheme.warningColor)
+                                            .foregroundColor(alert.level == .critical ? theme.qrBackgroundColor : theme.warningColor)
 
                                         Text(alert.description)
-                                            .font(themeManager.currentTheme.font(style: .caption))
-                                            .foregroundColor(alert.level == .critical ? .white : themeManager.currentTheme.textPrimary)
+                                            .font(theme.font(style: .caption))
+                                            .foregroundColor(alert.level == .critical ? theme.qrBackgroundColor : theme.textPrimary)
                                             .bold(alert.level == .critical)
                                     }
-                                    .padding(alert.level == .critical ? 8 : 0)
-                                    .background(alert.level == .critical ? themeManager.currentTheme.errorColor : Color.clear)
-                                    .cornerRadius(themeManager.currentTheme.cornerRadius)
+                                    .padding(alert.level == .critical ? theme.spacingS : 0)
+                                    .background(alert.level == .critical ? theme.errorColor : Color.clear)
+                                    .cornerRadius(theme.cornerRadius)
                                 }
                             }
 
                             HStack {
                                 Text("Est. Gas:")
-                                    .foregroundColor(themeManager.currentTheme.textSecondary)
-                                    .font(themeManager.currentTheme.font(style: .body))
+                                    .foregroundColor(theme.textSecondary)
+                                    .font(theme.font(style: .body))
                                 Text("\(result.estimatedGasUsed)")
-                                    .foregroundColor(themeManager.currentTheme.textPrimary)
-                                    .font(themeManager.currentTheme.font(style: .body))
+                                    .foregroundColor(theme.textPrimary)
+                                    .font(theme.font(style: .body))
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -97,31 +97,41 @@ struct SendView: View {
 
                 Spacer()
 
-                VStack(spacing: 16) {
+                VStack(spacing: theme.spacingL) {
                     if wsm.simulationResult == nil || wsm.simulationResult?.success == false {
-                        KryptoButton(title: isSimulating ? "Simulating..." : "Simulate Transaction", icon: "play.fill", action: {
+                        KryptoProgressButton(
+                            title: "Simulate Transaction",
+                            icon: "play.fill",
+                            isLoading: isSimulating,
+                            isPrimary: true
+                        ) {
                             Task {
                                 isSimulating = true
                                 await wsm.prepareTransaction(to: toAddress, value: amount, chain: chain)
                                 isSimulating = false
                             }
-                        }, isPrimary: true)
+                        }
                     } else {
                         if hasCriticalRisk {
                             Text("Cannot Send: Critical Risk Detected")
-                                .font(themeManager.currentTheme.font(style: .caption))
-                                .foregroundColor(themeManager.currentTheme.errorColor)
+                                .font(theme.font(style: .caption))
+                                .foregroundColor(theme.errorColor)
                                 .bold()
                         }
 
-                        KryptoButton(title: "Confirm & Send", icon: themeManager.currentTheme.iconSend, action: {
-                            Task {
-                                await wsm.confirmTransaction(to: toAddress, value: amount, chain: chain)
-                                presentationMode.wrappedValue.dismiss()
-                            }
-                        }, isPrimary: true)
-                            .opacity(hasCriticalRisk ? 0.5 : 1.0)
-                            .disabled(hasCriticalRisk)
+                        KryptoButton(
+                            title: "Confirm & Send",
+                            icon: theme.iconSend,
+                            action: {
+                                Task {
+                                    await wsm.confirmTransaction(to: toAddress, value: amount, chain: chain)
+                                    presentationMode.wrappedValue.dismiss()
+                                }
+                            },
+                            isPrimary: true
+                        )
+                        .opacity(hasCriticalRisk ? 0.5 : 1.0)
+                        .disabled(hasCriticalRisk)
                     }
                 }
                 .padding()
@@ -138,20 +148,22 @@ struct KryptoInput: View {
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let theme = themeManager.currentTheme
+        
+        VStack(alignment: .leading, spacing: theme.spacingS) {
             Text(title)
-                .font(themeManager.currentTheme.font(style: .headline))
-                .foregroundColor(themeManager.currentTheme.textPrimary)
+                .font(theme.font(style: .headline))
+                .foregroundColor(theme.textPrimary)
 
             TextField(placeholder, text: $text)
-                .font(themeManager.currentTheme.font(style: .title3))
-                .foregroundColor(themeManager.currentTheme.textPrimary)
+                .font(theme.font(style: .title3))
+                .foregroundColor(theme.textPrimary)
                 .padding()
-                .background(themeManager.currentTheme.cardBackground)
-                .cornerRadius(themeManager.currentTheme.cornerRadius)
+                .background(theme.cardBackground)
+                .cornerRadius(theme.cornerRadius)
                 .overlay(
-                    RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
-                        .stroke(themeManager.currentTheme.borderColor, lineWidth: 2)
+                    RoundedRectangle(cornerRadius: theme.cornerRadius)
+                        .stroke(theme.borderColor, lineWidth: 2)
                 )
         }
     }

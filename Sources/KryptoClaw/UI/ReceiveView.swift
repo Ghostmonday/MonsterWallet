@@ -15,19 +15,21 @@ struct ReceiveView: View {
     }
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
-            VStack(spacing: 30) {
+            VStack(spacing: theme.spacing2XL) {
                 Text("Receive \(chain.displayName)")
-                    .font(themeManager.currentTheme.font(style: .title2))
-                    .foregroundColor(themeManager.currentTheme.textPrimary)
-                    .padding(.top, 40)
+                    .font(theme.font(style: .title2))
+                    .foregroundColor(theme.textPrimary)
+                    .padding(.top, theme.spacing2XL + theme.spacingS)
 
                 if let address = wsm.currentAddress {
-                    VStack(spacing: 20) {
+                    VStack(spacing: theme.spacingXL) {
                         #if canImport(UIKit)
                             Image(uiImage: generateQRCode(from: address))
                                 .resizable()
@@ -35,19 +37,19 @@ struct ReceiveView: View {
                                 .scaledToFit()
                                 .frame(width: 200, height: 200)
                                 .padding()
-                                .background(Color.white)
-                                .cornerRadius(12)
+                                .background(theme.qrBackgroundColor)
+                                .cornerRadius(theme.cornerRadius)
                         #else
                             Image(systemName: "qrcode")
                                 .font(.system(size: 200))
                                 .padding()
-                                .background(Color.white)
-                                .cornerRadius(12)
+                                .background(theme.qrBackgroundColor)
+                                .cornerRadius(theme.cornerRadius)
                         #endif
 
                         Text("Scan to send \(chain.nativeCurrency)")
-                            .font(themeManager.currentTheme.font(style: .caption))
-                            .foregroundColor(themeManager.currentTheme.textSecondary)
+                            .font(theme.font(style: .caption))
+                            .foregroundColor(theme.textSecondary)
                     }
 
                     Button(action: {
@@ -61,20 +63,20 @@ struct ReceiveView: View {
                     }) {
                         HStack {
                             Text(address)
-                                .font(themeManager.currentTheme.addressFont)
+                                .font(theme.addressFont)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
-                                .foregroundColor(themeManager.currentTheme.textPrimary)
+                                .foregroundColor(theme.textPrimary)
 
                             Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                                .foregroundColor(copied ? .green : themeManager.currentTheme.accentColor)
+                                .foregroundColor(copied ? theme.successColor : theme.accentColor)
                         }
                         .padding()
-                        .background(themeManager.currentTheme.backgroundSecondary)
-                        .cornerRadius(8)
+                        .background(theme.backgroundSecondary)
+                        .cornerRadius(theme.cornerRadius)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: theme.cornerRadius)
+                                .stroke(theme.borderColor, lineWidth: 1)
                         )
                     }
                     .padding(.horizontal)
@@ -82,10 +84,10 @@ struct ReceiveView: View {
                     ShareLink(item: address, subject: Text("My Wallet Address"), message: Text("Here is my wallet address: \(address)")) {
                         Label("Share Address", systemImage: "square.and.arrow.up")
                     }
-                    .foregroundColor(themeManager.currentTheme.accentColor)
+                    .foregroundColor(theme.accentColor)
                 } else {
                     Text("No Wallet Loaded")
-                        .foregroundColor(.red)
+                        .foregroundColor(theme.errorColor)
                 }
 
                 Spacer()

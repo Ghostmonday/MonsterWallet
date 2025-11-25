@@ -10,20 +10,18 @@ struct NFTGalleryView: View {
     ]
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         VStack {
             if wsm.nfts.isEmpty {
-                Spacer()
-                VStack(spacing: 12) {
-                    Image(systemName: "photo.on.rectangle.angled")
-                        .font(.system(size: 48))
-                        .foregroundColor(themeManager.currentTheme.textSecondary)
-                    Text("No NFTs found")
-                        .foregroundColor(themeManager.currentTheme.textSecondary)
-                }
-                Spacer()
+                KryptoEmptyState(
+                    icon: "photo.on.rectangle.angled",
+                    title: "No NFTs",
+                    message: "Your NFT collection will appear here"
+                )
             } else {
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 16) {
+                    LazyVGrid(columns: columns, spacing: theme.spacingL) {
                         ForEach(wsm.nfts) { nft in
                             NFTCard(nft: nft)
                                 .onTapGesture {
@@ -46,6 +44,8 @@ struct NFTCard: View {
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         VStack(alignment: .leading, spacing: 0) {
             AsyncImage(url: nft.imageURL) { phase in
                 if let image = phase.image {
@@ -53,34 +53,37 @@ struct NFTCard: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 } else if phase.error != nil {
-                    Color.gray.opacity(0.3)
-                        .overlay(Image(systemName: "exclamationmark.triangle").foregroundColor(.white))
+                    theme.backgroundSecondary.opacity(0.5)
+                        .overlay(
+                            Image(systemName: "exclamationmark.triangle")
+                                .foregroundColor(theme.textSecondary)
+                        )
                 } else {
-                    Color.gray.opacity(0.3)
+                    theme.backgroundSecondary.opacity(0.5)
                         .overlay(ProgressView())
                 }
             }
             .frame(height: 150)
             .clipped()
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: theme.spacingXS) {
                 Text(nft.collectionName)
-                    .font(themeManager.currentTheme.font(style: .caption))
-                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                    .font(theme.font(style: .caption))
+                    .foregroundColor(theme.textSecondary)
                     .lineLimit(1)
 
                 Text(nft.name)
-                    .font(themeManager.currentTheme.font(style: .headline))
-                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .font(theme.font(style: .headline))
+                    .foregroundColor(theme.textPrimary)
                     .lineLimit(1)
             }
-            .padding(12)
+            .padding(theme.spacingM)
         }
-        .background(themeManager.currentTheme.cardBackground)
-        .cornerRadius(2)
+        .background(theme.cardBackground)
+        .cornerRadius(theme.cornerRadius)
         .overlay(
-            RoundedRectangle(cornerRadius: 2)
-                .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
+            RoundedRectangle(cornerRadius: theme.cornerRadius)
+                .stroke(theme.borderColor, lineWidth: 1)
         )
     }
 }

@@ -29,9 +29,11 @@ struct HistoryView: View {
     }
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -56,17 +58,18 @@ struct HistoryView: View {
                 .padding(.vertical)
 
                 if filteredTransactions.isEmpty {
-                    Spacer()
-                    Text("No transactions found")
-                        .foregroundColor(themeManager.currentTheme.textSecondary)
-                    Spacer()
+                    KryptoEmptyState(
+                        icon: "clock.arrow.circlepath",
+                        title: "No Transactions",
+                        message: "Your transaction history will appear here"
+                    )
                 } else {
                     List {
                         ForEach(filteredTransactions, id: \.hash) { tx in
                             TransactionRow(tx: tx, currentAddress: wsm.currentAddress ?? "")
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
-                                .padding(.vertical, 4)
+                                .padding(.vertical, theme.spacingXS)
                                 .onTapGesture {
                                     openExplorer(hash: tx.hash)
                                 }

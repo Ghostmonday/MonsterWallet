@@ -1,6 +1,8 @@
 import SwiftUI
 
 // MARK: - Theme-Aware View Modifiers
+// VERSION: 2.0.0
+// PURPOSE: Comprehensive theme-driven styling modifiers for consistent UI
 
 /// Applies comprehensive theme styling to any view, including background, material effects, patterns, and animations
 public struct ThemedContainerModifier: ViewModifier {
@@ -76,10 +78,10 @@ public struct ThemedCardModifier: ViewModifier {
                     .stroke(theme.borderColor, lineWidth: 1)
             )
             .shadow(
-                color: theme.accentColor.opacity(0.1),
-                radius: theme.cornerRadius / 2,
+                color: theme.shadowColor,
+                radius: theme.shadowRadius,
                 x: 0,
-                y: 2
+                y: theme.shadowY
             )
     }
 }
@@ -115,10 +117,10 @@ public struct ThemedButtonModifier: ViewModifier {
                     .stroke(theme.borderColor, lineWidth: isPrimary ? 0 : 1)
             )
             .shadow(
-                color: isHovering ? theme.accentColor.opacity(0.4) : theme.accentColor.opacity(0.1),
-                radius: isHovering ? theme.cornerRadius : theme.cornerRadius / 2,
+                color: isHovering ? theme.accentColor.opacity(0.4) : theme.shadowColor,
+                radius: isHovering ? theme.shadowRadius * 1.5 : theme.shadowRadius,
                 x: 0,
-                y: 2
+                y: theme.shadowY
             )
             .scaleEffect(isPressed ? 0.98 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: isPressed)
@@ -129,6 +131,197 @@ public struct ThemedButtonModifier: ViewModifier {
             .onHover { hovering in
                 isHovering = hovering
             }
+    }
+}
+
+// MARK: - Additional Theme Modifiers
+
+/// Applies themed input field styling
+public struct ThemedInputModifier: ViewModifier {
+    let theme: ThemeProtocolV2
+    let isError: Bool
+    
+    public init(theme: ThemeProtocolV2, isError: Bool = false) {
+        self.theme = theme
+        self.isError = isError
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .padding()
+            .background(theme.inputBackgroundColor)
+            .cornerRadius(theme.cornerRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.cornerRadius)
+                    .stroke(isError ? theme.errorColor : theme.borderColor, lineWidth: isError ? 2 : 1)
+            )
+            .foregroundColor(theme.textPrimary)
+    }
+}
+
+/// Applies themed section header styling
+public struct ThemedSectionHeaderModifier: ViewModifier {
+    let theme: ThemeProtocolV2
+    
+    public init(theme: ThemeProtocolV2) {
+        self.theme = theme
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .font(theme.headlineFont)
+            .foregroundColor(theme.textPrimary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Applies themed list row styling
+public struct ThemedListRowModifier: ViewModifier {
+    let theme: ThemeProtocolV2
+    
+    public init(theme: ThemeProtocolV2) {
+        self.theme = theme
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .padding(.vertical, theme.spacingM)
+            .padding(.horizontal, theme.spacingL)
+            .background(theme.cardBackground)
+            .cornerRadius(theme.cornerRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.cornerRadius)
+                    .stroke(theme.borderColor, lineWidth: 1)
+            )
+    }
+}
+
+/// Applies themed badge/chip styling
+public struct ThemedBadgeModifier: ViewModifier {
+    let theme: ThemeProtocolV2
+    let color: Color?
+    
+    public init(theme: ThemeProtocolV2, color: Color? = nil) {
+        self.theme = theme
+        self.color = color
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .font(theme.captionFont)
+            .padding(.horizontal, theme.spacingS)
+            .padding(.vertical, theme.spacingXS)
+            .background((color ?? theme.accentColor).opacity(0.15))
+            .foregroundColor(color ?? theme.accentColor)
+            .cornerRadius(theme.cornerRadiusSmall)
+    }
+}
+
+/// Applies themed toast/alert styling
+public struct ThemedToastModifier: ViewModifier {
+    let theme: ThemeProtocolV2
+    let type: ToastType
+    
+    public enum ToastType {
+        case success
+        case error
+        case warning
+        case info
+    }
+    
+    public init(theme: ThemeProtocolV2, type: ToastType) {
+        self.theme = theme
+        self.type = type
+    }
+    
+    private var backgroundColor: Color {
+        switch type {
+        case .success: return theme.successColor
+        case .error: return theme.errorColor
+        case .warning: return theme.warningColor
+        case .info: return theme.accentColor
+        }
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .padding()
+            .background(theme.cardBackground)
+            .cornerRadius(theme.cornerRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.cornerRadius)
+                    .stroke(backgroundColor, lineWidth: 1)
+            )
+            .shadow(color: theme.shadowColor, radius: theme.shadowRadius, x: 0, y: theme.shadowY)
+    }
+}
+
+/// Applies themed modal/sheet styling
+public struct ThemedSheetModifier: ViewModifier {
+    let theme: ThemeProtocolV2
+    
+    public init(theme: ThemeProtocolV2) {
+        self.theme = theme
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .background(theme.backgroundMain)
+    }
+}
+
+/// Applies themed destructive button styling
+public struct ThemedDestructiveButtonModifier: ViewModifier {
+    let theme: ThemeProtocolV2
+    
+    public init(theme: ThemeProtocolV2) {
+        self.theme = theme
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .foregroundColor(theme.destructiveColor)
+    }
+}
+
+/// Applies themed disabled state styling
+public struct ThemedDisabledModifier: ViewModifier {
+    let theme: ThemeProtocolV2
+    let isDisabled: Bool
+    
+    public init(theme: ThemeProtocolV2, isDisabled: Bool) {
+        self.theme = theme
+        self.isDisabled = isDisabled
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .opacity(isDisabled ? 0.5 : 1.0)
+            .allowsHitTesting(!isDisabled)
+    }
+}
+
+/// Applies themed action button (circular) styling
+public struct ThemedActionButtonModifier: ViewModifier {
+    let theme: ThemeProtocolV2
+    let isPrimary: Bool
+    
+    public init(theme: ThemeProtocolV2, isPrimary: Bool = true) {
+        self.theme = theme
+        self.isPrimary = isPrimary
+    }
+    
+    public func body(content: Content) -> some View {
+        content
+            .frame(width: theme.actionButtonSize, height: theme.actionButtonSize)
+            .background(
+                RoundedRectangle(cornerRadius: theme.cornerRadius * 2)
+                    .fill(isPrimary ? theme.accentColor.opacity(0.1) : theme.backgroundSecondary)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.cornerRadius * 2)
+                    .stroke(isPrimary ? theme.accentColor.opacity(0.5) : theme.borderColor, lineWidth: 1)
+            )
     }
 }
 
@@ -283,9 +476,113 @@ public extension View {
         self.modifier(ThemedButtonModifier(theme: theme, isPrimary: isPrimary))
     }
     
+    /// Applies themed input field styling
+    func themedInput(theme: ThemeProtocolV2, isError: Bool = false) -> some View {
+        self.modifier(ThemedInputModifier(theme: theme, isError: isError))
+    }
+    
+    /// Applies themed section header styling
+    func themedSectionHeader(theme: ThemeProtocolV2) -> some View {
+        self.modifier(ThemedSectionHeaderModifier(theme: theme))
+    }
+    
+    /// Applies themed list row styling
+    func themedListRow(theme: ThemeProtocolV2) -> some View {
+        self.modifier(ThemedListRowModifier(theme: theme))
+    }
+    
+    /// Applies themed badge/chip styling
+    func themedBadge(theme: ThemeProtocolV2, color: Color? = nil) -> some View {
+        self.modifier(ThemedBadgeModifier(theme: theme, color: color))
+    }
+    
+    /// Applies themed toast styling
+    func themedToast(theme: ThemeProtocolV2, type: ThemedToastModifier.ToastType) -> some View {
+        self.modifier(ThemedToastModifier(theme: theme, type: type))
+    }
+    
+    /// Applies themed sheet styling
+    func themedSheet(theme: ThemeProtocolV2) -> some View {
+        self.modifier(ThemedSheetModifier(theme: theme))
+    }
+    
+    /// Applies themed destructive styling
+    func themedDestructive(theme: ThemeProtocolV2) -> some View {
+        self.modifier(ThemedDestructiveButtonModifier(theme: theme))
+    }
+    
+    /// Applies themed disabled styling
+    func themedDisabled(theme: ThemeProtocolV2, isDisabled: Bool) -> some View {
+        self.modifier(ThemedDisabledModifier(theme: theme, isDisabled: isDisabled))
+    }
+    
+    /// Applies themed action button styling
+    func themedActionButton(theme: ThemeProtocolV2, isPrimary: Bool = true) -> some View {
+        self.modifier(ThemedActionButtonModifier(theme: theme, isPrimary: isPrimary))
+    }
+    
     /// Applies theme transition animation
     func withThemeTransition() -> some View {
         self.transition(.opacity.combined(with: .scale(scale: 0.95)))
             .animation(.easeInOut(duration: 0.3), value: UUID())
+    }
+    
+    /// Applies standard themed shadow
+    func themedShadow(theme: ThemeProtocolV2) -> some View {
+        self.shadow(color: theme.shadowColor, radius: theme.shadowRadius, x: 0, y: theme.shadowY)
+    }
+    
+    /// Applies themed corner radius
+    func themedCornerRadius(_ theme: ThemeProtocolV2, size: CornerRadiusSize = .standard) -> some View {
+        let radius: CGFloat
+        switch size {
+        case .small: radius = theme.cornerRadiusSmall
+        case .standard: radius = theme.cornerRadius
+        case .large: radius = theme.cornerRadiusLarge
+        case .pill: radius = theme.cornerRadiusPill
+        }
+        return self.cornerRadius(radius)
+    }
+}
+
+/// Corner radius size options
+public enum CornerRadiusSize {
+    case small
+    case standard
+    case large
+    case pill
+}
+
+// MARK: - Themed Text Styles
+
+public extension Text {
+    /// Applies primary text styling
+    func themedPrimary(_ theme: ThemeProtocolV2) -> some View {
+        self.foregroundColor(theme.textPrimary)
+    }
+    
+    /// Applies secondary text styling
+    func themedSecondary(_ theme: ThemeProtocolV2) -> some View {
+        self.foregroundColor(theme.textSecondary)
+    }
+    
+    /// Applies accent text styling
+    func themedAccent(_ theme: ThemeProtocolV2) -> some View {
+        self.foregroundColor(theme.accentColor)
+    }
+    
+    /// Applies success text styling
+    func themedSuccess(_ theme: ThemeProtocolV2) -> some View {
+        self.foregroundColor(theme.successColor)
+    }
+    
+    /// Applies error text styling
+    func themedError(_ theme: ThemeProtocolV2) -> some View {
+        self.foregroundColor(theme.errorColor)
+    }
+    
+    /// Applies warning text styling
+    func themedWarning(_ theme: ThemeProtocolV2) -> some View {
+        self.foregroundColor(theme.warningColor)
     }
 }

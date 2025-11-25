@@ -1,6 +1,6 @@
 // MODULE: SlideToConfirmButton
 // VERSION: 1.0.0
-// PURPOSE: Slide gesture component for transaction confirmation (Logic Only - No Styling)
+// PURPOSE: Slide gesture component for transaction confirmation
 
 import SwiftUI
 
@@ -30,18 +30,21 @@ public struct SlideToConfirmConfig: Sendable {
     public static let `default` = SlideToConfirmConfig()
 }
 
-// MARK: - Slide to Confirm Button (Gesture Logic Only)
+// MARK: - Slide to Confirm Button
 
-/// A slide-to-confirm button implementing drag gesture logic.
+/// A beautifully styled slide-to-confirm button with theme integration.
 ///
-/// **Implementation Notes:**
-/// - Uses GeometryReader to calculate relative position
-/// - DragGesture to track 0.0 to 1.0 progress
-/// - Triggers action only when threshold is crossed
-/// - No styling applied (structural only)
+/// **Features:**
+/// - Smooth gradient track with glassmorphism effect
+/// - Animated thumb with pulsing glow
+/// - Progress-based color transitions
+/// - Haptic feedback on completion
+/// - Full theme integration
 public struct SlideToConfirmButton: View {
     
     // MARK: - Properties
+    
+    @EnvironmentObject var themeManager: ThemeManager
     
     /// Current progress (0.0 to 1.0)
     @Binding var progress: CGFloat
@@ -51,6 +54,9 @@ public struct SlideToConfirmButton: View {
     
     /// Configuration
     let config: SlideToConfirmConfig
+    
+    /// Label text
+    let label: String
     
     /// Action to perform when threshold is reached
     let onConfirm: () -> Void
@@ -62,18 +68,21 @@ public struct SlideToConfirmButton: View {
     
     @State private var isDragging: Bool = false
     @State private var hasTriggered: Bool = false
+    @State private var pulseAnimation: Bool = false
     
     // MARK: - Initialization
     
     public init(
         progress: Binding<CGFloat>,
         isEnabled: Bool = true,
+        label: String = "Slide to Confirm",
         config: SlideToConfirmConfig = .default,
         onProgressChange: ((CGFloat) -> Void)? = nil,
         onConfirm: @escaping () -> Void
     ) {
         self._progress = progress
         self.isEnabled = isEnabled
+        self.label = label
         self.config = config
         self.onProgressChange = onProgressChange
         self.onConfirm = onConfirm
@@ -82,38 +91,156 @@ public struct SlideToConfirmButton: View {
     // MARK: - Body
     
     public var body: some View {
+        let theme = themeManager.currentTheme
+        
         GeometryReader { geometry in
             let trackWidth = geometry.size.width
-            let thumbSize = geometry.size.height
-            let maxOffset = trackWidth - thumbSize
+            let thumbSize: CGFloat = geometry.size.height - 8
+            let maxOffset = trackWidth - thumbSize - 8
             
             ZStack(alignment: .leading) {
-                // Track (background)
-                Rectangle()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                
-                // Progress fill
-                Rectangle()
-                    .frame(width: thumbSize + (maxOffset * progress))
-                
-                // Thumb (draggable element)
-                Circle()
-                    .frame(width: thumbSize, height: thumbSize)
-                    .offset(x: maxOffset * progress)
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { value in
-                                handleDragChange(value: value, maxOffset: maxOffset)
-                            }
-                            .onEnded { _ in
-                                handleDragEnd()
-                            }
+                // Track background with gradient
+                RoundedRectangle(cornerRadius: geometry.size.height / 2)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                theme.backgroundSecondary,
+                                theme.backgroundSecondary.opacity(0.8)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
                     )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: geometry.size.height / 2)
+                            .stroke(theme.borderColor.opacity(0.5), lineWidth: 1)
+                    )
+                
+                // Progress fill with animated gradient
+                RoundedRectangle(cornerRadius: geometry.size.height / 2)
+                    .fill(
+                        LinearGradient(
+                            colors: progressColors(theme: theme),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: thumbSize + 8 + (maxOffset * progress))
+                    .animation(.easeOut(duration: 0.1), value: progress)
+                
+                // Label text (fades as progress increases)
+                HStack {
+                    Spacer()
+                    
+                    HStack(spacing: 8) {
+                        if progress < 0.3 {
+                            Image(systemName: "chevron.right.2")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        
+                        Text(hasTriggered ? "Confirmed!" : label)
+                            .font(theme.font(style: .subheadline))
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(theme.textSecondary.opacity(max(0.0, 1.0 - Double(progress) * 2.0)))
+                    
+                    Spacer()
+                }
+                .padding(.leading, thumbSize + 16)
+                
+                // Thumb with glow effect
+                ZStack {
+                    // Glow effect
+                    Circle()
+                        .fill(thumbGlowColor(theme: theme).opacity(0.4))
+                        .frame(width: thumbSize + 10, height: thumbSize + 10)
+                        .blur(radius: 8)
+                        .scaleEffect(pulseAnimation && !hasTriggered ? 1.1 : 1.0)
+                    
+                    // Main thumb
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: thumbColors(theme: theme),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: thumbSize, height: thumbSize)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
+                        .shadow(color: theme.shadowColor.opacity(0.3), radius: 4, x: 0, y: 2)
+                    
+                    // Icon
+                    Image(systemName: hasTriggered ? "checkmark" : "arrow.right")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                        .rotationEffect(.degrees(hasTriggered ? 0 : (isDragging ? 0 : -10)))
+                        .scaleEffect(hasTriggered ? 1.2 : 1.0)
+                }
+                .offset(x: 4 + maxOffset * progress)
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            handleDragChange(value: value, maxOffset: maxOffset)
+                        }
+                        .onEnded { _ in
+                            handleDragEnd()
+                        }
+                )
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: hasTriggered)
             }
         }
+        .frame(height: 60)
+        .opacity(isEnabled && config.isEnabled ? 1.0 : 0.5)
         .disabled(!isEnabled || !config.isEnabled)
         .onChange(of: progress) { _, newValue in
             onProgressChange?(newValue)
+        }
+        .onAppear {
+            startPulseAnimation()
+        }
+    }
+    
+    // MARK: - Colors
+    
+    private func progressColors(theme: any ThemeProtocolV2) -> [Color] {
+        if hasTriggered {
+            return [theme.successColor, theme.successColor.opacity(0.8)]
+        } else if progress > 0.7 {
+            return [theme.successColor.opacity(0.8), theme.accentColor]
+        } else {
+            return [theme.accentColor, theme.accentColor.opacity(0.7)]
+        }
+    }
+    
+    private func thumbColors(theme: any ThemeProtocolV2) -> [Color] {
+        if hasTriggered {
+            return [theme.successColor, theme.successColor.opacity(0.8)]
+        } else if progress > 0.7 {
+            return [theme.successColor, theme.accentColor]
+        } else {
+            return [theme.accentColor, theme.accentColor.opacity(0.8)]
+        }
+    }
+    
+    private func thumbGlowColor(theme: any ThemeProtocolV2) -> Color {
+        if hasTriggered {
+            return theme.successColor
+        } else if progress > 0.7 {
+            return theme.successColor
+        } else {
+            return theme.accentColor
+        }
+    }
+    
+    // MARK: - Animations
+    
+    private func startPulseAnimation() {
+        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+            pulseAnimation = true
         }
     }
     
@@ -156,6 +283,12 @@ public struct SlideToConfirmButton: View {
         withAnimation(.easeOut(duration: 0.2)) {
             progress = 1.0
         }
+        
+        // Haptic feedback
+        #if os(iOS)
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+        #endif
         
         // Execute action
         onConfirm()
@@ -261,4 +394,3 @@ struct SlideToConfirmPreviewContainer: View {
     }
 }
 #endif
-

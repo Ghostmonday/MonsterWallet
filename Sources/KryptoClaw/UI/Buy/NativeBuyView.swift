@@ -336,7 +336,7 @@ public struct NativeBuyView: View {
                     
                     // Content
                     ScrollView {
-                        VStack(spacing: 24) {
+                        VStack(spacing: theme.spacingXL) {
                             switch viewModel.state {
                             case .inputAmount:
                                 amountInputView(theme: theme)
@@ -396,7 +396,7 @@ public struct NativeBuyView: View {
         let steps: [BuyFlowState] = [.inputAmount, .selectPayment, .confirmingOrder, .processing]
         let currentIndex = steps.firstIndex(where: { $0 == viewModel.state }) ?? 0
         
-        HStack(spacing: 4) {
+        HStack(spacing: theme.spacingXS) {
             ForEach(0..<4, id: \.self) { index in
                 Capsule()
                     .fill(index <= currentIndex ? theme.accentColor : theme.borderColor)
@@ -404,14 +404,14 @@ public struct NativeBuyView: View {
             }
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
+        .padding(.vertical, theme.spacingS)
     }
     
     // MARK: - Amount Input View
     
     @ViewBuilder
     private func amountInputView(theme: ThemeProtocolV2) -> some View {
-        VStack(spacing: 24) {
+        VStack(spacing: theme.spacingXL) {
             // Asset Selector
             Menu {
                 ForEach(viewModel.supportedAssets, id: \.id) { asset in
@@ -428,15 +428,15 @@ public struct NativeBuyView: View {
                     } placeholder: {
                         Circle().fill(theme.backgroundSecondary)
                     }
-                    .frame(width: 32, height: 32)
+                    .frame(width: theme.avatarSizeSmall, height: theme.avatarSizeSmall)
                     .clipShape(Circle())
                     
                     Text(viewModel.selectedAsset.name)
-                        .font(theme.font(style: .headline))
+                        .font(theme.headlineFont)
                         .foregroundColor(theme.textPrimary)
                     
                     Image(systemName: "chevron.down")
-                        .font(.caption)
+                        .font(theme.captionFont)
                         .foregroundColor(theme.textSecondary)
                 }
                 .padding()
@@ -445,14 +445,14 @@ public struct NativeBuyView: View {
             }
             
             // Amount Input
-            VStack(spacing: 8) {
-                HStack(alignment: .center, spacing: 4) {
+            VStack(spacing: theme.spacingS) {
+                HStack(alignment: .center, spacing: theme.spacingXS) {
                     Text("$")
-                        .font(.system(size: 48, weight: .bold))
+                        .font(theme.balanceFont)
                         .foregroundColor(theme.textSecondary)
                     
                     TextField("0", text: $viewModel.fiatAmount)
-                        .font(.system(size: 48, weight: .bold))
+                        .font(theme.balanceFont)
                         .foregroundColor(theme.textPrimary)
                         #if os(iOS)
                         .keyboardType(.decimalPad)
@@ -462,23 +462,23 @@ public struct NativeBuyView: View {
                 }
                 
                 Text("≈ \(viewModel.estimatedCrypto) \(viewModel.selectedAsset.symbol)")
-                    .font(theme.font(style: .subheadline))
+                    .font(theme.bodyFont)
                     .foregroundColor(theme.textSecondary)
             }
-            .padding(.vertical, 32)
+            .padding(.vertical, theme.spacing2XL)
             
             // Preset Amounts
-            HStack(spacing: 12) {
+            HStack(spacing: theme.spacingM) {
                 ForEach([25, 50, 100, 500] as [Decimal], id: \.self) { amount in
                     Button {
                         viewModel.setPresetAmount(amount)
                     } label: {
                         Text("$\(amount)")
-                            .font(theme.font(style: .subheadline))
+                            .font(theme.bodyFont)
                             .fontWeight(.medium)
                             .foregroundColor(theme.textPrimary)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
+                            .padding(.horizontal, theme.spacingL)
+                            .padding(.vertical, theme.spacingM)
                             .background(theme.backgroundSecondary)
                             .cornerRadius(theme.cornerRadius)
                     }
@@ -487,10 +487,10 @@ public struct NativeBuyView: View {
             
             // Limits info
             Text("Min $\(viewModel.minAmount) · Max $\(viewModel.maxAmount)")
-                .font(theme.font(style: .caption))
+                .font(theme.captionFont)
                 .foregroundColor(theme.textSecondary)
             
-            Spacer(minLength: 40)
+            Spacer(minLength: theme.spacing2XL + theme.spacingS)
             
             // Continue Button
             Button {
@@ -499,12 +499,12 @@ public struct NativeBuyView: View {
                 }
             } label: {
                 Text("Continue")
-                    .font(theme.font(style: .headline))
+                    .font(theme.headlineFont)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .foregroundColor(theme.qrBackgroundColor)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(viewModel.isValidAmount ? theme.accentColor : theme.borderColor)
+                    .background(viewModel.isValidAmount ? theme.accentColor : theme.disabledColor)
                     .cornerRadius(theme.cornerRadius)
             }
             .disabled(!viewModel.isValidAmount)
@@ -515,20 +515,20 @@ public struct NativeBuyView: View {
     
     @ViewBuilder
     private func paymentSelectionView(theme: ThemeProtocolV2) -> some View {
-        VStack(spacing: 20) {
+        VStack(spacing: theme.spacingXL) {
             // Quote Summary
             if let quote = viewModel.quote {
-                VStack(spacing: 8) {
+                VStack(spacing: theme.spacingS) {
                     Text("You'll receive")
-                        .font(theme.font(style: .subheadline))
+                        .font(theme.bodyFont)
                         .foregroundColor(theme.textSecondary)
                     
                     Text("\(quote.cryptoAmount.formatAsCurrency(symbol: "", maximumFractionDigits: 6)) \(quote.asset.symbol)")
-                        .font(.system(size: 32, weight: .bold))
+                        .font(theme.balanceFont)
                         .foregroundColor(theme.textPrimary)
                     
                     Text("@ $\(quote.exchangeRate) per \(quote.asset.symbol)")
-                        .font(theme.font(style: .caption))
+                        .font(theme.captionFont)
                         .foregroundColor(theme.textSecondary)
                 }
                 .padding()
@@ -538,7 +538,7 @@ public struct NativeBuyView: View {
             }
             
             Text("Select Payment Method")
-                .font(theme.font(style: .headline))
+                .font(theme.headlineFont)
                 .foregroundColor(theme.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
@@ -551,28 +551,28 @@ public struct NativeBuyView: View {
                         Image(systemName: method.icon)
                             .font(.title2)
                             .foregroundColor(theme.accentColor)
-                            .frame(width: 40)
+                            .frame(width: theme.avatarSizeMedium)
                         
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: theme.spacingXS) {
                             Text(method.rawValue)
-                                .font(theme.font(style: .body))
+                                .font(theme.bodyFont)
                                 .fontWeight(.medium)
                                 .foregroundColor(theme.textPrimary)
                             
                             Text(method.processingTime)
-                                .font(theme.font(style: .caption))
+                                .font(theme.captionFont)
                                 .foregroundColor(theme.textSecondary)
                         }
                         
                         Spacer()
                         
-                        VStack(alignment: .trailing, spacing: 2) {
+                        VStack(alignment: .trailing, spacing: theme.spacingXS) {
                             Text("\(NSDecimalNumber(decimal: method.fee * 100).doubleValue, specifier: "%.1f")% fee")
-                                .font(theme.font(style: .caption))
+                                .font(theme.captionFont)
                                 .foregroundColor(theme.textSecondary)
                             
                             Image(systemName: "chevron.right")
-                                .font(.caption)
+                                .font(theme.captionFont)
                                 .foregroundColor(theme.textSecondary)
                         }
                     }
@@ -592,10 +592,10 @@ public struct NativeBuyView: View {
     
     @ViewBuilder
     private func orderConfirmationView(theme: ThemeProtocolV2) -> some View {
-        VStack(spacing: 24) {
+        VStack(spacing: theme.spacingXL) {
             if let quote = viewModel.quote {
                 // Order Summary Card
-                VStack(spacing: 16) {
+                VStack(spacing: theme.spacingL) {
                     // You Pay
                     HStack {
                         Text("You Pay")
@@ -606,7 +606,7 @@ public struct NativeBuyView: View {
                             .foregroundColor(theme.textPrimary)
                     }
                     
-                    Divider()
+                    KryptoDivider()
                     
                     // You Receive
                     HStack {
@@ -618,7 +618,7 @@ public struct NativeBuyView: View {
                             .foregroundColor(theme.accentColor)
                     }
                     
-                    Divider()
+                    KryptoDivider()
                     
                     // Fees
                     HStack {
@@ -637,21 +637,21 @@ public struct NativeBuyView: View {
                             .foregroundColor(theme.textPrimary)
                     }
                     
-                    Divider()
+                    KryptoDivider()
                     
                     // Total
                     HStack {
                         Text("Total")
-                            .font(theme.font(style: .headline))
+                            .font(theme.headlineFont)
                             .foregroundColor(theme.textPrimary)
                         Spacer()
                         Text(quote.totalCost.formatAsCurrency())
-                            .font(theme.font(style: .headline))
+                            .font(theme.headlineFont)
                             .fontWeight(.bold)
                             .foregroundColor(theme.textPrimary)
                     }
                 }
-                .font(theme.font(style: .body))
+                .font(theme.bodyFont)
                 .padding()
                 .background(theme.cardBackground)
                 .cornerRadius(theme.cornerRadius)
@@ -666,7 +666,7 @@ public struct NativeBuyView: View {
                     Button("Change") {
                         viewModel.goBack()
                     }
-                    .font(theme.font(style: .caption))
+                    .font(theme.captionFont)
                     .foregroundColor(theme.accentColor)
                 }
                 .padding()
@@ -675,7 +675,7 @@ public struct NativeBuyView: View {
                 
                 // Timer
                 Text("Quote expires in 5:00")
-                    .font(theme.font(style: .caption))
+                    .font(theme.captionFont)
                     .foregroundColor(theme.warningColor)
                 
                 Spacer()
@@ -690,9 +690,9 @@ public struct NativeBuyView: View {
                         Image(systemName: viewModel.selectedPaymentMethod.icon)
                         Text("Pay \(quote.totalCost.formatAsCurrency())")
                     }
-                    .font(theme.font(style: .headline))
+                    .font(theme.headlineFont)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .foregroundColor(theme.qrBackgroundColor)
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(theme.accentColor)
@@ -706,7 +706,7 @@ public struct NativeBuyView: View {
     
     @ViewBuilder
     private func loadingView(theme: ThemeProtocolV2, message: String) -> some View {
-        VStack(spacing: 24) {
+        VStack(spacing: theme.spacingXL) {
             Spacer()
             
             ProgressView()
@@ -714,7 +714,7 @@ public struct NativeBuyView: View {
                 .tint(theme.accentColor)
             
             Text(message)
-                .font(theme.font(style: .body))
+                .font(theme.bodyFont)
                 .foregroundColor(theme.textSecondary)
             
             Spacer()
@@ -725,7 +725,7 @@ public struct NativeBuyView: View {
     
     @ViewBuilder
     private func successView(theme: ThemeProtocolV2, transactionId: String) -> some View {
-        VStack(spacing: 24) {
+        VStack(spacing: theme.spacingXL) {
             Spacer()
             
             Image(systemName: "checkmark.circle.fill")
@@ -733,20 +733,20 @@ public struct NativeBuyView: View {
                 .foregroundColor(theme.successColor)
             
             Text("Purchase Complete!")
-                .font(theme.font(style: .title))
+                .font(theme.titleFont)
                 .fontWeight(.bold)
                 .foregroundColor(theme.textPrimary)
             
             if let quote = viewModel.quote {
                 Text("You purchased \(quote.cryptoAmount.formatAsCurrency(symbol: "", maximumFractionDigits: 6)) \(quote.asset.symbol)")
-                    .font(theme.font(style: .body))
+                    .font(theme.bodyFont)
                     .foregroundColor(theme.textSecondary)
             }
             
             // Transaction ID
-            VStack(spacing: 4) {
+            VStack(spacing: theme.spacingXS) {
                 Text("Transaction ID")
-                    .font(theme.font(style: .caption))
+                    .font(theme.captionFont)
                     .foregroundColor(theme.textSecondary)
                 Text(transactionId)
                     .font(theme.addressFont)
@@ -757,7 +757,7 @@ public struct NativeBuyView: View {
             .cornerRadius(theme.cornerRadius)
             
             Text("Your crypto will arrive in your wallet within a few minutes.")
-                .font(theme.font(style: .caption))
+                .font(theme.captionFont)
                 .foregroundColor(theme.textSecondary)
                 .multilineTextAlignment(.center)
             
@@ -769,7 +769,7 @@ public struct NativeBuyView: View {
     
     @ViewBuilder
     private func failureView(theme: ThemeProtocolV2, error: String) -> some View {
-        VStack(spacing: 24) {
+        VStack(spacing: theme.spacingXL) {
             Spacer()
             
             Image(systemName: "xmark.circle.fill")
@@ -777,12 +777,12 @@ public struct NativeBuyView: View {
                 .foregroundColor(theme.errorColor)
             
             Text("Purchase Failed")
-                .font(theme.font(style: .title))
+                .font(theme.titleFont)
                 .fontWeight(.bold)
                 .foregroundColor(theme.textPrimary)
             
             Text(error)
-                .font(theme.font(style: .body))
+                .font(theme.bodyFont)
                 .foregroundColor(theme.textSecondary)
                 .multilineTextAlignment(.center)
             
@@ -792,9 +792,9 @@ public struct NativeBuyView: View {
                 viewModel.reset()
             } label: {
                 Text("Try Again")
-                    .font(theme.font(style: .headline))
+                    .font(theme.headlineFont)
                     .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                    .foregroundColor(theme.qrBackgroundColor)
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(theme.accentColor)
@@ -815,4 +815,3 @@ struct NativeBuyView_Previews: PreviewProvider {
     }
 }
 #endif
-

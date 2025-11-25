@@ -17,7 +17,7 @@ public struct SecurityToast: View {
             Image(systemName: isWarning ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                 .foregroundColor(isWarning ? theme.securityWarningColor : theme.successColor)
             Text(message)
-                .font(theme.font(style: .caption))
+                .font(theme.captionFont)
                 .foregroundColor(theme.textPrimary)
                 .multilineTextAlignment(.leading)
             Spacer()
@@ -29,7 +29,7 @@ public struct SecurityToast: View {
             RoundedRectangle(cornerRadius: theme.cornerRadius)
                 .stroke(isWarning ? theme.securityWarningColor : theme.successColor, lineWidth: 1)
         )
-        .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
+        .shadow(color: theme.shadowColor, radius: theme.shadowRadius, x: 0, y: theme.shadowY)
         .padding(.horizontal)
     }
 }

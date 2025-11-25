@@ -24,7 +24,7 @@ struct ChainDetailView: View {
                 )
 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: theme.spacingXL) {
                         ZStack {
                             Circle()
                                 .fill(theme.accentColor.opacity(0.1))
@@ -40,10 +40,10 @@ struct ChainDetailView: View {
                                 .font(.system(size: 48, weight: .bold))
                                 .foregroundColor(theme.accentColor)
                         }
-                        .padding(.top, 40)
+                        .padding(.top, theme.spacing2XL + theme.spacingS)
 
                         if case .loaded(let balances) = walletState.state, let balance = balances[chain] {
-                            VStack(spacing: 8) {
+                            VStack(spacing: theme.spacingS) {
                                 Text(balance.amount + " " + balance.currency)
                                     .font(theme.balanceFont)
                                     .foregroundColor(theme.textPrimary)
@@ -61,29 +61,29 @@ struct ChainDetailView: View {
                                 .foregroundColor(theme.textSecondary)
                         }
 
-                        HStack(spacing: 30) {
-                            VStack {
+                        HStack(spacing: theme.spacing2XL) {
+                            VStack(spacing: theme.spacingS) {
                                 Button(action: { showingSend = true }) {
                                     ZStack {
                                         Circle()
                                             .fill(theme.accentColor)
-                                            .frame(width: 56, height: 56)
+                                            .frame(width: theme.actionButtonSize, height: theme.actionButtonSize)
                                         Image(systemName: theme.iconSend)
                                             .font(.title2)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(theme.qrBackgroundColor)
                                     }
                                 }
                                 Text("Send")
-                                    .font(theme.font(style: .caption))
+                                    .font(theme.captionFont)
                                     .foregroundColor(theme.textPrimary)
                             }
 
-                            VStack {
+                            VStack(spacing: theme.spacingS) {
                                 Button(action: { showingReceive = true }) {
                                     ZStack {
                                         Circle()
                                             .fill(theme.backgroundSecondary)
-                                            .frame(width: 56, height: 56)
+                                            .frame(width: theme.actionButtonSize, height: theme.actionButtonSize)
                                             .overlay(Circle().stroke(theme.borderColor, lineWidth: 1))
                                         Image(systemName: theme.iconReceive)
                                             .font(.title2)
@@ -91,16 +91,16 @@ struct ChainDetailView: View {
                                     }
                                 }
                                 Text("Receive")
-                                    .font(theme.font(style: .caption))
+                                    .font(theme.captionFont)
                                     .foregroundColor(theme.textPrimary)
                             }
                         }
                         .padding(.vertical)
 
                         KryptoCard {
-                            VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: theme.spacingM) {
                                 Text("Network Stats")
-                                    .font(theme.font(style: .headline))
+                                    .font(theme.headlineFont)
                                     .foregroundColor(theme.textPrimary)
 
                                 KryptoListRow(title: "Network Status", value: "Operational", icon: theme.iconShield, isSystemIcon: true)

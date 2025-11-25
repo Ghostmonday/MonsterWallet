@@ -8,9 +8,11 @@ struct AddressBookView: View {
     @State private var showAddSheet = false
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -22,16 +24,11 @@ struct AddressBookView: View {
                 )
 
                 if wsm.contacts.isEmpty {
-                    VStack(spacing: 16) {
-                        Spacer()
-                        Image(systemName: "person.crop.circle.badge.plus")
-                            .font(.system(size: 64))
-                            .foregroundColor(themeManager.currentTheme.textSecondary)
-                        Text("No contacts yet")
-                            .font(themeManager.currentTheme.font(style: .headline))
-                            .foregroundColor(themeManager.currentTheme.textSecondary)
-                        Spacer()
-                    }
+                    KryptoEmptyState(
+                        icon: "person.crop.circle.badge.plus",
+                        title: "No Contacts",
+                        message: "Add your first contact to easily send crypto to friends and family"
+                    )
                 } else {
                     List {
                         ForEach(wsm.contacts) { contact in
@@ -44,7 +41,7 @@ struct AddressBookView: View {
                             )
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
-                            .padding(.vertical, 4)
+                            .padding(.vertical, theme.spacingXS)
                         }
                         .onDelete { indexSet in
                             for index in indexSet {
@@ -77,21 +74,23 @@ struct AddContactView: View {
     @State private var error: String?
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         NavigationView {
             ZStack {
                 Color.clear
-                    .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                    .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                     .ignoresSafeArea()
 
-                VStack(spacing: 24) {
+                VStack(spacing: theme.spacingXL) {
                     KryptoInput(title: "Name", placeholder: "Alice", text: $name)
                     KryptoInput(title: "Address", placeholder: "0x...", text: $address)
                     KryptoInput(title: "Note (Optional)", placeholder: "Friend", text: $note)
 
                     if let err = error {
                         Text(err)
-                            .foregroundColor(themeManager.currentTheme.errorColor)
-                            .font(themeManager.currentTheme.font(style: .caption))
+                            .foregroundColor(theme.errorColor)
+                            .font(theme.captionFont)
                     }
 
                     Spacer()
@@ -111,6 +110,7 @@ struct AddContactView: View {
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("Cancel") { isPresented = false }
+                                .foregroundColor(theme.accentColor)
                         }
                     }
             }

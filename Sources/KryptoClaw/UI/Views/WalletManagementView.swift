@@ -8,9 +8,11 @@ struct WalletManagementView: View {
     @State private var showingCreate = false
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -64,26 +66,28 @@ struct WalletRow: View {
     }
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         KryptoCard {
             HStack {
-                RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
+                RoundedRectangle(cornerRadius: theme.cornerRadius)
                     .fill(walletColor)
-                    .frame(width: 40, height: 40)
+                    .frame(width: theme.avatarSizeMedium, height: theme.avatarSizeMedium)
                     .overlay(
                         Text(wallet.name.prefix(1).uppercased())
-                            .foregroundColor(.white)
-                            .font(.headline)
+                            .foregroundColor(theme.qrBackgroundColor)
+                            .font(theme.headlineFont)
                     )
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: theme.spacingXS) {
                     Text(wallet.name)
-                        .font(themeManager.currentTheme.font(style: .headline))
-                        .foregroundColor(themeManager.currentTheme.textPrimary)
+                        .font(theme.headlineFont)
+                        .foregroundColor(theme.textPrimary)
 
                     if isSelected {
                         Text("Active")
-                            .font(themeManager.currentTheme.font(style: .caption))
-                            .foregroundColor(themeManager.currentTheme.successColor)
+                            .font(theme.captionFont)
+                            .foregroundColor(theme.successColor)
                     }
                 }
 
@@ -91,11 +95,11 @@ struct WalletRow: View {
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(themeManager.currentTheme.successColor)
+                        .foregroundColor(theme.successColor)
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, theme.spacingXS)
     }
 
     // MARK: - Color Theme Parsing Helper
@@ -182,13 +186,15 @@ struct WalletCreationView: View {
     @State private var isVerified = false
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         NavigationView {
             ZStack {
                 Color.clear
-                    .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                    .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                     .ignoresSafeArea()
 
-                VStack(spacing: 24) {
+                VStack(spacing: theme.spacingXL) {
                     if step == 0 {
                         // Step 1: Name
                         KryptoInput(title: "Wallet Name", placeholder: "My Vault", text: $name)
@@ -198,19 +204,19 @@ struct WalletCreationView: View {
                     } else if step == 1 {
                         // Step 2: Seed (Simulation)
                         Text("Secret Recovery Phrase")
-                            .font(themeManager.currentTheme.font(style: .headline))
-                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                            .font(theme.headlineFont)
+                            .foregroundColor(theme.textPrimary)
 
                         Text(seedPhrase)
                             .padding()
-                            .background(themeManager.currentTheme.backgroundSecondary)
-                            .cornerRadius(themeManager.currentTheme.cornerRadius)
-                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                            .background(theme.backgroundSecondary)
+                            .cornerRadius(theme.cornerRadius)
+                            .foregroundColor(theme.textPrimary)
                             .multilineTextAlignment(.center)
 
                         Text("Write this down. We cannot recover it.")
-                            .font(themeManager.currentTheme.font(style: .caption))
-                            .foregroundColor(themeManager.currentTheme.errorColor)
+                            .font(theme.captionFont)
+                            .foregroundColor(theme.errorColor)
 
                         Spacer()
 
@@ -218,52 +224,52 @@ struct WalletCreationView: View {
                     } else {
                         // Step 3: Verify
                         if isVerified {
-                            VStack(spacing: 16) {
+                            VStack(spacing: theme.spacingL) {
                                 Image(systemName: "checkmark.shield.fill")
                                     .font(.system(size: 60))
-                                    .foregroundColor(themeManager.currentTheme.successColor)
+                                    .foregroundColor(theme.successColor)
                                 
                                 Text("Verification Complete")
-                                    .font(themeManager.currentTheme.font(style: .title3))
-                                    .foregroundColor(themeManager.currentTheme.successColor)
+                                    .font(theme.font(style: .title3))
+                                    .foregroundColor(theme.successColor)
                                 
                                 Text("Your wallet is ready to use.")
-                                    .font(themeManager.currentTheme.font(style: .body))
-                                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                                    .font(theme.bodyFont)
+                                    .foregroundColor(theme.textSecondary)
                             }
                             
                             Spacer()
 
                             KryptoButton(title: "Create Wallet", icon: "lock.fill", action: createWallet, isPrimary: true)
                         } else {
-                            VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: theme.spacingM) {
                                 Text("Verify Recovery Phrase")
-                                    .font(themeManager.currentTheme.font(style: .headline))
-                                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                                    .font(theme.headlineFont)
+                                    .foregroundColor(theme.textPrimary)
                                 
                                 Text("Enter your recovery phrase below to verify you saved it.")
-                                    .font(themeManager.currentTheme.font(style: .caption))
-                                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                                    .font(theme.captionFont)
+                                    .foregroundColor(theme.textSecondary)
                                 
                                 TextEditor(text: $verificationInput)
                                     .frame(height: 100)
-                                    .padding(8)
-                                    .background(themeManager.currentTheme.backgroundSecondary)
-                                    .cornerRadius(themeManager.currentTheme.cornerRadius)
-                                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                                    .padding(theme.spacingS)
+                                    .background(theme.backgroundSecondary)
+                                    .cornerRadius(theme.cornerRadius)
+                                    .foregroundColor(theme.textPrimary)
                                     // Prevent capitalization and autocorrect for seed phrases usually
                                     .disableAutocorrection(true)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
-                                            .stroke(verificationError != nil ? themeManager.currentTheme.errorColor : Color.clear, lineWidth: 1)
+                                        RoundedRectangle(cornerRadius: theme.cornerRadius)
+                                            .stroke(verificationError != nil ? theme.errorColor : Color.clear, lineWidth: 1)
                                     )
                                     .accessibilityLabel("Recovery Phrase Verification Input")
                                     .accessibilityHint("Type your secret recovery phrase exactly as shown in the previous step")
                                 
                                 if let error = verificationError {
                                     Text(error)
-                                        .font(themeManager.currentTheme.font(style: .caption))
-                                        .foregroundColor(themeManager.currentTheme.errorColor)
+                                        .font(theme.captionFont)
+                                        .foregroundColor(theme.errorColor)
                                         .accessibilityLabel("Error: \(error)")
                                 }
                             }
@@ -290,10 +296,12 @@ struct WalletCreationView: View {
                                     verificationError = nil
                                 }
                             }
+                            .foregroundColor(theme.accentColor)
                         } else {
                             Button("Cancel") {
                                 isPresented = false
                             }
+                            .foregroundColor(theme.textSecondary)
                         }
                     }
                 }

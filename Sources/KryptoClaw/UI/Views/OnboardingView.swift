@@ -18,50 +18,53 @@ public struct OnboardingView: View {
     }
 
     public var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
 
                 // Logo & Branding
-                VStack(spacing: 24) {
+                VStack(spacing: theme.spacingXL) {
                     Image("Logo")
                         .resizable()
                         .frame(width: 100, height: 100)
-                        .cornerRadius(themeManager.currentTheme.cornerRadius)
+                        .cornerRadius(theme.cornerRadius)
                         .overlay(
-                            RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
-                                .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: theme.cornerRadius)
+                                .stroke(theme.borderColor, lineWidth: 1)
                         )
-                        .shadow(color: themeManager.currentTheme.accentColor.opacity(0.3), radius: 20, x: 0, y: 0)
+                        .shadow(color: theme.accentColor.opacity(0.3), radius: 20, x: 0, y: 0)
 
-                    VStack(spacing: 8) {
+                    VStack(spacing: theme.spacingS) {
                         Text("KRYPTOCLAW")
-                            .font(themeManager.currentTheme.font(style: .largeTitle))
+                            .font(theme.font(style: .largeTitle))
                             .tracking(2)
-                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                            .foregroundColor(theme.textPrimary)
 
                         Text("ELITE. SECURE. UNTRACEABLE.")
-                            .font(themeManager.currentTheme.font(style: .caption))
+                            .font(theme.font(style: .caption))
                             .tracking(4)
-                            .foregroundColor(themeManager.currentTheme.accentColor)
+                            .foregroundColor(theme.accentColor)
                     }
                 }
 
                 Spacer()
 
                 // Actions
-                VStack(spacing: 20) {
-                    KryptoButton(
-                        title: isCreating ? "INITIALIZING..." : "INITIATE PROTOCOL",
-                        icon: isCreating ? "hourglass" : "terminal.fill",
-                        action: { createWallet() },
+                VStack(spacing: theme.spacingXL) {
+                    KryptoProgressButton(
+                        title: "INITIATE PROTOCOL",
+                        icon: "terminal.fill",
+                        isLoading: isCreating,
                         isPrimary: true
-                    )
-                    .disabled(isCreating)
+                    ) {
+                        createWallet()
+                    }
 
                     KryptoButton(
                         title: "RECOVER ASSETS",
@@ -80,22 +83,22 @@ public struct OnboardingView: View {
                         )
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 20)
+                .padding(.horizontal, theme.spacingXL)
+                .padding(.bottom, theme.spacingXL)
 
-                VStack(spacing: 12) {
+                VStack(spacing: theme.spacingM) {
                     Text("By proceeding, you agree to our Terms of Service.")
-                        .font(themeManager.currentTheme.font(style: .caption))
-                        .foregroundColor(themeManager.currentTheme.textSecondary)
+                        .font(theme.font(style: .caption))
+                        .foregroundColor(theme.textSecondary)
 
-                    HStack(spacing: 20) {
+                    HStack(spacing: theme.spacingXL) {
                         Link("Terms", destination: AppConfig.supportURL)
                         Link("Privacy Policy", destination: AppConfig.privacyPolicyURL)
                     }
-                    .font(themeManager.currentTheme.font(style: .caption))
-                    .foregroundColor(themeManager.currentTheme.accentColor)
+                    .font(theme.font(style: .caption))
+                    .foregroundColor(theme.accentColor)
                 }
-                .padding(.bottom, 40)
+                .padding(.bottom, theme.spacing2XL + theme.spacingS)
             }
         }
         .sheet(isPresented: $isImporting) {
@@ -172,36 +175,38 @@ struct ImportWalletView: View {
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         NavigationView {
             ZStack {
                 Color.clear
-                    .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                    .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                     .ignoresSafeArea()
 
-                VStack(spacing: 32) {
-                    VStack(spacing: 8) {
+                VStack(spacing: theme.spacing2XL) {
+                    VStack(spacing: theme.spacingS) {
                         Text("RECOVERY SEQUENCE")
-                            .font(themeManager.currentTheme.font(style: .headline))
+                            .font(theme.font(style: .headline))
                             .tracking(2)
-                            .foregroundColor(themeManager.currentTheme.textPrimary)
+                            .foregroundColor(theme.textPrimary)
 
                         Text("Enter your 12 or 24 word phrase")
-                            .font(themeManager.currentTheme.font(style: .caption))
-                            .foregroundColor(themeManager.currentTheme.textSecondary)
+                            .font(theme.font(style: .caption))
+                            .foregroundColor(theme.textSecondary)
                     }
-                    .padding(.top, 32)
+                    .padding(.top, theme.spacing2XL)
 
                     TextEditor(text: $seedText)
                         .frame(height: 160)
                         .padding()
-                        .background(themeManager.currentTheme.backgroundSecondary)
-                        .cornerRadius(themeManager.currentTheme.cornerRadius) // Razor-edged
+                        .background(theme.backgroundSecondary)
+                        .cornerRadius(theme.cornerRadius)
                         .overlay(
-                            RoundedRectangle(cornerRadius: themeManager.currentTheme.cornerRadius)
-                                .stroke(themeManager.currentTheme.borderColor, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: theme.cornerRadius)
+                                .stroke(theme.borderColor, lineWidth: 1)
                         )
-                        .foregroundColor(themeManager.currentTheme.textPrimary)
-                        .font(themeManager.currentTheme.addressFont)
+                        .foregroundColor(theme.textPrimary)
+                        .font(theme.addressFont)
                         .padding(.horizontal)
 
                     KryptoButton(
@@ -231,29 +236,31 @@ struct BackupMnemonicView: View {
     @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
+        let theme = themeManager.currentTheme
+        
         ZStack {
             Color.clear
-                .themedContainer(theme: themeManager.currentTheme, showPattern: true, applyAnimation: true)
+                .themedContainer(theme: theme, showPattern: true, applyAnimation: true)
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
+            VStack(spacing: theme.spacingXL) {
                 Text("SECRET KEY")
-                    .font(themeManager.currentTheme.font(style: .title2))
-                    .foregroundColor(.red)
-                    .padding(.top, 40)
+                    .font(theme.font(style: .title2))
+                    .foregroundColor(theme.errorColor)
+                    .padding(.top, theme.spacing2XL + theme.spacingS)
 
                 Text("Write this down immediately. Do not share it. We cannot recover it for you.")
-                    .font(themeManager.currentTheme.font(style: .body))
-                    .foregroundColor(themeManager.currentTheme.textSecondary)
+                    .font(theme.font(style: .body))
+                    .foregroundColor(theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
 
                 Text(mnemonic)
-                    .font(themeManager.currentTheme.addressFont)
-                    .foregroundColor(themeManager.currentTheme.textPrimary)
+                    .font(theme.addressFont)
+                    .foregroundColor(theme.textPrimary)
                     .padding()
-                    .background(themeManager.currentTheme.backgroundSecondary)
-                    .cornerRadius(themeManager.currentTheme.cornerRadius)
+                    .background(theme.backgroundSecondary)
+                    .cornerRadius(theme.cornerRadius)
                     .padding(.horizontal)
 
                 Spacer()
@@ -264,7 +271,7 @@ struct BackupMnemonicView: View {
                     action: onConfirm,
                     isPrimary: true
                 )
-                .padding(.bottom, 40)
+                .padding(.bottom, theme.spacing2XL + theme.spacingS)
             }
         }
     }

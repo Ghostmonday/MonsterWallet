@@ -72,17 +72,17 @@ public struct HomeView: View {
                                     .transition(.scale)
                             }
                         }
-                        .padding(8)
+                        .padding(theme.spacingS)
                         .background(theme.backgroundSecondary.opacity(0.5))
-                        .cornerRadius(8)
+                        .cornerRadius(theme.cornerRadius)
                         .accessibilityLabel(showCopyFeedback ? "Address copied and clipboard protected" : "Copy address to clipboard")
                     }
-                    .padding(.bottom, 10)
+                    .padding(.bottom, theme.spacingM)
                 }
 
                 ScrollView {
-                    VStack(spacing: 20) {
-                        VStack(spacing: 10) {
+                    VStack(spacing: theme.spacingXL) {
+                        VStack(spacing: theme.spacingM) {
                             Text("Total Portfolio Value")
                                 .font(theme.font(style: .subheadline))
                                 .foregroundColor(theme.textSecondary)
@@ -100,28 +100,25 @@ public struct HomeView: View {
                                     .foregroundColor(theme.textPrimary)
                             }
                         }
-                        .padding(30)
+                        .padding(theme.spacing2XL)
 
-                        HStack(spacing: 20) {
-                            ActionButton(icon: theme.iconSend, label: "Send", theme: theme) {
+                        HStack(spacing: theme.spacingXL) {
+                            KryptoActionButton(icon: theme.iconSend, label: "Send") {
                                 showingSend = true
                             }
-                            ActionButton(icon: theme.iconReceive, label: "Receive", theme: theme) {
+                            KryptoActionButton(icon: theme.iconReceive, label: "Receive") {
                                 showingReceive = true
                             }
                             if AppConfig.Features.isSwapEnabled {
-                                ActionButton(icon: theme.iconSwap, label: "Swap", theme: theme) {
+                                KryptoActionButton(icon: theme.iconSwap, label: "Swap") {
                                     showingSwap = true
                                 }
                             }
                         }
                         .padding(.horizontal)
 
-                        VStack(alignment: .leading, spacing: 15) {
-                            Text("Assets")
-                                .font(theme.font(style: .title3))
-                                .fontWeight(.bold)
-                                .foregroundColor(theme.textPrimary)
+                        VStack(alignment: .leading, spacing: theme.spacingL) {
+                            KryptoSectionHeader("Assets")
                                 .padding(.horizontal)
 
                             if case let .loaded(balances) = walletState.state {
@@ -135,8 +132,9 @@ public struct HomeView: View {
                                 }
                             } else {
                                 // Skeleton loading state
-                                ForEach(0..<3) { _ in
-                                    SkeletonRow(theme: theme)
+                                ForEach(0..<3, id: \.self) { _ in
+                                    KryptoLoadingRow()
+                                        .padding(.horizontal)
                                 }
                             }
                         }
@@ -187,36 +185,6 @@ public struct HomeView: View {
     }
 }
 
-struct ActionButton: View {
-    let icon: String
-    let label: String
-    let theme: ThemeProtocolV2
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack {
-                ZStack {
-                    RoundedRectangle(cornerRadius: theme.cornerRadius * 4) // Slightly softer than main cards
-                        .fill(theme.accentColor.opacity(0.1)) // More subtle fill
-                        .frame(width: 60, height: 60)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: theme.cornerRadius * 4)
-                                .stroke(theme.accentColor.opacity(0.5), lineWidth: 1)
-                        )
-
-                    Image(systemName: icon)
-                        .font(.system(size: 24))
-                        .foregroundColor(theme.accentColor)
-                }
-                Text(label)
-                    .font(theme.font(style: .caption).bold()) // Bolder text
-                    .foregroundColor(theme.textPrimary)
-            }
-        }
-    }
-}
-
 struct AssetRow: View {
     let chain: Chain
     let balance: Balance
@@ -224,38 +192,13 @@ struct AssetRow: View {
 
     var body: some View {
         HStack {
-            AsyncImage(url: chain.logoURL) { phase in
-                switch phase {
-                case .empty:
-                    RoundedRectangle(cornerRadius: theme.cornerRadius)
-                        .fill(theme.backgroundSecondary)
-                        .frame(width: 40, height: 40)
-                        .overlay(ProgressView())
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 40, height: 40)
-                        .clipShape(RoundedRectangle(cornerRadius: theme.cornerRadius))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: theme.cornerRadius)
-                                .stroke(theme.borderColor, lineWidth: 0.5)
-                        )
-                case .failure:
-                    Circle()
-                        .fill(Color.white.opacity(0.1))
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Text(chain.nativeCurrency.prefix(1))
-                                .fontWeight(.bold)
-                                .foregroundColor(theme.textPrimary)
-                        )
-                @unknown default:
-                    EmptyView()
-                }
-            }
+            KryptoAssetIcon(
+                imageURL: chain.logoURL,
+                fallbackText: chain.nativeCurrency,
+                size: .medium
+            )
 
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: theme.spacingXS) {
                 Text(chain.displayName)
                     .font(theme.font(style: .headline))
                     .foregroundColor(theme.textPrimary)
@@ -266,7 +209,7 @@ struct AssetRow: View {
 
             Spacer()
 
-            VStack(alignment: .trailing) {
+            VStack(alignment: .trailing, spacing: theme.spacingXS) {
                 Text(balance.amount)
                     .font(theme.font(style: .body))
                     .foregroundColor(theme.textPrimary)
@@ -286,49 +229,6 @@ struct AssetRow: View {
                 .stroke(theme.borderColor, lineWidth: 1)
         )
         .padding(.horizontal)
-    }
-}
-
-struct SkeletonRow: View {
-    let theme: ThemeProtocolV2
-    @State private var isAnimating = false
-
-    var body: some View {
-        HStack {
-            Circle()
-                .fill(theme.textSecondary.opacity(0.2))
-                .frame(width: 40, height: 40)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(theme.textSecondary.opacity(0.2))
-                    .frame(width: 100, height: 16)
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(theme.textSecondary.opacity(0.2))
-                    .frame(width: 60, height: 12)
-            }
-            
-            Spacer()
-            
-            VStack(alignment: .trailing, spacing: 8) {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(theme.textSecondary.opacity(0.2))
-                    .frame(width: 80, height: 16)
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(theme.textSecondary.opacity(0.2))
-                    .frame(width: 50, height: 12)
-            }
-        }
-        .padding()
-        .background(theme.cardBackground)
-        .cornerRadius(theme.cornerRadius)
-        .padding(.horizontal)
-        .opacity(isAnimating ? 0.5 : 1.0)
-        .onAppear {
-            withAnimation(Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
-                isAnimating = true
-            }
-        }
     }
 }
 
