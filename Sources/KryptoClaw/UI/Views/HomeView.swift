@@ -11,6 +11,9 @@ public struct HomeView: View {
 
     @State private var selectedChain: Chain?
     @State private var showCopyFeedback = false
+    @State private var showClipboardToast = false
+
+    private static let toastDisplayDuration: TimeInterval = 3.0
 
     public init() {}
 
@@ -50,9 +53,13 @@ public struct HomeView: View {
                 if let address = walletState.currentAddress {
                     Button(action: {
                         walletState.copyCurrentAddress()
-                        withAnimation { showCopyFeedback = true }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            withAnimation { showCopyFeedback = false }
+                        withAnimation {
+                            showClipboardToast = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + Self.toastDisplayDuration) {
+                            withAnimation {
+                                showClipboardToast = false
+                            }
                         }
                     }) {
                         HStack {
@@ -60,22 +67,14 @@ public struct HomeView: View {
                                 .font(theme.addressFont)
                                 .foregroundColor(theme.textSecondary)
                             
-                            if showCopyFeedback {
-                                Image(systemName: "shield.check.fill")
-                                    .font(.caption)
-                                    .foregroundColor(theme.successColor)
-                                    .transition(.scale)
-                            } else {
-                                Image(systemName: "doc.on.doc")
-                                    .font(.caption)
-                                    .foregroundColor(theme.accentColor)
-                                    .transition(.scale)
-                            }
+                            Image(systemName: "doc.on.doc")
+                                .font(.caption)
+                                .foregroundColor(theme.accentColor)
                         }
                         .padding(theme.spacingS)
                         .background(theme.backgroundSecondary.opacity(0.5))
                         .cornerRadius(theme.cornerRadius)
-                        .accessibilityLabel(showCopyFeedback ? "Address copied and clipboard protected" : "Copy address to clipboard")
+                        .accessibilityLabel("Copy address to clipboard")
                     }
                     .padding(.bottom, theme.spacingM)
                 }
@@ -140,6 +139,18 @@ public struct HomeView: View {
                         }
                     }
                     .padding(.bottom, 100)
+                }
+            }
+            if showClipboardToast {
+                VStack {
+                    Spacer()
+                    ToastView(
+                        message: "Address copied securely. Clipboard will be cleared automatically.",
+                        iconName: "checkmark.shield.fill",
+                        backgroundColor: theme.successColor,
+                        textColor: theme.textPrimary
+                    )
+                    .padding()
                 }
             }
         }
