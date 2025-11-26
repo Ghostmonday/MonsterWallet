@@ -975,4 +975,3 @@ struct Screenshot_Onboarding: View {
         }
     }
 }
-

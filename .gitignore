@@ -37,3 +37,6 @@ build_log.txt
 hero_banner.png
 logo.png
 .build_derived_data/
+
+# Xcode build folder (SPM derived data)
+build/

@@ -59,17 +59,30 @@ KryptoClaw isn't just another wallet—it's architected for security, reliabilit
 ```text
 KryptoClaw/
 ├── Sources/KryptoClaw/
-│   ├── Core/           # KeyStore, Blockchain, Transaction Logic
-│   ├── UI/             # Views, Components, Theme Engine
-│   └── App/            # Entry Point, Config
-├── Tests/KryptoClawTests/
-│   ├── Unit/           # Logic Tests
-│   ├── Integration/    # Simulation Demo
-│   └── Compliance/     # Audit Scanner
-├── BuildPlan.md        # The Master Plan
-├── Spec.md             # The Blueprint
-├── ThemeArtistGuide.md # The Designer's Manual
-└── V2_ROADMAP.md       # The Future
+│   ├── Core/                 # KeyStore, Blockchain, Transaction, Security
+│   │   ├── Blockchain/       # Chain-specific transaction services
+│   │   ├── Models/           # Data models (Contact, WalletInfo, NFT)
+│   │   ├── Protocols/        # Provider & signer protocols
+│   │   ├── Providers/        # HTTP providers & NFT fetchers
+│   │   ├── Recovery/         # Shamir recovery & P2P signing
+│   │   ├── Security/         # Keychain, Secure Enclave, Biometrics
+│   │   ├── Services/         # Logger, Telemetry, Error handling
+│   │   └── Transaction/      # Gas routing, simulation, analysis
+│   ├── Screenshot/           # App Store screenshot generation
+│   ├── Themes/               # Visual themes (10+ themes)
+│   ├── UI/                   # SwiftUI views & components
+│   │   ├── Components/       # Reusable UI components
+│   │   └── Views/            # Screen views (Home, Send, Settings, etc.)
+│   ├── KryptoClawApp.swift   # App entry point
+│   ├── ThemeEngine.swift     # Theme management
+│   └── WalletStateManager.swift # App state management
+├── Tests/KryptoClawTests/    # Unit, integration & compliance tests
+├── docs/
+│   ├── REFERENCE_GUIDE.md    # Developer implementation guide
+│   ├── V2_ROADMAP.md         # Future features roadmap
+│   └── archive/              # Historical reports
+├── scripts/                  # Build & screenshot automation
+└── Website_Assets/           # Landing page & privacy policy
 ```
 
 ---

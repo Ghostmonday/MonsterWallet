@@ -668,4 +668,3 @@ public final class FakeDataProvider {
         return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
-
