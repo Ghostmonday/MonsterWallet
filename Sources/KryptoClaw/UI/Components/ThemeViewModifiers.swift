@@ -131,6 +131,9 @@ public struct ThemedButtonModifier: ViewModifier {
             .onHover { hovering in
                 isHovering = hovering
             }
+            .simultaneousGesture(TapGesture().onEnded {
+                SoundManager.shared.playSound(named: theme.soundButtonPress)
+            })
     }
 }
 
@@ -253,6 +256,17 @@ public struct ThemedToastModifier: ViewModifier {
                     .stroke(backgroundColor, lineWidth: 1)
             )
             .shadow(color: theme.shadowColor, radius: theme.shadowRadius, x: 0, y: theme.shadowY)
+            .onAppear {
+                switch type {
+                case .success:
+                    SoundManager.shared.playSound(named: theme.soundSuccess)
+                case .error:
+                    SoundManager.shared.playSound(named: theme.soundError)
+                case .warning, .info:
+                    // Optional: Add warning/info sounds if needed
+                    break
+                }
+            }
     }
 }
 
@@ -322,6 +336,9 @@ public struct ThemedActionButtonModifier: ViewModifier {
                 RoundedRectangle(cornerRadius: theme.cornerRadius * 2)
                     .stroke(isPrimary ? theme.accentColor.opacity(0.5) : theme.borderColor, lineWidth: 1)
             )
+            .simultaneousGesture(TapGesture().onEnded {
+                SoundManager.shared.playSound(named: theme.soundButtonPress)
+            })
     }
 }
 

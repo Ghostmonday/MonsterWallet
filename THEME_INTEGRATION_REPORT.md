@@ -101,7 +101,24 @@ Each theme now exhibits:
 - System blue accents
 - Familiar interface patterns
 
-### 5. **Performance Optimizations**
+    public let iconShield = "checkmark.seal.fill"
+}
+
+### 5. **Sound Design System** (NEW)
+Integrated a `SoundManager` and updated the Theme Engine to support immersive audio feedback:
+
+- **Theme-Specific Sounds**: Each theme can define unique sounds for:
+    - Button Press
+    - Success Actions
+    - Error States
+    - Tab/Theme Changes
+- **Implementation**:
+    - `SoundManager.swift`: Handles audio playback with system sound fallback.
+    - Updated `ThemeProtocolV2` to include sound properties.
+    - Updated `ThemedButtonModifier` and `ThemedToastModifier` to trigger sounds.
+- **Assets**: Defined expected filenames (e.g., `elite_click.mp3`, `cyber_success.wav`) in `SOUND_ASSETS.md`.
+
+### 6. **Performance Optimizations**
 
 - Animations use `.repeatForever()` with minimal CPU impact
 - Background effects are optional and can be disabled
@@ -176,9 +193,8 @@ Sources/KryptoClaw/
 
 ## Next Steps (Optional Enhancements)
 
-1. **Sound Design**: Add theme-specific sound effects for interactions
-2. **Haptics**: Expand haptic feedback patterns per theme
-3. **Custom Theme Creator**: Allow users to create custom themes
+1. **Haptics**: Expand haptic feedback patterns per theme
+2. **Custom Theme Creator**: Allow users to create custom themes
 4. **Theme Transitions**: Add more transition effects (slide, morph, etc.)
 5. **Performance Monitor**: Track FPS during animation-heavy themes
 

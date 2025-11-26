@@ -36,6 +36,12 @@ public protocol ThemeProtocolV2 {
     var iconSwap: String { get }
     var iconSettings: String { get }
     var iconShield: String { get }
+    
+    // Sound Design
+    var soundButtonPress: String? { get }
+    var soundSuccess: String? { get }
+    var soundError: String? { get }
+    var soundTabChange: String? { get }
 }
 
 public enum BackgroundAnimationType {
@@ -52,6 +58,12 @@ public extension ThemeProtocolV2 {
     
     // Backward compatibility: hasDiamondTexture maps to showDiamondPattern
     var hasDiamondTexture: Bool { showDiamondPattern }
+    
+    // Default sounds (nil means silent or fallback)
+    var soundButtonPress: String? { nil }
+    var soundSuccess: String? { nil }
+    var soundError: String? { nil }
+    var soundTabChange: String? { nil }
 }
 
 public enum KryptoColors {
@@ -138,8 +150,12 @@ public class ThemeManager: ObservableObject {
     }
 
     public func setTheme(type: ThemeType) {
+        let newTheme = ThemeFactory.create(type: type)
+        // Play activation sound for the new theme
+        SoundManager.shared.playSound(named: newTheme.soundSuccess)
+        
         withAnimation {
-            self.currentTheme = ThemeFactory.create(type: type)
+            self.currentTheme = newTheme
         }
     }
 }
@@ -188,6 +204,12 @@ public struct EliteDarkTheme: ThemeProtocolV2 {
     public let iconSwap = "arrow.triangle.swap"
     public let iconSettings = "gearshape.circle.fill"
     public let iconShield = "checkmark.shield.fill"
+    
+    // Elite Sounds
+    public let soundButtonPress: String? = "elite_click"
+    public let soundSuccess: String? = "elite_success"
+    public let soundError: String? = "elite_error"
+    public let soundTabChange: String? = "elite_tab"
 }
 
 // Cyberpunk - Retro-futuristic dystopia with 80s neon aesthetics
@@ -232,6 +254,12 @@ public struct CyberPunkTheme: ThemeProtocolV2 {
     public let iconSwap = "arrow.triangle.2.circlepath.circle.fill"
     public let iconSettings = "cpu"
     public let iconShield = "exclamationmark.shield.fill"
+    
+    // Cyberpunk Sounds
+    public let soundButtonPress: String? = "cyber_click"
+    public let soundSuccess: String? = "cyber_success"
+    public let soundError: String? = "cyber_error"
+    public let soundTabChange: String? = "cyber_tab"
 }
 
 // Pure White - Minimalist luxury with Japanese aesthetic
@@ -364,6 +392,12 @@ public struct FireAshTheme: ThemeProtocolV2 {
     public let iconSwap = "tornado"
     public let iconSettings = "poweron"
     public let iconShield = "shield.slash.fill"
+    
+    // Fire & Ash Sounds
+    public let soundButtonPress: String? = "fire_click"
+    public let soundSuccess: String? = "fire_success"
+    public let soundError: String? = "fire_error"
+    public let soundTabChange: String? = "fire_tab"
 }
 
 // Water & Ice - Serene aquatic depths with crystalline clarity
@@ -408,5 +442,11 @@ public struct WaterIceTheme: ThemeProtocolV2 {
     public let iconSwap = "arrow.triangle.capsulepath"
     public let iconSettings = "slider.horizontal.2.square"
     public let iconShield = "checkmark.seal.fill"
+    
+    // Water & Ice Sounds
+    public let soundButtonPress: String? = "water_click"
+    public let soundSuccess: String? = "water_success"
+    public let soundError: String? = "water_error"
+    public let soundTabChange: String? = "water_tab"
 }
 
