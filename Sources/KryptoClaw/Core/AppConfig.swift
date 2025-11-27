@@ -17,6 +17,12 @@ public enum AppConfig {
     public static var oneInchAPIKey: String? {
         ProcessInfo.processInfo.environment["ONEINCH_API_KEY"]
     }
+    
+    /// OpenSea API key for NFT fetching
+    /// Get key at: https://docs.opensea.io/reference/api-keys
+    public static var openSeaAPIKey: String? {
+        ProcessInfo.processInfo.environment["OPENSEA_API_KEY"]
+    }
 
     // MARK: - Environment Detection
     

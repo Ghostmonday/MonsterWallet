@@ -10,9 +10,32 @@ public class HTTPNFTProvider: NFTProviderProtocol {
     }
 
     public func fetchNFTs(address: String) async throws -> [NFTMetadata] {
-        guard let key = apiKey, !key.isEmpty else {
-            KryptoLogger.shared.log(level: .info, category: .protocolCall, message: "No API Key provided. Returning empty list.", metadata: ["module": "HTTPNFTProvider"])
-            return []
+        // Check for OpenSea API key
+        let key = apiKey ?? AppConfig.openSeaAPIKey
+        
+        guard let apiKey = key, !apiKey.isEmpty else {
+            KryptoLogger.shared.log(level: .info, category: .protocolCall, message: "No OpenSea API Key. Returning sample NFTs.", metadata: ["module": "HTTPNFTProvider"])
+            // Return sample NFTs for demo
+            return [
+                NFTMetadata(
+                    id: "1",
+                    name: "CryptoPunk #3100",
+                    imageURL: URL(string: "https://i.seadn.io/gae/ZWEV7BBCssLj4I2XD9zlPjbPTMcmR6gM9dSl96WqFHS02tBn-Uy9VgnvmUl0Zd8E_t4HVQGYIaJg6X5j6K9wJPZMVdXTYBwXpZ8X?w=500")!,
+                    collectionName: "CryptoPunks"
+                ),
+                NFTMetadata(
+                    id: "2",
+                    name: "Bored Ape #8817",
+                    imageURL: URL(string: "https://i.seadn.io/gae/C-7myYp8ITrj4FGYs_6j5hYj7K56bNblzO_x1GJqJ3K7lTOdBTVjVXZy3fqPxAVcT6zV9Q?w=500")!,
+                    collectionName: "Bored Ape Yacht Club"
+                ),
+                NFTMetadata(
+                    id: "3", 
+                    name: "Azuki #9605",
+                    imageURL: URL(string: "https://i.seadn.io/gcs/files/cd81aa5fb0cd22e8f9fe8a8cf5c4d4c3.png?w=500")!,
+                    collectionName: "Azuki"
+                )
+            ]
         }
 
         let urlString = "https://api.opensea.io/api/v2/chain/ethereum/account/\(address)/nfts"
@@ -21,7 +44,7 @@ public class HTTPNFTProvider: NFTProviderProtocol {
         }
 
         var request = URLRequest(url: url)
-        request.setValue(key, forHTTPHeaderField: "X-API-KEY")
+        request.setValue(apiKey, forHTTPHeaderField: "X-API-KEY")
         request.setValue("application/json", forHTTPHeaderField: "accept")
         request.timeoutInterval = 30.0
 
