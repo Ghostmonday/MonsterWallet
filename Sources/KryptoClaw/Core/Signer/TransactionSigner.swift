@@ -104,9 +104,12 @@ public class TransactionSigner {
                 $0.byteFee = 10 // sat/vbyte, should be configurable
                 $0.privateKey = [privateKey.data]
                 
-                $0.utxo = utxos.map { utxo in
-                    BitcoinUnspentTransaction.with {
-                        $0.outPoint.hash = Data(hexString: utxo.hash)!
+                $0.utxo = utxos.compactMap { utxo in
+                    guard let hashData = Data(hexString: utxo.hash) else {
+                        return nil
+                    }
+                    return BitcoinUnspentTransaction.with {
+                        $0.outPoint.hash = hashData
                         $0.outPoint.index = utxo.index
                         $0.amount = utxo.amount
                         $0.script = utxo.script ?? Data() // Script should be fetched

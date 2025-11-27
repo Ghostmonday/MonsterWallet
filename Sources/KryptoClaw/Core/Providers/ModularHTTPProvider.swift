@@ -224,12 +224,24 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
 
         let url = AppConfig.rpcURL
 
+        // Convert value to hex - handle both decimal and hex strings
+        let valueHex: String
+        if value.hasPrefix("0x") {
+            // Already hex, remove prefix and use as-is
+            valueHex = String(value.dropFirst(2))
+        } else if let decimalValue = BigUInt(value) {
+            // Decimal string, convert to hex
+            valueHex = String(decimalValue, radix: 16)
+        } else {
+            throw BlockchainError.parsingError
+        }
+        
         let estimatePayload: [String: Any] = [
             "jsonrpc": "2.0",
             "method": "eth_estimateGas",
             "params": [[
                 "to": to,
-                "value": "0x" + (BigUInt(value).map { String($0, radix: 16) } ?? "0"),
+                "value": "0x" + valueHex,
                 "data": "0x" + data.hexString,
             ]],
             "id": 1,
@@ -264,10 +276,33 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = 30.0
 
-        let (data, _) = try await session.data(for: request)
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw BlockchainError.parsingError }
+        let (data, response) = try await session.data(for: request)
+        
+        // Check HTTP status
+        if let httpResponse = response as? HTTPURLResponse,
+           !(200...299).contains(httpResponse.statusCode) {
+            throw BlockchainError.networkError(
+                NSError(domain: "HTTP", code: httpResponse.statusCode, userInfo: nil)
+            )
+        }
+        
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw BlockchainError.parsingError
+        }
 
-        if let err = json["error"] as? [String: Any] { throw BlockchainError.rpcError(err["message"] as? String ?? "RPC Error") }
-        return json["result"] as? String ?? "0x0"
+        // Check for RPC error
+        if let err = json["error"] as? [String: Any] {
+            let message = err["message"] as? String ?? "RPC Error"
+            let code = err["code"] as? Int ?? -1
+            logger.error("RPC Error [\(code)]: \(message)")
+            throw BlockchainError.rpcError(message)
+        }
+        
+        guard let result = json["result"] as? String else {
+            logger.error("Missing result in RPC response: \(json)")
+            throw BlockchainError.parsingError
+        }
+        
+        return result
     }
 }

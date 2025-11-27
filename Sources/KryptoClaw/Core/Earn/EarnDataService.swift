@@ -147,8 +147,8 @@ public actor EarnDataService {
         try await Task.sleep(nanoseconds: 100_000_000) // 100ms
         
         // Mock response data based on real Lido stats
-        let mockAPY = Decimal(string: "3.8")! // ~3.8% APY for ETH staking
-        let mockTVL = Decimal(string: "28500000000")! // ~$28.5B TVL
+        let mockAPY = Decimal(string: "3.8") ?? 3.8 // ~3.8% APY for ETH staking
+        let mockTVL = Decimal(string: "28500000000") ?? 28500000000 // ~$28.5B TVL
         
         // Create stETH asset
         let stETH = Asset(
@@ -176,8 +176,8 @@ public actor EarnDataService {
             isActive: true,
             strategyDescription: "Stake ETH and receive stETH, a liquid staking token that accrues daily rewards. No minimum, no lockup.",
             rewardsBreakdown: [
-                RewardComponent(name: "Consensus Rewards", apy: Decimal(string: "2.8")!),
-                RewardComponent(name: "Execution Rewards", apy: Decimal(string: "1.0")!)
+                RewardComponent(name: "Consensus Rewards", apy: Decimal(string: "2.8") ?? 2.8),
+                RewardComponent(name: "Execution Rewards", apy: Decimal(string: "1.0") ?? 1.0)
             ]
         )
         
@@ -203,8 +203,8 @@ public actor EarnDataService {
                 protocol: .aave,
                 inputAsset: .usdc,
                 outputAsset: createAToken("aUSDC", "USDC", .usdc),
-                apy: Decimal(string: "4.2")!,
-                tvlUSD: Decimal(string: "2100000000")!,
+                apy: Decimal(string: "4.2") ?? 4.2,
+                tvlUSD: Decimal(string: "2100000000") ?? 2100000000,
                 lockup: .none,
                 riskLevel: .low,
                 isActive: true,
@@ -217,8 +217,8 @@ public actor EarnDataService {
                 protocol: .aave,
                 inputAsset: .usdt,
                 outputAsset: createAToken("aUSDT", "USDT", .usdt),
-                apy: Decimal(string: "3.9")!,
-                tvlUSD: Decimal(string: "980000000")!,
+                apy: Decimal(string: "3.9") ?? 3.9,
+                tvlUSD: Decimal(string: "980000000") ?? 980000000,
                 lockup: .none,
                 riskLevel: .low,
                 isActive: true,
@@ -231,8 +231,8 @@ public actor EarnDataService {
                 protocol: .aave,
                 inputAsset: .ethereum,
                 outputAsset: createAToken("aWETH", "ETH", .ethereum),
-                apy: Decimal(string: "2.1")!,
-                tvlUSD: Decimal(string: "4500000000")!,
+                apy: Decimal(string: "2.1") ?? 2.1,
+                tvlUSD: Decimal(string: "4500000000") ?? 4500000000,
                 lockup: .none,
                 riskLevel: .low,
                 isActive: true,
@@ -281,8 +281,8 @@ public actor EarnDataService {
                 protocol: .rocket,
                 inputAsset: .ethereum,
                 outputAsset: rETH,
-                apy: Decimal(string: "3.5")!,
-                tvlUSD: Decimal(string: "3200000000")!,
+                apy: Decimal(string: "3.5") ?? 3.5,
+                tvlUSD: Decimal(string: "3200000000") ?? 3200000000,
                 lockup: .none, // Liquid staking
                 riskLevel: .low,
                 minimumStake: "10000000000000000", // 0.01 ETH
@@ -304,8 +304,8 @@ public actor EarnDataService {
                 id: "compound-usdc-supply",
                 protocol: .compound,
                 inputAsset: .usdc,
-                apy: Decimal(string: "3.8")!,
-                tvlUSD: Decimal(string: "1500000000")!,
+                apy: Decimal(string: "3.8") ?? 3.8,
+                tvlUSD: Decimal(string: "1500000000") ?? 1500000000,
                 lockup: .none,
                 riskLevel: .low,
                 isActive: true,
@@ -335,9 +335,9 @@ public actor EarnDataService {
                     type: .token,
                     isVerified: true
                 ),
-                apy: Decimal(string: "5.5")!,
-                apyRange: Decimal(string: "4.0")!...Decimal(string: "7.0")!,
-                tvlUSD: Decimal(string: "12000000000")!,
+                apy: Decimal(string: "5.5") ?? 5.5,
+                apyRange: (Decimal(string: "4.0") ?? 4.0)...(Decimal(string: "7.0") ?? 7.0),
+                tvlUSD: Decimal(string: "12000000000") ?? 12000000000,
                 lockup: .unbondingPeriod(days: 7),
                 riskLevel: .medium,
                 isActive: true,

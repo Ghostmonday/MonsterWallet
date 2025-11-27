@@ -77,7 +77,9 @@ public class MultiChainProvider: BlockchainProviderProtocol {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         // Add Basic Auth
-        let authData = AppConfig.TestEndpoints.bitcoinAuth.data(using: .utf8)!
+        guard let authData = AppConfig.TestEndpoints.bitcoinAuth.data(using: .utf8) else {
+            throw BlockchainError.parsingError
+        }
         request.setValue("Basic \(authData.base64EncodedString())", forHTTPHeaderField: "Authorization")
         request.timeoutInterval = 10.0
         
@@ -277,11 +279,13 @@ public class MultiChainProvider: BlockchainProviderProtocol {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.httpBody = signedTx // Raw hex string or binary? Mempool expects hex string usually.
-        // WalletCore signs to Data. We need to check if we send bytes or hex.
-        // Usually API expects Hex String.
+        // Mempool.space expects hex string in the request body
         let hexString = signedTx.hexString
-        request.httpBody = hexString.data(using: .utf8)
+        guard let bodyData = hexString.data(using: .utf8) else {
+            throw BlockchainError.parsingError
+        }
+        request.httpBody = bodyData
+        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
         
         let (data, response) = try await session.data(for: request)
         

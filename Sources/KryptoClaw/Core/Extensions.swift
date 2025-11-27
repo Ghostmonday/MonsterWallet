@@ -6,17 +6,33 @@ public extension Data {
     }
     
     init?(hexString: String) {
-        let len = hexString.count / 2
+        // Handle 0x prefix
+        var cleanHex = hexString
+        if cleanHex.hasPrefix("0x") || cleanHex.hasPrefix("0X") {
+            cleanHex = String(cleanHex.dropFirst(2))
+        }
+        
+        // Handle odd-length strings by padding with leading zero
+        if cleanHex.count % 2 != 0 {
+            cleanHex = "0" + cleanHex
+        }
+        
+        guard !cleanHex.isEmpty else {
+            return nil
+        }
+        
+        let len = cleanHex.count / 2
         var data = Data(capacity: len)
-        var ptr = hexString.startIndex
+        var ptr = cleanHex.startIndex
+        
         for _ in 0..<len {
-            let end = hexString.index(ptr, offsetBy: 2)
-            let bytes = hexString[ptr..<end]
-            if let num = UInt8(bytes, radix: 16) {
-                data.append(num)
-            } else {
+            guard ptr < cleanHex.endIndex else { return nil }
+            let end = cleanHex.index(ptr, offsetBy: 2, limitedBy: cleanHex.endIndex) ?? cleanHex.endIndex
+            let bytes = cleanHex[ptr..<end]
+            guard let num = UInt8(bytes, radix: 16) else {
                 return nil
             }
+            data.append(num)
             ptr = end
         }
         self = data

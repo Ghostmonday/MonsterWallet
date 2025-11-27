@@ -3,6 +3,7 @@
 // PURPOSE: Actor-based staking transaction executor with simulation guard
 
 import Foundation
+import BigInt
 
 // MARK: - Staking Manager
 
@@ -509,36 +510,78 @@ public actor StakingManager {
     
     // MARK: - ABI Encoding Helpers
     
-    /// Encode an address to 32-byte ABI format
+    /// Encode an address to 32-byte ABI format (12 bytes padding + 20 bytes address)
     private func encodeAddress(_ address: String) -> Data {
         var cleanAddress = address.lowercased()
         if cleanAddress.hasPrefix("0x") {
             cleanAddress = String(cleanAddress.dropFirst(2))
         }
         
+        // Validate address length (should be 40 hex chars = 20 bytes)
+        guard cleanAddress.count == 40 else {
+            return Data(repeating: 0, count: 32) // Return zero-filled data on error
+        }
+        
+        // Start with 12 bytes of padding (zeros)
         var data = Data(repeating: 0, count: 12)
         
-        // Convert hex string to bytes
+        // Convert hex string to bytes and append
         var index = cleanAddress.startIndex
         for _ in 0..<20 {
-            let nextIndex = cleanAddress.index(index, offsetBy: 2)
+            guard index < cleanAddress.endIndex else { break }
+            let nextIndex = cleanAddress.index(index, offsetBy: 2, limitedBy: cleanAddress.endIndex) ?? cleanAddress.endIndex
             if let byte = UInt8(cleanAddress[index..<nextIndex], radix: 16) {
                 data.append(byte)
+            } else {
+                // Invalid hex, return zero-filled data
+                return Data(repeating: 0, count: 32)
             }
             index = nextIndex
+        }
+        
+        // Ensure we have exactly 32 bytes (12 padding + 20 address)
+        if data.count < 32 {
+            data.append(Data(repeating: 0, count: 32 - data.count))
         }
         
         return data
     }
     
-    /// Encode a uint256 value
+    /// Encode a uint256 value (32 bytes, big-endian)
     private func encodeUint256(_ value: String) -> Data {
         var data = Data(repeating: 0, count: 32)
         
+        // Handle hex strings
+        if value.hasPrefix("0x") {
+            let hexString = String(value.dropFirst(2))
+            if let hexData = Data(hexString: hexString) {
+                // Pad or truncate to 32 bytes
+                if hexData.count <= 32 {
+                    data.replaceSubrange((32 - hexData.count)..<32, with: hexData)
+                } else {
+                    // Truncate if too long
+                    data.replaceSubrange(0..<32, with: hexData.prefix(32))
+                }
+                return data
+            }
+        }
+        
+        // Handle decimal strings (UInt64 max is 18,446,744,073,709,551,615)
+        // For larger values, should use BigInt, but for now handle UInt64
         if let intValue = UInt64(value) {
             var bigEndian = intValue.bigEndian
             let bytes = withUnsafeBytes(of: &bigEndian) { Data($0) }
             data.replaceSubrange(24..<32, with: bytes)
+        } else if let bigIntValue = BigUInt(value) {
+            // Handle larger values with BigUInt
+            let hexString = String(bigIntValue, radix: 16)
+            if let hexData = Data(hexString: hexString) {
+                if hexData.count <= 32 {
+                    data.replaceSubrange((32 - hexData.count)..<32, with: hexData)
+                } else {
+                    data.replaceSubrange(0..<32, with: hexData.prefix(32))
+                }
+            }
         }
         
         return data

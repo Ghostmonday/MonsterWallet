@@ -118,7 +118,8 @@ public class WalletStateManager: ObservableObject {
         // Fetch balances in PARALLEL with timeout
         await withTaskGroup(of: (Chain, Balance?).self) { group in
             for chain in chainsToFetch {
-                group.addTask { [self] in
+                group.addTask { [weak self] in
+                    guard let self = self else { return (chain, nil) }
                     do {
                         // Add 5 second timeout per chain
                         let balance = try await self.withTimeout(seconds: 5) {
