@@ -10,13 +10,13 @@ import XCTest
 final class E2ETestRunner {
     
     /// Run all E2E tests and generate a summary report
-    static func runAllTests() async {
+    static func runAllTests() async throws {
         print("\n" + "=".repeating(60))
         print("🧪 KRYPTOCLAW E2E TEST SUITE")
         print("=".repeating(60) + "\n")
         
         let testSuite = WalletE2ETests()
-        testSuite.setUp()
+        try testSuite.setUp()
         
         var passed = 0
         var failed = 0

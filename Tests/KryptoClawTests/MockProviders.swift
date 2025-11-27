@@ -41,6 +41,10 @@ class MockRouter: RoutingProtocol {
     func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate {
         return GasEstimate(gasLimit: 21000, maxFeePerGas: "20000000000", maxPriorityFeePerGas: "1000000000")
     }
+    
+    func getTransactionCount(address: String) async throws -> UInt64 {
+        return 0
+    }
 }
 
 class MockSecurityPolicy: SecurityPolicyProtocol {

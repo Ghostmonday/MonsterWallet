@@ -3,7 +3,7 @@ import XCTest
 import BigInt
 
 // Mock URLProtocol to intercept network requests
-class MockURLProtocol: URLProtocol {
+class SimulationMockURLProtocol: URLProtocol {
     static var requestHandler: ((URLRequest) -> (HTTPURLResponse, Data?))?
 
     override class func canInit(with request: URLRequest) -> Bool {
@@ -15,7 +15,7 @@ class MockURLProtocol: URLProtocol {
     }
 
     override func startLoading() {
-        guard let handler = MockURLProtocol.requestHandler else {
+        guard let handler = SimulationMockURLProtocol.requestHandler else {
             XCTFail("Received unexpected request with no handler set")
             return
         }
@@ -40,7 +40,7 @@ final class SimulationOverflowTests: XCTestCase {
         super.setUp()
 
         let config = URLSessionConfiguration.ephemeral
-        config.protocolClasses = [MockURLProtocol.self]
+        config.protocolClasses = [SimulationMockURLProtocol.self]
         session = URLSession(configuration: config)
 
         let rpcRouter = RPCRouter(session: session)
@@ -48,7 +48,7 @@ final class SimulationOverflowTests: XCTestCase {
     }
 
     override func tearDown() {
-        MockURLProtocol.requestHandler = nil
+        SimulationMockURLProtocol.requestHandler = nil
         super.tearDown()
     }
 
@@ -70,7 +70,7 @@ final class SimulationOverflowTests: XCTestCase {
         )
 
         // Mock RPC responses
-        MockURLProtocol.requestHandler = { request in
+        SimulationMockURLProtocol.requestHandler = { request in
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
 
             guard let httpBody = request.httpBody,

@@ -450,55 +450,68 @@ struct ImportWalletSheet: View {
     
     private var inputView: some View {
         VStack(spacing: 0) {
-            VStack(spacing: KC.Space.sm) {
-                Text("Import Wallet")
-                    .font(KC.Font.title2)
-                    .foregroundColor(KC.Color.textPrimary)
-                
-                Text("Enter your 12-word recovery phrase")
-                    .font(KC.Font.body)
-                    .foregroundColor(KC.Color.textTertiary)
-            }
-            .padding(.top, KC.Space.xl)
+            inputHeader
+            wordInputGrid
+            importButton
+        }
+    }
+    
+    private var inputHeader: some View {
+        VStack(spacing: KC.Space.sm) {
+            Text("Import Wallet")
+                .font(KC.Font.title2)
+                .foregroundColor(KC.Color.textPrimary)
             
-            ScrollView {
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: KC.Space.sm) {
-                    ForEach(0..<12, id: \.self) { index in
-                        HStack(spacing: KC.Space.sm) {
-                            Text("\(index + 1)")
-                                .font(KC.Font.caption)
-                                .foregroundColor(KC.Color.textMuted)
-                                .frame(width: 24)
-                            
-                            TextField("", text: $words[index])
-                                .font(KC.Font.mono)
-                                .foregroundColor(KC.Color.textPrimary)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
-                        }
-                        .padding(KC.Space.md)
-                        .background(KC.Color.card)
-                        .clipShape(RoundedRectangle(cornerRadius: KC.Radius.sm))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: KC.Radius.sm)
-                                .stroke(KC.Color.border, lineWidth: 1)
-                        )
-                    }
+            Text("Enter your 12-word recovery phrase")
+                .font(KC.Font.body)
+                .foregroundColor(KC.Color.textTertiary)
+        }
+        .padding(.top, KC.Space.xl)
+    }
+    
+    private var wordInputGrid: some View {
+        ScrollView {
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: KC.Space.sm) {
+                ForEach(Array(0..<12), id: \.self) { index in
+                    wordInputField(index: index)
                 }
-                .kcPadding()
-                .padding(.top, KC.Space.xl)
-            }
-            
-            KCButton("Import Wallet", icon: "arrow.down.doc", isLoading: isImporting) {
-                importWallet()
             }
             .kcPadding()
-            .padding(.bottom, KC.Space.xxxl)
-            .disabled(words.contains(where: { $0.isEmpty }))
+            .padding(.top, KC.Space.xl)
         }
+    }
+    
+    private func wordInputField(index: Int) -> some View {
+        HStack(spacing: KC.Space.sm) {
+            Text("\(index + 1)")
+                .font(KC.Font.caption)
+                .foregroundColor(KC.Color.textMuted)
+                .frame(width: 24)
+            
+            TextField("", text: $words[index])
+                .font(KC.Font.mono)
+                .foregroundColor(KC.Color.textPrimary)
+                .disableAutocorrection(true)
+        }
+        .padding(KC.Space.md)
+        .background(KC.Color.card)
+        .clipShape(RoundedRectangle(cornerRadius: KC.Radius.sm))
+        .overlay(
+            RoundedRectangle(cornerRadius: KC.Radius.sm)
+                .stroke(KC.Color.border, lineWidth: 1)
+        )
+    }
+    
+    private var importButton: some View {
+        KCButton("Import Wallet", icon: "arrow.down.doc", isLoading: isImporting) {
+            importWallet()
+        }
+        .kcPadding()
+        .padding(.bottom, KC.Space.xxxl)
+        .disabled(words.contains(where: { $0.isEmpty }))
     }
     
     private var successView: some View {
