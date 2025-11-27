@@ -25,11 +25,12 @@ public class MultiChainProvider: BlockchainProviderProtocol {
     }
 
     private func fetchBitcoinBalance(address: String) async throws -> Balance {
-        // // B) IMPLEMENTATION INSTRUCTIONS
-        // Investigate `wallet.getBalance` from Trust Wallet Core (Phase 4).
-        // If it supports network calls, replace this custom RPC logic.
-        // Current implementation uses mempool.space for balance check.
-
+        // Use local regtest node in test environment
+        if AppConfig.isTestEnvironment {
+            return try await fetchBitcoinBalanceLocal(address: address)
+        }
+        
+        // Production: mempool.space
         let urlString = "https://mempool.space/api/address/\(address)"
         guard let url = URL(string: urlString) else { throw BlockchainError.invalidAddress }
 
@@ -54,14 +55,56 @@ public class MultiChainProvider: BlockchainProviderProtocol {
 
         return Balance(amount: "\(balanceBTC)", currency: "BTC", decimals: 8)
     }
+    
+    private func fetchBitcoinBalanceLocal(address: String) async throws -> Balance {
+        // Bitcoin Core RPC - regtest
+        let url = AppConfig.TestEndpoints.bitcoinRPC
+        
+        let payload: [String: Any] = [
+            "jsonrpc": "1.0",
+            "id": "balance",
+            "method": "getreceivedbyaddress",
+            "params": [address, 0] // 0 confirmations
+        ]
+        
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: payload) else {
+            throw BlockchainError.parsingError
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = httpBody
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Add Basic Auth
+        let authData = AppConfig.TestEndpoints.bitcoinAuth.data(using: .utf8)!
+        request.setValue("Basic \(authData.base64EncodedString())", forHTTPHeaderField: "Authorization")
+        request.timeoutInterval = 10.0
+        
+        do {
+            let (data, _) = try await session.data(for: request)
+            
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let result = json["result"] as? Double {
+                return Balance(amount: String(format: "%.8f", result), currency: "BTC", decimals: 8)
+            }
+            
+            // If address not in wallet, return 0
+            return Balance(amount: "0.00000000", currency: "BTC", decimals: 8)
+        } catch {
+            NSLog("⚠️ BTC balance fetch failed: %@", error.localizedDescription)
+            return Balance(amount: "0.00000000", currency: "BTC", decimals: 8)
+        }
+    }
 
     private func fetchSolanaBalance(address: String) async throws -> Balance {
-        // // B) IMPLEMENTATION INSTRUCTIONS
-        // Investigate `wallet.getBalance` from Trust Wallet Core (Phase 4).
-        // If it supports network calls, replace this custom RPC logic.
-        // Current implementation uses Solana JSON-RPC.
-
-        let url = URL(string: "https://api.mainnet-beta.solana.com")!
+        // Use local node in test environment
+        let url: URL
+        if AppConfig.isTestEnvironment {
+            url = AppConfig.TestEndpoints.solanaRPC
+        } else {
+            url = URL(string: "https://api.mainnet-beta.solana.com")!
+        }
 
         let payload: [String: Any] = [
             "jsonrpc": "2.0",

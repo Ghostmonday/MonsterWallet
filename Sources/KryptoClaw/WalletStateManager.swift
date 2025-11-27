@@ -112,8 +112,8 @@ public class WalletStateManager: ObservableObject {
 
         var balances: [Chain: Balance] = [:]
         
-        // In test environment, only fetch ETH (BTC/SOL not configured)
-        let chainsToFetch: [Chain] = AppConfig.isTestEnvironment ? [.ethereum] : Chain.allCases
+        // Fetch all chains (local endpoints now configured for test mode)
+        let chainsToFetch: [Chain] = Chain.allCases
 
         // Fetch balances in PARALLEL with timeout
         await withTaskGroup(of: (Chain, Balance?).self) { group in
