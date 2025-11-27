@@ -43,15 +43,24 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             return SimulationResult(success: true, estimatedGasUsed: 21000, balanceChanges: [:], error: nil)
         }
 
-        let balanceBigInt = if balance.amount.hasPrefix("0x") {
-            BigUInt(balance.amount.dropFirst(2), radix: 16) ?? BigUInt(0)
+        // Convert balance from ETH string (e.g., "4897.999937") to wei BigUInt
+        let balanceInWei: BigUInt
+        if balance.amount.hasPrefix("0x") {
+            balanceInWei = BigUInt(balance.amount.dropFirst(2), radix: 16) ?? BigUInt(0)
+        } else if let ethDecimal = Decimal(string: balance.amount) {
+            // Convert ETH to wei (multiply by 10^18)
+            let weiDecimal = ethDecimal * pow(10, 18)
+            balanceInWei = BigUInt(weiDecimal.description.split(separator: ".").first ?? "0") ?? BigUInt(0)
         } else {
-            BigUInt(balance.amount) ?? BigUInt(0)
+            balanceInWei = BigUInt(0)
         }
+        
+        NSLog("🔍 Simulation: balance=%@ ETH, balanceWei=%@", balance.amount, String(balanceInWei))
 
         let txValue = BigUInt(tx.value) ?? BigUInt(0)
+        NSLog("🔍 Simulation: txValue=%@ wei", String(txValue))
 
-        if txValue > balanceBigInt {
+        if txValue > balanceInWei {
             return SimulationResult(
                 success: false,
                 estimatedGasUsed: 0,
