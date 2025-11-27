@@ -161,15 +161,16 @@ public class WalletStateManager: ObservableObject {
         // Fetch history in background (non-blocking)
         Task.detached { [weak self] in
             guard let self = self else { return }
-            var allSummaries: [TransactionSummary] = []
+            var summaries: [TransactionSummary] = []
             for chain in chainsToFetch {
                 if let hist = try? await self.blockchainProvider.fetchHistory(address: address, chain: chain) {
-                    allSummaries.append(contentsOf: hist.transactions)
+                    summaries.append(contentsOf: hist.transactions)
                 }
             }
-            allSummaries.sort { $0.timestamp > $1.timestamp }
+            summaries.sort { $0.timestamp > $1.timestamp }
+            let finalSummaries = summaries // Make immutable for Sendable
             await MainActor.run {
-                self.history = TransactionHistory(transactions: allSummaries)
+                self.history = TransactionHistory(transactions: finalSummaries)
             }
         }
         

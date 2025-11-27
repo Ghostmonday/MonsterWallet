@@ -26,6 +26,7 @@ final class WalletE2ETests: XCTestCase {
     private let testBitcoinAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
     private let testSolanaAddress = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
     
+    @MainActor
     override func setUp() {
         super.setUp()
         
@@ -46,6 +47,7 @@ final class WalletE2ETests: XCTestCase {
         )
     }
     
+    @MainActor
     override func tearDown() {
         walletStateManager = nil
         testKeyStore = nil

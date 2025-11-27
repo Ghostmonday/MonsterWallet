@@ -14,6 +14,12 @@ public enum LogCategory: String {
     case boundary = "Boundary"
     case error = "Error"
     case security = "Security"
+    // Added for comprehensive logging
+    case blockchain = "Blockchain"
+    case transaction = "Transaction"
+    case network = "Network"
+    case simulation = "Simulation"
+    case appLifecycle = "AppLifecycle"
 }
 
 public protocol LoggerProtocol {

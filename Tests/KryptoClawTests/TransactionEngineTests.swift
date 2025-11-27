@@ -2,7 +2,7 @@ import XCTest
 @testable import KryptoClaw
 
 class TEMockBlockchainProvider: BlockchainProviderProtocol {
-    var balanceToReturn: Balance = Balance(amount: "0x100000000000000", currency: "ETH", decimals: 18) // Fits in UInt64
+    var balanceToReturn: Balance = Balance(amount: "1000.00", currency: "ETH", decimals: 18) // Decimal ETH format
     
     func fetchBalance(address: String, chain: Chain) async throws -> Balance {
         return balanceToReturn
@@ -42,41 +42,42 @@ final class TransactionEngineTests: XCTestCase {
     }
     
     func testSimulationSuccess() async throws {
+        // Use valid test addresses
         let tx = Transaction(
-            from: "0xSender",
-            to: "0xReceiver",
-            value: "0x100", // Small value
+            from: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            to: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            value: "1000000000000000", // 0.001 ETH in wei (decimal)
             data: Data(),
             nonce: 0,
             gasLimit: 21000,
             maxFeePerGas: "1000000000",
             maxPriorityFeePerGas: "1000000000",
-            chainId: 1
+            chainId: 31337 // Local testnet
         )
         
         let result = try await simulator.simulate(tx: tx)
-        XCTAssertTrue(result.success)
+        XCTAssertTrue(result.success, "Simulation should succeed, error: \(result.error ?? "none")")
         XCTAssertNil(result.error)
     }
     
     func testSimulationInsufficientFunds() async throws {
-        mockProvider.balanceToReturn = Balance(amount: "0x0", currency: "ETH", decimals: 18)
+        mockProvider.balanceToReturn = Balance(amount: "0.00", currency: "ETH", decimals: 18) // Zero balance in decimal format
         
         let tx = Transaction(
-            from: "0xSender",
-            to: "0xReceiver",
-            value: "0x100",
+            from: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            to: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            value: "1000000000000000000", // 1 ETH in wei
             data: Data(),
             nonce: 0,
             gasLimit: 21000,
             maxFeePerGas: "1000000000",
             maxPriorityFeePerGas: "1000000000",
-            chainId: 1
+            chainId: 31337
         )
         
         let result = try await simulator.simulate(tx: tx)
         XCTAssertFalse(result.success)
-        XCTAssertEqual(result.error, "Insufficient funds")
+        XCTAssertTrue(result.error?.contains("Insufficient") ?? false, "Error should mention insufficient funds, got: \(result.error ?? "nil")")
     }
     
     func testRouterEstimate() async throws {

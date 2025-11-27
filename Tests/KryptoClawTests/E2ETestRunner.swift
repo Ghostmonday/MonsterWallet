@@ -16,7 +16,7 @@ final class E2ETestRunner {
         print("=".repeating(60) + "\n")
         
         let testSuite = WalletE2ETests()
-        testSuite.setUp()
+        await MainActor.run { testSuite.setUp() }
         
         var passed = 0
         var failed = 0
@@ -152,7 +152,7 @@ final class E2ETestRunner {
             print("❌ FAILED: \(error)\n")
         }
         
-        testSuite.tearDown()
+        await MainActor.run { testSuite.tearDown() }
         
         // Print summary
         print("\n" + "=".repeating(60))
