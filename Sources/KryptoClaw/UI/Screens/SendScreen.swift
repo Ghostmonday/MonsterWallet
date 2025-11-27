@@ -388,11 +388,20 @@ public struct SendScreen: View {
             let weiValue = ethToWei(amount)
             NSLog("🔴 SEND TX: amount=%@ ETH, wei=%@, to=%@", amount, weiValue, recipient)
             
-            await walletState.confirmTransaction(to: recipient, value: weiValue, chain: selectedChain)
-            HapticEngine.shared.play(.success)
-            withAnimation {
+            let success = await walletState.confirmTransaction(to: recipient, value: weiValue, chain: selectedChain)
+            
+            await MainActor.run {
                 isProcessing = false
-                showSuccess = true
+                if success {
+                    HapticEngine.shared.play(.success)
+                    withAnimation {
+                        showSuccess = true
+                    }
+                } else {
+                    HapticEngine.shared.play(.error)
+                    // Error state is set by confirmTransaction
+                    NSLog("🔴 Transaction failed - not showing success screen")
+                }
             }
         }
     }

@@ -1,0 +1,88 @@
+# KryptoClaw Local Blockchain Testing Environment
+# Run: docker-compose up -d
+# Provides local testnets for ETH, SOL, and BTC
+
+version: '3.8'
+
+services:
+  # ═══════════════════════════════════════════════════════════════
+  # ETHEREUM LOCAL NODE (Anvil - Foundry)
+  # RPC: http://localhost:8545
+  # ═══════════════════════════════════════════════════════════════
+  ethereum:
+    image: ghcr.io/foundry-rs/foundry:latest
+    container_name: kryptoclaw-eth
+    command: >
+      anvil
+      --host 0.0.0.0
+      --port 8545
+      --accounts 10
+      --balance 10000
+      --block-time 2
+      --chain-id 31337
+    ports:
+      - "8545:8545"
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════════════════════
+  # SOLANA LOCAL NODE (Test Validator)
+  # RPC: http://localhost:8899
+  # WebSocket: ws://localhost:8900
+  # ═══════════════════════════════════════════════════════════════
+  solana:
+    image: solanalabs/solana:v1.18.15
+    container_name: kryptoclaw-sol
+    command: >
+      solana-test-validator
+      --rpc-port 8899
+      --bind-address 0.0.0.0
+      --quiet
+    ports:
+      - "8899:8899"
+      - "8900:8900"
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════════════════════
+  # BITCOIN LOCAL NODE (Regtest Mode)
+  # RPC: http://localhost:18443
+  # User: kryptoclaw / Pass: testpass123
+  # ═══════════════════════════════════════════════════════════════
+  bitcoin:
+    image: ruimarinho/bitcoin-core:latest
+    container_name: kryptoclaw-btc
+    command: >
+      -regtest
+      -server
+      -rpcuser=kryptoclaw
+      -rpcpassword=testpass123
+      -rpcallowip=0.0.0.0/0
+      -rpcbind=0.0.0.0
+      -txindex
+      -fallbackfee=0.0001
+    ports:
+      - "18443:18443"
+      - "18444:18444"
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════════════════════
+  # NGINX REVERSE PROXY (Optional - unified endpoint)
+  # All chains via: http://localhost:8080/eth, /sol, /btc
+  # ═══════════════════════════════════════════════════════════════
+  proxy:
+    image: nginx:alpine
+    container_name: kryptoclaw-proxy
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - ethereum
+      - solana
+      - bitcoin
+    restart: unless-stopped
+
+# Named volumes for persistence (optional)
+volumes:
+  btc-data:
+  sol-data:
+
