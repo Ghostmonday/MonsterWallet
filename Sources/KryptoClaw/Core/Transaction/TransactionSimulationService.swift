@@ -4,6 +4,7 @@
 
 import Foundation
 import CryptoKit
+import BigInt
 
 // MARK: - Simulation Result
 
@@ -271,10 +272,11 @@ public actor TransactionSimulationService {
     /// Simulate an Ethereum transaction
     private func simulateEthereum(request: SimulationRequest) async throws -> SimulationReceipt {
         // Use eth_call to simulate
+        let valueBigInt = BigUInt(request.value) ?? 0
         var callParams: [String: Any] = [
             "from": request.from,
             "to": request.to,
-            "value": "0x" + (UInt64(request.value) ?? 0).hexString
+            "value": "0x" + String(valueBigInt, radix: 16)
         ]
         
         if !request.data.isEmpty {
@@ -404,12 +406,12 @@ public actor TransactionSimulationService {
     
     /// Calculate expected balance changes
     private func calculateBalanceChanges(request: SimulationRequest, gasEstimate: UInt64) -> [String: String] {
-        guard let valueWei = UInt64(request.value) else {
+        guard let valueWei = BigUInt(request.value) else {
             return [:]
         }
         
         // Estimate gas cost (using mock gas price)
-        let gasCost = gasEstimate * 30_000_000_000 // 30 gwei
+        let gasCost = BigUInt(gasEstimate) * BigUInt(30_000_000_000) // 30 gwei
         let totalCost = valueWei + gasCost
         
         return [
