@@ -5,6 +5,17 @@ import OSLog
 public class ModularHTTPProvider: BlockchainProviderProtocol {
     private let session: URLSession
     private let logger = Logger(subsystem: "com.kryptoclaw.app", category: "ModularHTTPProvider")
+    
+    // Shared number formatter for ETH formatting (thread-safe for read-only use)
+    private static let ethFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 6
+        formatter.minimumFractionDigits = 2
+        formatter.decimalSeparator = "."
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        return formatter
+    }()
 
     public init(session: URLSession = .shared) {
         self.session = session
@@ -38,7 +49,16 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
     private func fetchLocalTestnetHistory(address: String, chain: Chain) async throws -> TransactionHistory {
         let url = AppConfig.rpcURL
         let normalizedAddress = address.lowercased()
-        var transactions: [TransactionSummary] = []
+        
+        // Shared number formatter (thread-safe for read-only use)
+        let formatter: NumberFormatter = {
+            let f = NumberFormatter()
+            f.maximumFractionDigits = 6
+            f.minimumFractionDigits = 2
+            f.decimalSeparator = "."
+            f.usesGroupingSeparator = false
+            return f
+        }()
         
         // Get current block number
         let blockNumPayload: [String: Any] = [
@@ -58,33 +78,86 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         guard let blockNumJson = try? JSONSerialization.jsonObject(with: blockNumData) as? [String: Any],
               let blockNumHex = blockNumJson["result"] as? String,
               let currentBlock = UInt64(blockNumHex.dropFirst(2), radix: 16) else {
+            logger.warning("Failed to get current block number")
             return TransactionHistory(transactions: [])
         }
         
         // Scan last 50 blocks (reasonable for local testnet)
         let blocksToScan = min(currentBlock, 50)
-        let startBlock = currentBlock - blocksToScan
+        let startBlock = max(0, currentBlock - blocksToScan)
+        let blockRange = Array(stride(from: currentBlock, through: startBlock, by: -1))
         
-        for blockNum in stride(from: currentBlock, through: startBlock, by: -1) {
-            let blockPayload: [String: Any] = [
-                "jsonrpc": "2.0",
-                "method": "eth_getBlockByNumber",
-                "params": ["0x" + String(blockNum, radix: 16), true], // true = include transactions
-                "id": Int(blockNum)
-            ]
+        // Fetch blocks in parallel with concurrency limit
+        var allTransactions: [TransactionSummary] = []
+        let maxConcurrency = 5 // Limit concurrent requests
+        
+        await withTaskGroup(of: [TransactionSummary].self) { group in
+            // Add all tasks
+            for blockNum in blockRange {
+                group.addTask { [weak self] in
+                    guard let self = self else { return [] }
+                    return await self.fetchTransactionsFromBlock(
+                        blockNum: blockNum,
+                        address: normalizedAddress,
+                        chain: chain,
+                        formatter: formatter,
+                        url: url
+                    )
+                }
+            }
             
+            // Process results as they come in with early termination
+            for await blockTransactions in group {
+                allTransactions.append(contentsOf: blockTransactions)
+                
+                // Early termination if we have enough transactions
+                if allTransactions.count >= 20 {
+                    group.cancelAll()
+                    break
+                }
+            }
+        }
+        
+        // Sort by timestamp descending and limit to 20
+        allTransactions.sort { $0.timestamp > $1.timestamp }
+        return TransactionHistory(transactions: Array(allTransactions.prefix(20)))
+    }
+    
+    /// Fetch transactions from a single block
+    private func fetchTransactionsFromBlock(
+        blockNum: UInt64,
+        address: String,
+        chain: Chain,
+        formatter: NumberFormatter,
+        url: URL
+    ) async -> [TransactionSummary] {
+        let blockPayload: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "eth_getBlockByNumber",
+            "params": ["0x" + String(blockNum, radix: 16), true],
+            "id": Int(blockNum)
+        ]
+        
+        do {
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONSerialization.data(withJSONObject: blockPayload)
+            request.timeoutInterval = 5.0 // Shorter timeout for individual blocks
+            
             let (blockData, _) = try await session.data(for: request)
             
             guard let blockJson = try? JSONSerialization.jsonObject(with: blockData) as? [String: Any],
                   let result = blockJson["result"] as? [String: Any],
                   let txArray = result["transactions"] as? [[String: Any]],
                   let timestampHex = result["timestamp"] as? String else {
-                continue
+                return []
             }
             
             let timestamp = UInt64(timestampHex.dropFirst(2), radix: 16) ?? 0
             let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
+            
+            var transactions: [TransactionSummary] = []
             
             for tx in txArray {
                 guard let from = (tx["from"] as? String)?.lowercased(),
@@ -95,17 +168,11 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
                 }
                 
                 // Filter transactions involving our address
-                if from == normalizedAddress || to == normalizedAddress {
+                if from == address || to == address {
                     // Convert value from wei to ETH
                     let weiValue = BigUInt(valueHex.dropFirst(2), radix: 16) ?? BigUInt(0)
                     let ethValue = Decimal(string: String(weiValue)) ?? 0
                     let eth = ethValue / pow(10, 18)
-                    
-                    let formatter = NumberFormatter()
-                    formatter.maximumFractionDigits = 6
-                    formatter.minimumFractionDigits = 2
-                    formatter.decimalSeparator = "."
-                    formatter.usesGroupingSeparator = false
                     let valueString = formatter.string(from: eth as NSNumber) ?? "0.00"
                     
                     transactions.append(TransactionSummary(
@@ -119,13 +186,11 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
                 }
             }
             
-            // Limit to 20 transactions for performance
-            if transactions.count >= 20 { break }
+            return transactions
+        } catch {
+            logger.debug("Failed to fetch block \(blockNum): \(error.localizedDescription)")
+            return []
         }
-        
-        // Sort by timestamp descending
-        transactions.sort { $0.timestamp > $1.timestamp }
-        return TransactionHistory(transactions: transactions)
     }
 
     public func broadcast(signedTx: Data, chain: Chain) async throws -> String {
@@ -235,14 +300,8 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         let ethValue = weiDecimal / pow(10, 18)
         
         // Format to string, avoiding scientific notation
-        let formatter = NumberFormatter()
-        formatter.maximumFractionDigits = 6
-        formatter.minimumFractionDigits = 2
-        formatter.decimalSeparator = "."
-        formatter.numberStyle = .decimal
-        formatter.usesGroupingSeparator = false // Plain number string
-        
-        let amountString = formatter.string(from: ethValue as NSNumber) ?? "0.00"
+        // Use shared formatter instance (thread-safe for read-only use)
+        let amountString = Self.ethFormatter.string(from: ethValue as NSNumber) ?? "0.00"
         
         logger.info("Balance fetched: \(hexResult) -> \(amountString) ETH")
 

@@ -127,18 +127,35 @@ public class WalletStateManager: ObservableObject {
         // Fetch all chains (local endpoints now configured for test mode)
         let chainsToFetch: [Chain] = Chain.allCases
 
-        // Fetch balances in PARALLEL with timeout
+        // Fetch balances AND prices in PARALLEL with timeout
         await withTaskGroup(of: (Chain, Balance?).self) { group in
             for chain in chainsToFetch {
                 group.addTask { [weak self] in
                     guard let self = self else { return (chain, nil) }
                     do {
-                        // Add 5 second timeout per chain
+                        // Fetch balance with timeout
                         let balance = try await self.withTimeout(seconds: 5) {
                             try await self.blockchainProvider.fetchBalance(address: address, chain: chain)
                         }
                         KryptoLogger.shared.log(level: .info, category: .blockchain, message: "Balance fetched", metadata: ["chain": chain.rawValue, "amount": balance.amount])
-                        return (chain, balance)
+                        
+                        // Try to fetch price (non-fatal if it fails)
+                        var usdValue: Decimal? = nil
+                        if let amount = Decimal(string: balance.amount), amount > 0 {
+                            do {
+                                let price = try await self.withTimeout(seconds: 5) {
+                                    try await self.blockchainProvider.fetchPrice(chain: chain)
+                                }
+                                usdValue = amount * price
+                                KryptoLogger.shared.log(level: .debug, category: .blockchain, message: "Price fetched", metadata: ["chain": chain.rawValue, "price": "\(price)", "usd": "\(usdValue ?? 0)"])
+                            } catch {
+                                // Price fetch failed - not fatal, just show balance without USD
+                                KryptoLogger.shared.log(level: .debug, category: .blockchain, message: "Price fetch skipped", metadata: ["chain": chain.rawValue])
+                            }
+                        }
+                        
+                        // Return balance with USD value if available
+                        return (chain, Balance(amount: balance.amount, currency: balance.currency, decimals: balance.decimals, usdValue: usdValue))
                     } catch {
                         KryptoLogger.shared.log(level: .warning, category: .blockchain, message: "Balance fetch failed", metadata: ["chain": chain.rawValue, "error": error.localizedDescription])
                         return (chain, nil)
