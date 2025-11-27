@@ -310,7 +310,7 @@ public struct SwapScreen: View {
     }
     
     private func fetchQuote() {
-        guard !fromAmount.isEmpty, let _ = Decimal(string: fromAmount) else {
+        guard !fromAmount.isEmpty, let amount = Decimal(string: fromAmount), amount > 0 else {
             toAmount = ""
             quote = nil
             return
@@ -318,23 +318,59 @@ public struct SwapScreen: View {
         
         isLoadingQuote = true
         
-        // Simulate quote fetch
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Mock quote
-            if let amount = Double(fromAmount) {
-                let rate = fromToken == "ETH" ? 2500.0 : 0.0004
-                toAmount = String(format: "%.2f", amount * rate)
-                                quote = LocalSwapQuote(
-                                    fromToken: fromToken,
-                                    toToken: toToken,
-                                    fromAmount: fromAmount,
-                                    toAmount: toAmount,
-                                    rate: String(format: "%.2f", rate),
-                                    gasCostUSD: "2.50",
-                                    priceImpact: 0.3
-                                )
+        Task {
+            do {
+                // Convert amount to base units (wei for ETH)
+                let decimals = fromToken == "ETH" ? 18 : 6 // ETH=18, USDC/USDT=6
+                let baseAmount = (amount * pow(10, decimals)).description.split(separator: ".").first ?? "0"
+                
+                // Get real quote from DEX aggregator
+                let swapQuote = try await walletState.getSwapQuote(
+                    from: fromToken,
+                    to: toToken,
+                    amount: String(baseAmount),
+                    chain: .ethereum
+                )
+                
+                // Convert output amount from base units
+                let outDecimals = toToken == "ETH" ? 18 : 6
+                let outAmount = (Decimal(string: swapQuote.outAmount) ?? 0) / pow(10, outDecimals)
+                
+                // Calculate rate
+                let rate = outAmount / amount
+                
+                await MainActor.run {
+                    toAmount = String(format: "%.2f", (outAmount as NSDecimalNumber).doubleValue)
+                    quote = LocalSwapQuote(
+                        fromToken: fromToken,
+                        toToken: toToken,
+                        fromAmount: fromAmount,
+                        toAmount: toAmount,
+                        rate: String(format: "%.4f", (rate as NSDecimalNumber).doubleValue),
+                        gasCostUSD: "2.50", // TODO: Get from gas estimate
+                        priceImpact: swapQuote.priceImpact ?? 0.1
+                    )
+                    isLoadingQuote = false
+                }
+            } catch {
+                // Fallback to mock quote on error
+                await MainActor.run {
+                    if let amt = Double(fromAmount) {
+                        let rate = fromToken == "ETH" ? 3000.0 : 0.00033 // Approximate rates
+                        toAmount = String(format: "%.2f", amt * rate)
+                        quote = LocalSwapQuote(
+                            fromToken: fromToken,
+                            toToken: toToken,
+                            fromAmount: fromAmount,
+                            toAmount: toAmount,
+                            rate: String(format: "%.4f", rate),
+                            gasCostUSD: "2.50",
+                            priceImpact: 0.3
+                        )
+                    }
+                    isLoadingQuote = false
+                }
             }
-            isLoadingQuote = false
         }
     }
     

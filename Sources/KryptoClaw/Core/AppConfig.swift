@@ -3,6 +3,20 @@ import Foundation
 public enum AppConfig {
     public static let privacyPolicyURL = URL(string: "https://kryptoclaw.app/privacy")!
     public static let supportURL = URL(string: "https://kryptoclaw.app/support")!
+    
+    // MARK: - API Keys (Optional - features work without them, just with rate limits)
+    
+    /// Etherscan API key for mainnet transaction history
+    /// Get free key at: https://etherscan.io/apis
+    public static var etherscanAPIKey: String? {
+        ProcessInfo.processInfo.environment["ETHERSCAN_API_KEY"]
+    }
+    
+    /// 1inch API key for swap quotes
+    /// Get key at: https://portal.1inch.dev/
+    public static var oneInchAPIKey: String? {
+        ProcessInfo.processInfo.environment["ONEINCH_API_KEY"]
+    }
 
     // MARK: - Environment Detection
     

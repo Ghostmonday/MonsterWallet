@@ -41,9 +41,8 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
             return try await fetchLocalTestnetHistory(address: address, chain: chain)
         }
         
-        // For mainnet, would use Etherscan API or similar indexer
-        // TODO: Implement Etherscan API integration
-        return TransactionHistory(transactions: [])
+        // For mainnet, use Etherscan API
+        return try await fetchEtherscanHistory(address: address, chain: chain)
     }
     
     private func fetchLocalTestnetHistory(address: String, chain: Chain) async throws -> TransactionHistory {
@@ -190,6 +189,98 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         } catch {
             logger.debug("Failed to fetch block \(blockNum): \(error.localizedDescription)")
             return []
+        }
+    }
+    
+    // MARK: - Etherscan API (Mainnet)
+    
+    private func fetchEtherscanHistory(address: String, chain: Chain) async throws -> TransactionHistory {
+        // Etherscan API - free tier allows 5 calls/sec
+        // For production, use your own API key
+        let apiKey = AppConfig.etherscanAPIKey ?? "YourApiKeyToken"
+        let baseURL = "https://api.etherscan.io/api"
+        
+        var components = URLComponents(string: baseURL)!
+        components.queryItems = [
+            URLQueryItem(name: "module", value: "account"),
+            URLQueryItem(name: "action", value: "txlist"),
+            URLQueryItem(name: "address", value: address),
+            URLQueryItem(name: "startblock", value: "0"),
+            URLQueryItem(name: "endblock", value: "99999999"),
+            URLQueryItem(name: "page", value: "1"),
+            URLQueryItem(name: "offset", value: "20"), // Last 20 transactions
+            URLQueryItem(name: "sort", value: "desc"),
+            URLQueryItem(name: "apikey", value: apiKey)
+        ]
+        
+        guard let url = components.url else {
+            return TransactionHistory(transactions: [])
+        }
+        
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 15.0
+        
+        do {
+            let (data, response) = try await session.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                return TransactionHistory(transactions: [])
+            }
+            
+            struct EtherscanResponse: Codable {
+                let status: String
+                let message: String
+                let result: [EtherscanTx]
+            }
+            
+            struct EtherscanTx: Codable {
+                let hash: String
+                let from: String
+                let to: String
+                let value: String
+                let timeStamp: String
+                let isError: String?
+            }
+            
+            let etherscanResponse = try JSONDecoder().decode(EtherscanResponse.self, from: data)
+            
+            guard etherscanResponse.status == "1" else {
+                // API returned error or no results
+                return TransactionHistory(transactions: [])
+            }
+            
+            let localFormatter = Self.ethFormatter
+            var transactions: [TransactionSummary] = []
+            
+            for tx in etherscanResponse.result {
+                // Skip failed transactions
+                if tx.isError == "1" { continue }
+                
+                // Convert timestamp
+                guard let timestamp = Double(tx.timeStamp) else { continue }
+                let date = Date(timeIntervalSince1970: timestamp)
+                
+                // Convert value from wei to ETH
+                guard let weiValue = BigUInt(tx.value) else { continue }
+                let ethValue = Decimal(string: String(weiValue)) ?? 0
+                let eth = ethValue / pow(10, 18)
+                let valueString = localFormatter.string(from: eth as NSNumber) ?? "0.00"
+                
+                transactions.append(TransactionSummary(
+                    hash: tx.hash,
+                    from: tx.from,
+                    to: tx.to,
+                    value: valueString,
+                    timestamp: date,
+                    chain: chain
+                ))
+            }
+            
+            return TransactionHistory(transactions: transactions)
+        } catch {
+            logger.error("Etherscan API error: \(error.localizedDescription)")
+            return TransactionHistory(transactions: [])
         }
     }
 
