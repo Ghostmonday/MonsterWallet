@@ -68,7 +68,7 @@ final class KeyStoreTests: XCTestCase {
         XCTAssertTrue(stored)
         
         let retrieved = try keyStore.getPrivateKey(id: keyID)
-        XCTAssertEqual(retrieved, keyData)
+        XCTAssertEqual(retrieved.unsafeDataCopy(), keyData)
     }
     
     func testItemNotFound() {
@@ -116,7 +116,7 @@ final class KeyStoreTests: XCTestCase {
         XCTAssertTrue(stored)
         
         let retrieved = try keyStore.getPrivateKey(id: keyID)
-        XCTAssertEqual(retrieved, data2)
+        XCTAssertEqual(retrieved.unsafeDataCopy(), data2)
     }
     
     func testIsProtected() {

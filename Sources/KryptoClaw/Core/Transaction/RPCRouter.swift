@@ -111,8 +111,20 @@ public actor RPCRouter {
     
     // MARK: - Endpoint Configuration
     
-    /// Ethereum endpoints (Flashbots primary for MEV protection)
-    private let ethereumEndpoints: [RPCEndpoint] = [
+    /// Ethereum endpoints - uses test endpoints in test environment
+    private var ethereumEndpoints: [RPCEndpoint] {
+        if AppConfig.isTestEnvironment {
+            return [
+                RPCEndpoint(
+                    url: AppConfig.TestEndpoints.ethereumRPC,
+                    name: "Anvil Local",
+                    chainId: AppConfig.TestEndpoints.ethereumChainId,
+                    isMEVProtected: false,
+                    priority: 0
+                )
+            ]
+        }
+        return [
         RPCEndpoint(
             url: URL(string: "https://rpc.flashbots.net")!,
             name: "Flashbots",
@@ -135,9 +147,22 @@ public actor RPCRouter {
             priority: 2
         )
     ]
+    }
     
-    /// Bitcoin endpoints
-    private let bitcoinEndpoints: [RPCEndpoint] = [
+    /// Bitcoin endpoints - uses test endpoints in test environment
+    private var bitcoinEndpoints: [RPCEndpoint] {
+        if AppConfig.isTestEnvironment {
+            return [
+                RPCEndpoint(
+                    url: AppConfig.TestEndpoints.bitcoinRPC,
+                    name: "Bitcoin Regtest",
+                    chainId: nil,
+                    isMEVProtected: false,
+                    priority: 0
+                )
+            ]
+        }
+        return [
         RPCEndpoint(
             url: URL(string: "https://mempool.space/api")!,
             name: "Mempool.space",
@@ -153,9 +178,22 @@ public actor RPCRouter {
             priority: 1
         )
     ]
+    }
     
-    /// Solana endpoints
-    private let solanaEndpoints: [RPCEndpoint] = [
+    /// Solana endpoints - uses test endpoints in test environment
+    private var solanaEndpoints: [RPCEndpoint] {
+        if AppConfig.isTestEnvironment {
+            return [
+                RPCEndpoint(
+                    url: AppConfig.TestEndpoints.solanaRPC,
+                    name: "Solana Test Validator",
+                    chainId: nil,
+                    isMEVProtected: false,
+                    priority: 0
+                )
+            ]
+        }
+        return [
         RPCEndpoint(
             url: URL(string: "https://api.mainnet-beta.solana.com")!,
             name: "Solana Mainnet",
@@ -171,6 +209,7 @@ public actor RPCRouter {
             priority: 1
         )
     ]
+    }
     
     // MARK: - State
     
@@ -317,10 +356,15 @@ public actor RPCRouter {
     ) async throws -> RPCResult {
         let startTime = Date()
         
+        // Bitcoin Core RPC uses JSON-RPC 1.0, others use 2.0
+        let isBitcoinRPC = AppConfig.isTestEnvironment && endpoint.url == AppConfig.TestEndpoints.bitcoinRPC
+        let jsonRpcVersion = isBitcoinRPC ? "1.0" : "2.0"
+        let rpcId: Any = isBitcoinRPC ? "test" : Int(Date().timeIntervalSince1970 * 1000)
+        
         // Build JSON-RPC payload
         let payload: [String: Any] = [
-            "jsonrpc": "2.0",
-            "id": Int(Date().timeIntervalSince1970 * 1000),
+            "jsonrpc": jsonRpcVersion,
+            "id": rpcId,
             "method": method,
             "params": params
         ]
@@ -334,6 +378,16 @@ public actor RPCRouter {
         request.httpBody = httpBody
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = requestTimeout
+        
+        // Add Bitcoin RPC authentication if needed
+        if isBitcoinRPC {
+            let authString = AppConfig.TestEndpoints.bitcoinAuth
+            guard let authData = authString.data(using: .utf8) else {
+                throw RPCRouterError.networkError(underlying: "Failed to encode Bitcoin auth")
+            }
+            let base64Auth = authData.base64EncodedString(options: [])
+            request.setValue("Basic \(base64Auth)", forHTTPHeaderField: "Authorization")
+        }
         
         // Execute with timeout
         let (data, response): (Data, URLResponse)
@@ -371,35 +425,73 @@ public actor RPCRouter {
         )
     }
     
-    /// Broadcast Bitcoin transaction
+    /// Broadcast Bitcoin transaction with failover
     private func broadcastBitcoinTransaction(signedTx: Data) async throws -> RPCResult {
-        let startTime = Date()
-        let endpoint = bitcoinEndpoints[0]
-        
-        let hexTx = signedTx.map { String(format: "%02x", $0) }.joined()
-        let url = URL(string: "\(endpoint.url.absoluteString)/tx")!
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = hexTx.data(using: .utf8)
-        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = requestTimeout
-        
-        let (data, response) = try await session.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw RPCRouterError.invalidResponse(endpoint: endpoint.name)
+        let endpoints = bitcoinEndpoints.sorted { $0.priority < $1.priority }
+        guard !endpoints.isEmpty else {
+            throw RPCRouterError.noEndpointsAvailable(chain: "Bitcoin")
         }
         
-        let latency = Int(Date().timeIntervalSince(startTime) * 1000)
+        let hexTx = signedTx.map { String(format: "%02x", $0) }.joined()
+        var errors: [String] = []
         
-        return RPCResult(
-            data: data,
-            endpoint: endpoint,
-            protectionStatus: .unavailable,
-            latencyMs: latency
-        )
+        for endpoint in endpoints {
+            let startTime = Date()
+            
+            do {
+                let url = URL(string: "\(endpoint.url.absoluteString)/tx")!
+                
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                request.httpBody = hexTx.data(using: .utf8)
+                request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+                request.timeoutInterval = requestTimeout
+                
+                // Add Bitcoin RPC authentication if needed
+                if AppConfig.isTestEnvironment && endpoint.url == AppConfig.TestEndpoints.bitcoinRPC {
+                    let authString = AppConfig.TestEndpoints.bitcoinAuth
+                    guard let authData = authString.data(using: .utf8) else {
+                        throw RPCRouterError.networkError(underlying: "Failed to encode Bitcoin auth")
+                    }
+                    let base64Auth = authData.base64EncodedString(options: [])
+                    request.setValue("Basic \(base64Auth)", forHTTPHeaderField: "Authorization")
+                }
+                
+                let (data, response): (Data, URLResponse)
+                do {
+                    (data, response) = try await session.data(for: request)
+                } catch let error as URLError where error.code == .timedOut {
+                    throw RPCRouterError.timeout(endpoint: endpoint.name)
+                } catch {
+                    throw RPCRouterError.networkError(underlying: error.localizedDescription)
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse,
+                      (200...299).contains(httpResponse.statusCode) else {
+                    throw RPCRouterError.invalidResponse(endpoint: endpoint.name)
+                }
+                
+                let latency = Int(Date().timeIntervalSince(startTime) * 1000)
+                
+                // Mark endpoint as healthy
+                endpointHealth[endpoint.url.absoluteString] = true
+                lastSuccessfulEndpoint[.bitcoin] = endpoint
+                
+                return RPCResult(
+                    data: data,
+                    endpoint: endpoint,
+                    protectionStatus: .unavailable,
+                    latencyMs: latency
+                )
+            } catch {
+                // Mark endpoint as unhealthy and try next
+                endpointHealth[endpoint.url.absoluteString] = false
+                errors.append("\(endpoint.name): \(error.localizedDescription)")
+                continue
+            }
+        }
+        
+        throw RPCRouterError.allEndpointsFailed(chain: "Bitcoin", errors: errors)
     }
 }
 

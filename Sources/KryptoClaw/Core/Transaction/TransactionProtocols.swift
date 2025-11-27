@@ -73,6 +73,7 @@ public struct GasEstimate: Codable, Equatable {
 
 public protocol RoutingProtocol {
     func estimateGas(to: String, value: String, data: Data, chain: Chain) async throws -> GasEstimate
+    func getTransactionCount(address: String) async throws -> UInt64
 }
 
 public protocol SecurityPolicyProtocol {

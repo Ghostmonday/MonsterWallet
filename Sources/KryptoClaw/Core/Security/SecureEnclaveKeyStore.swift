@@ -86,7 +86,7 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
     /// - It MUST be tested on a physical device. Simulators do not support full SE emulation.
     /// - Verify: 1. Store Key. 2. Reset FaceID settings. 3. Try to Fetch Key.
     /// - Expected Result: Fetch fails, and `deleteKey` (Wipe) is triggered.
-    public func getPrivateKey(id: String) throws -> Data {
+    public func getPrivateKey(id: String) throws -> SecureBytes {
         // 1. Fetch the Encrypted Blob (Wrapped Key) from Keychain (RAM access only)
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -139,7 +139,8 @@ public class SecureEnclaveKeyStore: KeyStoreProtocol {
             throw KeyStoreError.decryptionFailed
         }
 
-        return plaintext
+        // Wrap in SecureBytes for automatic memory wiping when deallocated
+        return SecureBytes(data: plaintext)
     }
     
     /// Wraps the private key (mnemonic) using the Secure Enclave Master Key.

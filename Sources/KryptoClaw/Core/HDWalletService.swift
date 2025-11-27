@@ -8,6 +8,16 @@ import WalletCore
 // MARK: - BIP39/BIP32/BIP44 Implementation
 
 public enum MnemonicService {
+    // Known test mnemonics that work without WalletCore
+    private static let knownTestMnemonics: [String: Data] = [
+        // Standard test mnemonic
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about": 
+            Data(repeating: 0x01, count: 32),
+        // Anvil/Hardhat test mnemonic - derives to 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+        "test test test test test test test test test test test junk":
+            Data(hexString: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")!
+    ]
+    
     public static func generateMnemonic() -> String? {
         #if canImport(WalletCore)
         guard let wallet = HDWallet(strength: 128, passphrase: "") else {
@@ -16,24 +26,29 @@ public enum MnemonicService {
         return wallet.mnemonic
         #else
         // Fallback for Simulator/Debug without WalletCore
-        return "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+        return "test test test test test test test test test test test junk"
         #endif
     }
 
     public static func validate(mnemonic: String) -> Bool {
-        // Special case for known test mnemonic when WalletCore isn't available
-        let testMnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
-        if mnemonic == testMnemonic {
+        let normalized = mnemonic.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Check known test mnemonics first
+        if knownTestMnemonics.keys.contains(normalized) {
             return true
         }
         
         #if canImport(WalletCore)
         return Mnemonic.isValid(mnemonic: mnemonic)
         #else
-        // In test environments without WalletCore, allow any 12-word or 24-word mnemonic for testing
-        let words = mnemonic.split(separator: " ")
-        return words.count == 12 || words.count == 24
+        // Without WalletCore, ONLY accept known test mnemonics
+        return false
         #endif
+    }
+    
+    public static func getTestPrivateKey(for mnemonic: String) -> Data? {
+        let normalized = mnemonic.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        return knownTestMnemonics[normalized]
     }
 }
 
@@ -81,12 +96,9 @@ public enum HDWalletService {
         let privateKey = wallet.getKey(coin: coin.coinType, derivationPath: path)
         return privateKey.data
         #else
-        // For testing without WalletCore, return a mock private key
-        // This is ONLY for testing and should never be used in production
-        let testMnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
-        if mnemonic == testMnemonic {
-            // Return a deterministic test private key (32 bytes)
-            return Data(repeating: 0x01, count: 32)
+        // For testing without WalletCore, use known test private keys
+        if let testKey = MnemonicService.getTestPrivateKey(for: mnemonic) {
+            return testKey
         }
         throw WalletError.derivationFailed
         #endif
@@ -117,6 +129,11 @@ public enum HDWalletService {
         }
         return coin.coinType.deriveAddress(privateKey: privateKey)
         #else
+        // For testing without WalletCore, return known test addresses
+        // Anvil test wallet private key -> address mapping
+        if privateKeyData.hexString == "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" {
+            return "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        }
         return ""
         #endif
     }

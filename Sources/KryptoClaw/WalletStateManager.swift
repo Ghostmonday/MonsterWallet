@@ -101,56 +101,90 @@ public class WalletStateManager: ObservableObject {
     }
 
     public func refreshBalance() async {
-        guard let address = currentAddress else { return }
+        guard let address = currentAddress else {
+            print("⚠️ [WalletStateManager] No currentAddress set!")
+            return
+        }
+        
+        NSLog("🔍 [WalletStateManager] Refreshing balance for: %@", address)
 
         state = .loading
 
-        do {
-            var balances: [Chain: Balance] = [:]
+        var balances: [Chain: Balance] = [:]
+        
+        // In test environment, only fetch ETH (BTC/SOL not configured)
+        let chainsToFetch: [Chain] = AppConfig.isTestEnvironment ? [.ethereum] : Chain.allCases
 
-            // Fetch balances for all chains concurrently
-            try await withThrowingTaskGroup(of: (Chain, Balance).self) { group in
-                for chain in Chain.allCases {
-                    group.addTask {
-                        let balance = try await self.blockchainProvider.fetchBalance(address: address, chain: chain)
+        // Fetch balances in PARALLEL with timeout
+        await withTaskGroup(of: (Chain, Balance?).self) { group in
+            for chain in chainsToFetch {
+                group.addTask { [self] in
+                    do {
+                        // Add 5 second timeout per chain
+                        let balance = try await self.withTimeout(seconds: 5) {
+                            try await self.blockchainProvider.fetchBalance(address: address, chain: chain)
+                        }
+                        NSLog("✅ [%@] Balance: %@", chain.rawValue, balance.amount)
                         return (chain, balance)
+                    } catch {
+                        NSLog("⚠️ [%@] Balance fetch failed: %@", chain.rawValue, error.localizedDescription)
+                        return (chain, nil)
                     }
                 }
-
-                for try await (chain, balance) in group {
+            }
+            
+            for await (chain, balance) in group {
+                if let balance = balance {
                     balances[chain] = balance
                 }
             }
+        }
+        
+        NSLog("🟢 Balance fetches complete. Got %d balances", balances.count)
 
-            // Parallel data fetching for History and NFTs
-            // We fetch history for ALL chains now (JULES-REVIEW requirement met)
-            async let historyResult: TransactionHistory = {
-                var allSummaries: [TransactionSummary] = []
-                // We use a task group for histories as well
-                try await withThrowingTaskGroup(of: TransactionHistory.self) { group in
-                    for chain in Chain.allCases {
-                        group.addTask {
-                            try await self.blockchainProvider.fetchHistory(address: address, chain: chain)
-                        }
-                    }
-                    for try await hist in group {
-                        allSummaries.append(contentsOf: hist.transactions)
-                    }
+        // Set state to loaded with whatever balances we got
+        state = .loaded(balances)
+        NSLog("🟢 State set to .loaded!")
+
+        // Fetch history in background (non-blocking)
+        Task.detached { [weak self] in
+            guard let self = self else { return }
+            var allSummaries: [TransactionSummary] = []
+            for chain in chainsToFetch {
+                if let hist = try? await self.blockchainProvider.fetchHistory(address: address, chain: chain) {
+                    allSummaries.append(contentsOf: hist.transactions)
                 }
-                // Sort by timestamp descending (newest first)
-                allSummaries.sort { $0.timestamp > $1.timestamp }
-                return TransactionHistory(transactions: allSummaries)
-            }()
-
-            async let nftsResult = nftProvider.fetchNFTs(address: address)
-
-            let (history, nfts) = try await (historyResult, nftsResult)
-
-            state = .loaded(balances)
-            self.history = history
-            self.nfts = nfts
-        } catch {
-            state = .error(ErrorTranslator.userFriendlyMessage(for: error))
+            }
+            allSummaries.sort { $0.timestamp > $1.timestamp }
+            await MainActor.run {
+                self.history = TransactionHistory(transactions: allSummaries)
+            }
+        }
+        
+        // Fetch NFTs in background (non-blocking)
+        Task.detached { [weak self] in
+            guard let self = self else { return }
+            if let nfts = try? await self.nftProvider.fetchNFTs(address: address) {
+                await MainActor.run {
+                    self.nfts = nfts
+                }
+            }
+        }
+    }
+    
+    /// Helper function for timeout
+    private func withTimeout<T>(seconds: Double, operation: @escaping () async throws -> T) async throws -> T {
+        try await withThrowingTaskGroup(of: T.self) { group in
+            group.addTask {
+                try await operation()
+            }
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                throw CancellationError()
+            }
+            let result = try await group.next()!
+            group.cancelAll()
+            return result
         }
     }
 
@@ -185,17 +219,21 @@ public class WalletStateManager: ObservableObject {
         do {
             let txData = data ?? Data()
             let estimate = try await router.estimateGas(to: to, value: value, data: txData, chain: chain)
+            
+            // Fetch current nonce from chain
+            let nonce = try await router.getTransactionCount(address: from)
+            NSLog("🔴 TX nonce for %@: %d", from, nonce)
 
             let tx = Transaction(
                 from: from,
                 to: to,
                 value: value,
                 data: txData,
-                nonce: 0,
+                nonce: nonce,
                 gasLimit: estimate.gasLimit,
                 maxFeePerGas: estimate.maxFeePerGas,
                 maxPriorityFeePerGas: estimate.maxPriorityFeePerGas,
-                chainId: chain == .ethereum ? 1 : 0 // Simplified chain mapping
+                chainId: chain == .ethereum ? AppConfig.getEthereumChainId() : 0
             )
 
             let result = try await simulator.simulate(tx: tx)
@@ -231,16 +269,17 @@ public class WalletStateManager: ObservableObject {
             } else {
                 KryptoLogger.shared.log(level: .warning, category: .stateTransition, message: "Pending transaction mismatch or missing. Re-estimating.", metadata: ["to": to, "value": value])
                 let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: chain)
+                let nonce = try await router.getTransactionCount(address: from)
                 txToSign = Transaction(
                     from: from,
                     to: to,
                     value: value,
                     data: Data(),
-                    nonce: 0,
+                    nonce: nonce,
                     gasLimit: estimate.gasLimit,
                     maxFeePerGas: estimate.maxFeePerGas,
                     maxPriorityFeePerGas: estimate.maxPriorityFeePerGas,
-                    chainId: chain == .ethereum ? 1 : 0
+                    chainId: chain == .ethereum ? AppConfig.getEthereumChainId() : 0
                 )
             }
 
@@ -321,18 +360,28 @@ public class WalletStateManager: ObservableObject {
 
     public func importWallet(mnemonic: String) async {
         do {
+            NSLog("🔴 IMPORT WALLET CALLED with: %@", mnemonic.prefix(30).description)
+            
             let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .ethereum)
+            NSLog("🔴 Private key derived, length: %d", privateKey.count)
+            NSLog("🔴 Private key hex: %@", privateKey.hexString)
+            
             let address = HDWalletService.address(from: privateKey, for: .ethereum)
+            NSLog("🔴 Derived address: %@", address)
+            NSLog("🔴 Expected: %@", AppConfig.TestWallet.address)
 
-            // Check if already exists? (Optional)
-
+            // Store with address ID for wallet management
             _ = try keyStore.storePrivateKey(key: privateKey, id: address)
+            
+            // Also store with "primary_account" ID for the signer
+            _ = try keyStore.storePrivateKey(key: privateKey, id: "primary_account")
 
             let newWallet = WalletInfo(id: address, name: "Imported Wallet", colorTheme: "blue")
             wallets.append(newWallet)
             saveWallets()
             await loadAccount(id: address)
         } catch {
+            print("❌ [WalletStateManager] Import failed: \(error)")
             state = .error("Import failed: \(error.localizedDescription)")
         }
     }

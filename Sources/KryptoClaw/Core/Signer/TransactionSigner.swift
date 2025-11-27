@@ -16,8 +16,8 @@ public class TransactionSigner {
 
     public func sign(transaction: TransactionPayload) async throws -> String {
         // 1. Retrieve Key Identifier (Mnemonic is stored under 'primary_account')
-        let mnemonicData = try keyStore.getPrivateKey(id: "primary_account")
-        guard let mnemonic = String(data: mnemonicData, encoding: .utf8) else {
+        let secureMnemonic = try keyStore.getPrivateKey(id: "primary_account")
+        guard let mnemonic = String(data: secureMnemonic.unsafeDataCopy(), encoding: .utf8) else {
             throw BlockchainError.parsingError
         }
         
@@ -35,8 +35,8 @@ public class TransactionSigner {
         case .ethereum:
             var input = EthereumSigningInput()
             input.toAddress = transaction.toAddress
-            // ChainID: Ethereum mainnet = 1, convert UInt64 to big-endian Data
-            let chainIDValue: UInt64 = 1
+            // ChainID: Use test chain ID (31337) in test environment, mainnet (1) otherwise
+            let chainIDValue: UInt64 = UInt64(AppConfig.getEthereumChainId())
             input.chainID = withUnsafeBytes(of: chainIDValue.bigEndian) { Data($0) }
             
             // Nonce: Convert UInt64 to big-endian Data (remove leading zeros, but keep at least 1 byte)

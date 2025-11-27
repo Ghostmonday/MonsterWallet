@@ -13,7 +13,8 @@ public class SimpleP2PSigner: SignerProtocol {
     }
 
     public func signTransaction(tx: Transaction) async throws -> SignedData {
-        let privateKeyData = try keyStore.getPrivateKey(id: keyId)
+        let secureKey = try keyStore.getPrivateKey(id: keyId)
+        let privateKeyData = secureKey.unsafeDataCopy() // SecureBytes auto-wipes when secureKey goes out of scope
 
         guard let valueBig = BigUInt(tx.value) else { throw BlockchainError.parsingError }
         guard let gasPriceBig = BigUInt(tx.maxFeePerGas) else { throw BlockchainError.parsingError }
@@ -46,7 +47,8 @@ public class SimpleP2PSigner: SignerProtocol {
     }
 
     public func signMessage(message: String) async throws -> Data {
-        let privateKeyData = try keyStore.getPrivateKey(id: keyId)
+        let secureKey = try keyStore.getPrivateKey(id: keyId)
+        let privateKeyData = secureKey.unsafeDataCopy() // SecureBytes auto-wipes when secureKey goes out of scope
         guard let msgData = message.data(using: .utf8) else {
             throw BlockchainError.parsingError
         }

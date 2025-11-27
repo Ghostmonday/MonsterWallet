@@ -1,8 +1,10 @@
 import BigInt
 import Foundation
+import OSLog
 
 public class ModularHTTPProvider: BlockchainProviderProtocol {
     private let session: URLSession
+    private let logger = Logger(subsystem: "com.kryptoclaw.app", category: "ModularHTTPProvider")
 
     public init(session: URLSession = .shared) {
         self.session = session
@@ -101,6 +103,12 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
 
     private func fetchEthereumBalance(address: String) async throws -> Balance {
         let url = AppConfig.rpcURL
+        
+        NSLog("🟢🟢🟢 fetchEthereumBalance CALLED 🟢🟢🟢")
+        NSLog("🟢 Address: %@", address)
+        NSLog("🟢 URL: %@", url.absoluteString)
+        
+        logger.debug("Fetching ETH balance for \(address) from \(url.absoluteString)")
 
         let payload: [String: Any] = [
             "jsonrpc": "2.0",
@@ -119,25 +127,63 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = 30.0
 
+        NSLog("🟢 Making HTTP request...")
         let (data, response) = try await session.data(for: request)
+        NSLog("🟢 Got response!")
 
         guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
+            NSLog("🔴 HTTP Error: %d", (response as? HTTPURLResponse)?.statusCode ?? -1)
+            logger.error("HTTP Error: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
             throw BlockchainError.networkError(NSError(domain: "HTTP", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: nil))
+        }
+        
+        NSLog("🟢 HTTP Status: %d", httpResponse.statusCode)
+        if let responseStr = String(data: data, encoding: .utf8) {
+            NSLog("🟢 Response body: %@", responseStr)
         }
 
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            NSLog("🔴 JSON Parsing Failed")
+            logger.error("JSON Parsing Failed")
             throw BlockchainError.parsingError
         }
 
         if let error = json["error"] as? [String: Any], let message = error["message"] as? String {
+            logger.error("RPC Error: \(message)")
             throw BlockchainError.rpcError(message)
         }
 
-        guard let result = json["result"] as? String else {
+        guard let hexResult = json["result"] as? String else {
+            logger.error("No result in response: \(json)")
             throw BlockchainError.parsingError
         }
+        
+        // Convert hex string to decimal string (wei), then format as ETH
+        let hexString = hexResult.hasPrefix("0x") ? String(hexResult.dropFirst(2)) : hexResult
+        
+        guard let weiValue = BigUInt(hexString, radix: 16) else {
+            logger.error("Failed to parse hex balance: \(hexResult)")
+            throw BlockchainError.parsingError
+        }
+        
+        // Convert wei to ETH (divide by 10^18)
+        // Use Decimal for better precision handling than Double
+        let weiDecimal = Decimal(string: String(weiValue)) ?? 0
+        let ethValue = weiDecimal / pow(10, 18)
+        
+        // Format to string, avoiding scientific notation
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 6
+        formatter.minimumFractionDigits = 2
+        formatter.decimalSeparator = "."
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false // Plain number string
+        
+        let amountString = formatter.string(from: ethValue as NSNumber) ?? "0.00"
+        
+        logger.info("Balance fetched: \(hexResult) -> \(amountString) ETH")
 
-        return Balance(amount: result, currency: "ETH", decimals: 18)
+        return Balance(amount: amountString, currency: "ETH", decimals: 18)
     }
 
     public func fetchPrice(chain: Chain) async throws -> Decimal {

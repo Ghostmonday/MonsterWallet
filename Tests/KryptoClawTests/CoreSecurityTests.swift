@@ -61,7 +61,7 @@ final class CoreSecurityTests: XCTestCase {
         
         // 3. Retrieve
         let retrieved = try? keyStore.getPrivateKey(id: id)
-        XCTAssertEqual(retrieved, secret, "Should retrieve original secret after decryption")
+        XCTAssertEqual(retrieved?.unsafeDataCopy(), secret, "Should retrieve original secret after decryption")
     }
 }
 

@@ -58,8 +58,8 @@ final class TransactionSignerE2ETests: XCTestCase {
         
         // Verify we can retrieve it correctly and it's valid
         do {
-            let retrievedData = try mockKeyStore.getPrivateKey(id: "primary_account")
-            guard let retrievedMnemonic = String(data: retrievedData, encoding: .utf8) else {
+            let secureData = try mockKeyStore.getPrivateKey(id: "primary_account")
+            guard let retrievedMnemonic = String(data: secureData.unsafeDataCopy(), encoding: .utf8) else {
                 XCTFail("Failed to decode retrieved mnemonic")
                 return
             }
@@ -110,8 +110,8 @@ final class TransactionSignerE2ETests: XCTestCase {
         XCTAssertFalse(testMnemonic.isEmpty, "Test mnemonic should be initialized")
         
         // Verify mnemonic can be retrieved from key store
-        let retrievedData = try mockKeyStore.getPrivateKey(id: "primary_account")
-        guard let retrievedMnemonic = String(data: retrievedData, encoding: .utf8) else {
+        let secureData = try mockKeyStore.getPrivateKey(id: "primary_account")
+        guard let retrievedMnemonic = String(data: secureData.unsafeDataCopy(), encoding: .utf8) else {
             XCTFail("Failed to decode mnemonic from key store")
             return
         }
@@ -375,11 +375,11 @@ class TestableMockKeyStore: KeyStoreProtocol {
         return true
     }
     
-    func getPrivateKey(id: String) throws -> Data {
+    func getPrivateKey(id: String) throws -> SecureBytes {
         guard let data = storage[id] else {
             throw KeyStoreError.itemNotFound
         }
-        return data
+        return SecureBytes(data: data)
     }
     
     func deleteKey(id: String) throws {

@@ -4,8 +4,67 @@ public enum AppConfig {
     public static let privacyPolicyURL = URL(string: "https://kryptoclaw.app/privacy")!
     public static let supportURL = URL(string: "https://kryptoclaw.app/support")!
 
-    // Infrastructure
-    public static let rpcURL = URL(string: "https://eth.llamarpc.com")!
+    // MARK: - Environment Detection
+    
+    /// Check if running in test/development mode
+    /// ⚠️ TEMPORARILY FORCED TO TRUE FOR LOCAL TESTING - REVERT BEFORE RELEASE
+    public static var isTestEnvironment: Bool {
+        #if DEBUG
+        return true // FORCED FOR TESTING - was: env/args check
+        #else
+        return false
+        #endif
+    }
+    
+    // MARK: - Docker Test Environment (localhost)
+    
+    public struct TestEndpoints {
+        public static let ethereumRPC = URL(string: "http://localhost:8545")!
+        public static let solanaRPC = URL(string: "http://localhost:8899")!
+        public static let solanaWS = URL(string: "ws://localhost:8900")!
+        public static let bitcoinRPC = URL(string: "http://localhost:18443")!
+        public static let bitcoinAuth = "kryptoclaw:testpass123"
+        public static let proxyURL = URL(string: "http://localhost:8080")!
+        
+        // Test chain IDs
+        public static let ethereumChainId = 31337 // Anvil local (0x7a69)
+    }
+    
+    // MARK: - Test Wallet (Pre-funded with 10,000 ETH)
+    
+    /// Standard test wallet for local blockchain testing
+    /// ⚠️  PUBLIC TEST WALLET - Never use with real funds
+    public struct TestWallet {
+        /// Standard test mnemonic from Hardhat/Anvil
+        public static let mnemonic = "test test test test test test test test test test test junk"
+        
+        /// Primary test account address (m/44'/60'/0'/0/0)
+        public static let address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        
+        /// Private key for primary account
+        public static let privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+        
+        /// Additional pre-funded accounts (same mnemonic, different indices)
+        public static let additionalAccounts = [
+            "0x70997970C51812dc3A010C7d01b50e0d17dc79C8", // Account 1
+            "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC", // Account 2
+            "0x90F79bf6EB2c4f870365E785982E1f101E93b906"  // Account 3
+        ]
+    }
+    
+    // MARK: - Chain ID Helpers
+    
+    /// Get the appropriate Ethereum chain ID based on environment
+    public static func getEthereumChainId() -> Int {
+        return isTestEnvironment ? TestEndpoints.ethereumChainId : 1
+    }
+
+    // MARK: - Infrastructure
+    
+    public static var rpcURL: URL {
+        isTestEnvironment ? TestEndpoints.ethereumRPC : URL(string: "https://eth.llamarpc.com")!
+    }
+    
     // Optional API for full transaction simulation (e.g. Tenderly)
     public static let simulationAPIURL: URL? = nil
 

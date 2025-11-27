@@ -2,10 +2,11 @@ import Foundation
 
 public protocol KeyStoreProtocol {
     /// Retrieves the private key (or handle) for the given ID.
+    /// Returns SecureBytes to ensure automatic memory wiping when deallocated.
     /// - Parameter id: The unique identifier for the key.
-    /// - Returns: The key data (or handle).
+    /// - Returns: SecureBytes wrapper containing the key data.
     /// - Throws: An error if the key cannot be retrieved or authentication fails.
-    func getPrivateKey(id: String) throws -> Data
+    func getPrivateKey(id: String) throws -> SecureBytes
 
     /// Stores a private key.
     /// - Parameters:

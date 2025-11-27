@@ -182,7 +182,7 @@ public actor SecureEnclaveInterface: SecureEnclaveInterfaceProtocol {
         let storageId = hskKeyPrefix + identifier
         
         do {
-            let keyData = try keyStore.getPrivateKey(id: storageId)
+            let secureKey = try keyStore.getPrivateKey(id: storageId)
             
             KryptoLogger.shared.log(
                 level: .info,
@@ -190,7 +190,8 @@ public actor SecureEnclaveInterface: SecureEnclaveInterfaceProtocol {
                 message: "HSK-derived key retrieved from Secure Enclave"
             )
             
-            return keyData
+            // WARNING: The returned Data is NOT auto-wiped. Caller is responsible for secure handling.
+            return secureKey.unsafeDataCopy()
         } catch KeyStoreError.itemNotFound {
             throw HSKError.keyNotFound
         } catch {

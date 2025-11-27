@@ -28,7 +28,7 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             }
         }
 
-        let chain: Chain = if tx.chainId == 1 {
+        let chain: Chain = if tx.chainId == 1 || tx.chainId == AppConfig.TestEndpoints.ethereumChainId {
             .ethereum
         } else {
             // TODO: Implement proper chain ID mapping for Bitcoin/Solana

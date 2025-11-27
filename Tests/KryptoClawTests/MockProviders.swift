@@ -25,7 +25,7 @@ class MockBlockchainProvider: BlockchainProviderProtocol {
 
 class MockKeyStore: KeyStoreProtocol {
     func storePrivateKey(key: Data, id: String) throws -> Bool { return true }
-    func getPrivateKey(id: String) throws -> Data { return Data() }
+    func getPrivateKey(id: String) throws -> SecureBytes { return SecureBytes(data: Data()) }
     func deleteKey(id: String) throws {}
     func deleteAll() throws {}
     func isProtected() -> Bool { return true }
