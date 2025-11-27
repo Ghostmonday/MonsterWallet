@@ -307,7 +307,7 @@ public struct SendScreen: View {
             }
             
             if let hash = walletState.lastTxHash {
-                Button(action: { /* View on explorer */ }) {
+                Button(action: { openTransactionInExplorer(hash: hash) }) {
                     HStack(spacing: KC.Space.sm) {
                         Text("View Transaction")
                             .font(KC.Font.body)
@@ -370,6 +370,32 @@ public struct SendScreen: View {
     private func truncateAddress(_ address: String) -> String {
         guard address.count > 12 else { return address }
         return "\(address.prefix(8))...\(address.suffix(6))"
+    }
+    
+    private func openTransactionInExplorer(hash: String) {
+        let baseURL: String
+        
+        switch selectedChain {
+        case .ethereum:
+            if AppConfig.isTestEnvironment {
+                // For local testnet, we can't open in explorer - just copy hash
+                #if canImport(UIKit)
+                UIPasteboard.general.string = hash
+                #endif
+                return
+            }
+            baseURL = "https://etherscan.io/tx/"
+        case .bitcoin:
+            baseURL = "https://mempool.space/tx/"
+        case .solana:
+            baseURL = "https://solscan.io/tx/"
+        }
+        
+        if let url = URL(string: baseURL + hash) {
+            #if canImport(UIKit)
+            UIApplication.shared.open(url)
+            #endif
+        }
     }
     
     private func alertType(for level: RiskLevel) -> KCBanner.BannerType {

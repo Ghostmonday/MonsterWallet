@@ -20,39 +20,112 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
     }
 
     public func fetchHistory(address: String, chain: Chain) async throws -> TransactionHistory {
-        // TODO: Implement actual history fetching using Etherscan API (or similar indexer)
-        // Standard RPC nodes do not efficiently support "get history by address"
-
-        try? await Task.sleep(nanoseconds: 300_000_000)
-
-        let mockTxs = [
-            TransactionSummary(
-                hash: "0x7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b",
-                from: address,
-                to: "0xRecipientAddr...",
-                value: "0.05",
-                timestamp: Date().addingTimeInterval(-3600),
-                chain: chain
-            ),
-            TransactionSummary(
-                hash: "0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b",
-                from: "0xWhaleWallet...",
-                to: address,
-                value: "2.50",
-                timestamp: Date().addingTimeInterval(-86400),
-                chain: chain
-            ),
-            TransactionSummary(
-                hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b",
-                from: address,
-                to: "0xUniswapRouter...",
-                value: "0.10",
-                timestamp: Date().addingTimeInterval(-172_800),
-                chain: chain
-            ),
+        guard chain == .ethereum else {
+            // Only ETH history supported in V1
+            return TransactionHistory(transactions: [])
+        }
+        
+        // For local testnet, scan recent blocks for transactions
+        if AppConfig.isTestEnvironment {
+            return try await fetchLocalTestnetHistory(address: address, chain: chain)
+        }
+        
+        // For mainnet, would use Etherscan API or similar indexer
+        // TODO: Implement Etherscan API integration
+        return TransactionHistory(transactions: [])
+    }
+    
+    private func fetchLocalTestnetHistory(address: String, chain: Chain) async throws -> TransactionHistory {
+        let url = AppConfig.rpcURL
+        let normalizedAddress = address.lowercased()
+        var transactions: [TransactionSummary] = []
+        
+        // Get current block number
+        let blockNumPayload: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "eth_blockNumber",
+            "params": [],
+            "id": 1
         ]
-
-        return TransactionHistory(transactions: mockTxs)
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: blockNumPayload)
+        request.timeoutInterval = 10.0
+        
+        let (blockNumData, _) = try await session.data(for: request)
+        guard let blockNumJson = try? JSONSerialization.jsonObject(with: blockNumData) as? [String: Any],
+              let blockNumHex = blockNumJson["result"] as? String,
+              let currentBlock = UInt64(blockNumHex.dropFirst(2), radix: 16) else {
+            return TransactionHistory(transactions: [])
+        }
+        
+        // Scan last 50 blocks (reasonable for local testnet)
+        let blocksToScan = min(currentBlock, 50)
+        let startBlock = currentBlock - blocksToScan
+        
+        for blockNum in stride(from: currentBlock, through: startBlock, by: -1) {
+            let blockPayload: [String: Any] = [
+                "jsonrpc": "2.0",
+                "method": "eth_getBlockByNumber",
+                "params": ["0x" + String(blockNum, radix: 16), true], // true = include transactions
+                "id": Int(blockNum)
+            ]
+            
+            request.httpBody = try JSONSerialization.data(withJSONObject: blockPayload)
+            let (blockData, _) = try await session.data(for: request)
+            
+            guard let blockJson = try? JSONSerialization.jsonObject(with: blockData) as? [String: Any],
+                  let result = blockJson["result"] as? [String: Any],
+                  let txArray = result["transactions"] as? [[String: Any]],
+                  let timestampHex = result["timestamp"] as? String else {
+                continue
+            }
+            
+            let timestamp = UInt64(timestampHex.dropFirst(2), radix: 16) ?? 0
+            let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
+            
+            for tx in txArray {
+                guard let from = (tx["from"] as? String)?.lowercased(),
+                      let to = (tx["to"] as? String)?.lowercased(),
+                      let hash = tx["hash"] as? String,
+                      let valueHex = tx["value"] as? String else {
+                    continue
+                }
+                
+                // Filter transactions involving our address
+                if from == normalizedAddress || to == normalizedAddress {
+                    // Convert value from wei to ETH
+                    let weiValue = BigUInt(valueHex.dropFirst(2), radix: 16) ?? BigUInt(0)
+                    let ethValue = Decimal(string: String(weiValue)) ?? 0
+                    let eth = ethValue / pow(10, 18)
+                    
+                    let formatter = NumberFormatter()
+                    formatter.maximumFractionDigits = 6
+                    formatter.minimumFractionDigits = 2
+                    formatter.decimalSeparator = "."
+                    formatter.usesGroupingSeparator = false
+                    let valueString = formatter.string(from: eth as NSNumber) ?? "0.00"
+                    
+                    transactions.append(TransactionSummary(
+                        hash: hash,
+                        from: tx["from"] as? String ?? "",
+                        to: tx["to"] as? String ?? "",
+                        value: valueString,
+                        timestamp: date,
+                        chain: chain
+                    ))
+                }
+            }
+            
+            // Limit to 20 transactions for performance
+            if transactions.count >= 20 { break }
+        }
+        
+        // Sort by timestamp descending
+        transactions.sort { $0.timestamp > $1.timestamp }
+        return TransactionHistory(transactions: transactions)
     }
 
     public func broadcast(signedTx: Data, chain: Chain) async throws -> String {
