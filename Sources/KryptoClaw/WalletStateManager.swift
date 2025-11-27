@@ -39,6 +39,9 @@ public class WalletStateManager: ObservableObject {
 
     // Transaction Flow State
     @Published public var pendingTransaction: Transaction?
+    
+    // Prevent concurrent balance refreshes
+    private var isRefreshingBalance = false
 
     // Current Account
     public var currentAddress: String?
@@ -102,11 +105,20 @@ public class WalletStateManager: ObservableObject {
 
     public func refreshBalance() async {
         guard let address = currentAddress else {
-            print("⚠️ [WalletStateManager] No currentAddress set!")
+            KryptoLogger.shared.log(level: .warning, category: .stateTransition, message: "No currentAddress set for balance refresh")
             return
         }
         
-        NSLog("🔍 [WalletStateManager] Refreshing balance for: %@", address)
+        // Prevent concurrent refresh calls
+        guard !isRefreshingBalance else {
+            KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "Balance refresh already in progress, skipping")
+            return
+        }
+        
+        isRefreshingBalance = true
+        defer { isRefreshingBalance = false }
+        
+        KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "Refreshing balance", metadata: ["address": address])
 
         state = .loading
 
@@ -125,10 +137,10 @@ public class WalletStateManager: ObservableObject {
                         let balance = try await self.withTimeout(seconds: 5) {
                             try await self.blockchainProvider.fetchBalance(address: address, chain: chain)
                         }
-                        NSLog("✅ [%@] Balance: %@", chain.rawValue, balance.amount)
+                        KryptoLogger.shared.log(level: .info, category: .blockchain, message: "Balance fetched", metadata: ["chain": chain.rawValue, "amount": balance.amount])
                         return (chain, balance)
                     } catch {
-                        NSLog("⚠️ [%@] Balance fetch failed: %@", chain.rawValue, error.localizedDescription)
+                        KryptoLogger.shared.log(level: .warning, category: .blockchain, message: "Balance fetch failed", metadata: ["chain": chain.rawValue, "error": error.localizedDescription])
                         return (chain, nil)
                     }
                 }
@@ -141,11 +153,10 @@ public class WalletStateManager: ObservableObject {
             }
         }
         
-        NSLog("🟢 Balance fetches complete. Got %d balances", balances.count)
+        KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "Balance fetches complete", metadata: ["count": "\(balances.count)"])
 
         // Set state to loaded with whatever balances we got
         state = .loaded(balances)
-        NSLog("🟢 State set to .loaded!")
 
         // Fetch history in background (non-blocking)
         Task.detached { [weak self] in
@@ -223,7 +234,7 @@ public class WalletStateManager: ObservableObject {
             
             // Fetch current nonce from chain
             let nonce = try await router.getTransactionCount(address: from)
-            NSLog("🔴 TX nonce for %@: %d", from, nonce)
+            KryptoLogger.shared.log(level: .debug, category: .transaction, message: "Transaction nonce fetched", metadata: ["address": from, "nonce": "\(nonce)"])
 
             let tx = Transaction(
                 from: from,
@@ -258,18 +269,17 @@ public class WalletStateManager: ObservableObject {
     @discardableResult
     public func confirmTransaction(to: String, value: String, chain: Chain = .ethereum) async -> Bool {
         guard let from = currentAddress else { 
-            NSLog("🔴 confirmTransaction: No current address!")
+            KryptoLogger.shared.log(level: .error, category: .transaction, message: "confirmTransaction called without current address")
             return false 
         }
         
-        // Skip simulation check in test mode - just build and send
-        NSLog("🔴 confirmTransaction: from=%@, to=%@, value=%@", from, to, value)
+        KryptoLogger.shared.log(level: .info, category: .transaction, message: "Confirming transaction", metadata: ["from": from, "to": to, "value": value])
 
         do {
             // Build transaction directly (skip simulation requirement for now)
             let estimate = try await router.estimateGas(to: to, value: value, data: Data(), chain: chain)
             let nonce = try await router.getTransactionCount(address: from)
-            NSLog("🔴 Got nonce: %d, gasLimit: %d", nonce, estimate.gasLimit)
+            KryptoLogger.shared.log(level: .debug, category: .transaction, message: "Transaction parameters", metadata: ["nonce": "\(nonce)", "gasLimit": "\(estimate.gasLimit)"])
             
             let txToSign = Transaction(
                 from: from,
@@ -283,13 +293,13 @@ public class WalletStateManager: ObservableObject {
                 chainId: chain == .ethereum ? AppConfig.getEthereumChainId() : 0
             )
             
-            NSLog("🔴 Signing transaction...")
+            KryptoLogger.shared.log(level: .info, category: .transaction, message: "Signing transaction")
             let signedData = try await signer.signTransaction(tx: txToSign)
-            NSLog("🔴 Signed! Raw tx length: %d bytes", signedData.raw.count)
+            KryptoLogger.shared.log(level: .debug, category: .transaction, message: "Transaction signed", metadata: ["rawLength": "\(signedData.raw.count)"])
             
-            NSLog("🔴 Broadcasting...")
+            KryptoLogger.shared.log(level: .info, category: .transaction, message: "Broadcasting transaction")
             let txHash = try await blockchainProvider.broadcast(signedTx: signedData.raw, chain: chain)
-            NSLog("✅ TX BROADCAST SUCCESS! Hash: %@", txHash)
+            KryptoLogger.shared.log(level: .info, category: .transaction, message: "Transaction broadcast successful", metadata: ["txHash": txHash])
 
             lastTxHash = txHash
             pendingTransaction = nil
@@ -298,7 +308,7 @@ public class WalletStateManager: ObservableObject {
             return true
 
         } catch {
-            NSLog("🔴 confirmTransaction FAILED: %@", error.localizedDescription)
+            KryptoLogger.shared.logError(module: "WalletStateManager", error: error)
             state = .error(ErrorTranslator.userFriendlyMessage(for: error))
             return false
         }
@@ -369,15 +379,11 @@ public class WalletStateManager: ObservableObject {
 
     public func importWallet(mnemonic: String) async {
         do {
-            NSLog("🔴 IMPORT WALLET CALLED with: %@", mnemonic.prefix(30).description)
+            KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "Importing wallet")
             
             let privateKey = try HDWalletService.derivePrivateKey(mnemonic: mnemonic, for: .ethereum)
-            NSLog("🔴 Private key derived, length: %d", privateKey.count)
-            NSLog("🔴 Private key hex: %@", privateKey.hexString)
-            
             let address = HDWalletService.address(from: privateKey, for: .ethereum)
-            NSLog("🔴 Derived address: %@", address)
-            NSLog("🔴 Expected: %@", AppConfig.TestWallet.address)
+            KryptoLogger.shared.log(level: .info, category: .stateTransition, message: "Wallet imported", metadata: ["address": address])
 
             // Store with address ID for wallet management
             _ = try keyStore.storePrivateKey(key: privateKey, id: address)
@@ -390,7 +396,7 @@ public class WalletStateManager: ObservableObject {
             saveWallets()
             await loadAccount(id: address)
         } catch {
-            print("❌ [WalletStateManager] Import failed: \(error)")
+            KryptoLogger.shared.logError(module: "WalletStateManager", error: error)
             state = .error("Import failed: \(error.localizedDescription)")
         }
     }

@@ -104,10 +104,6 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
     private func fetchEthereumBalance(address: String) async throws -> Balance {
         let url = AppConfig.rpcURL
         
-        NSLog("🟢🟢🟢 fetchEthereumBalance CALLED 🟢🟢🟢")
-        NSLog("🟢 Address: %@", address)
-        NSLog("🟢 URL: %@", url.absoluteString)
-        
         logger.debug("Fetching ETH balance for \(address) from \(url.absoluteString)")
 
         let payload: [String: Any] = [
@@ -127,23 +123,17 @@ public class ModularHTTPProvider: BlockchainProviderProtocol {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = 30.0
 
-        NSLog("🟢 Making HTTP request...")
         let (data, response) = try await session.data(for: request)
-        NSLog("🟢 Got response!")
 
         guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
-            NSLog("🔴 HTTP Error: %d", (response as? HTTPURLResponse)?.statusCode ?? -1)
-            logger.error("HTTP Error: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
-            throw BlockchainError.networkError(NSError(domain: "HTTP", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: nil))
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+            logger.error("HTTP Error: \(statusCode)")
+            throw BlockchainError.networkError(NSError(domain: "HTTP", code: statusCode, userInfo: nil))
         }
         
-        NSLog("🟢 HTTP Status: %d", httpResponse.statusCode)
-        if let responseStr = String(data: data, encoding: .utf8) {
-            NSLog("🟢 Response body: %@", responseStr)
-        }
+        logger.debug("HTTP Status: \(httpResponse.statusCode)")
 
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            NSLog("🔴 JSON Parsing Failed")
             logger.error("JSON Parsing Failed")
             throw BlockchainError.parsingError
         }

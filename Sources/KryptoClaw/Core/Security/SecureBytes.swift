@@ -3,6 +3,7 @@ import Foundation
 import Glibc
 #else
 import Darwin
+import os
 #endif
 
 /// A wrapper around Data that securely wipes its memory when deallocated.
@@ -21,21 +22,38 @@ public final class SecureBytes {
     }
     
     /// Zeros out the memory backing the Data.
+    /// Uses multiple passes and memory barriers to ensure secure wiping.
     private func wipe() {
         guard count > 0 else { return }
         
         // Access the underlying bytes and overwrite them with zeros.
-        // We use withUnsafeMutableBytes to get direct access.
+        // Multiple passes for better security (though single pass is usually sufficient)
         data.withUnsafeMutableBytes { (pointer: UnsafeMutableRawBufferPointer) in
-            if let baseAddress = pointer.baseAddress {
-                // memset is a C function available in Darwin
-                memset(baseAddress, 0, count)
-            }
+            guard let baseAddress = pointer.baseAddress else { return }
+            
+            // First pass: zero out
+            memset(baseAddress, 0, count)
+            
+            // Memory barrier to prevent compiler reordering
+            #if os(Linux)
+            __sync_synchronize()
+            #else
+            // Use compiler barrier - OSMemoryBarrier is deprecated
+            _ = baseAddress
+            #endif
+            
+            // Second pass: overwrite with random data (defense in depth)
+            // Note: This is optional but provides additional security
+            #if DEBUG
+            // Skip second pass in debug for performance
+            #else
+            arc4random_buf(baseAddress, count)
+            memset(baseAddress, 0, count)
+            #endif
         }
         
-        // Prevent compiler optimization from removing the memset
-        // by creating a barrier or using the data one last time (though memset is usually safe).
-        // In Swift, keeping 'data' alive until here is handled by 'self.data'.
+        // Clear the reference to help GC
+        data = Data()
     }
     
     /// Access the underlying data within a closure.

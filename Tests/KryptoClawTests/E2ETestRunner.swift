@@ -16,7 +16,7 @@ final class E2ETestRunner {
         print("=".repeating(60) + "\n")
         
         let testSuite = WalletE2ETests()
-        try testSuite.setUp()
+        testSuite.setUp()
         
         var passed = 0
         var failed = 0

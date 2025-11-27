@@ -5,6 +5,10 @@ import web3
 public class LocalSimulator: TransactionSimulatorProtocol {
     private let provider: BlockchainProviderProtocol
     private let session: URLSession
+    
+    // Cache balance checks to avoid redundant network calls
+    private var balanceCache: [String: (balance: Balance, timestamp: Date)] = [:]
+    private let balanceCacheTTL: TimeInterval = 30.0 // 30 seconds cache
 
     public init(provider: BlockchainProviderProtocol, session: URLSession = .shared) {
         self.provider = provider
@@ -35,8 +39,8 @@ public class LocalSimulator: TransactionSimulatorProtocol {
             .bitcoin
         }
 
-        // 2. Fetch Balance for Pre-check
-        let balance = try await provider.fetchBalance(address: tx.from, chain: chain)
+        // 2. Fetch Balance for Pre-check (with caching)
+        let balance = try await getCachedBalance(address: tx.from, chain: chain)
 
         guard chain == .ethereum else {
             // Only ETH simulation supported in V1
@@ -54,11 +58,8 @@ public class LocalSimulator: TransactionSimulatorProtocol {
         } else {
             balanceInWei = BigUInt(0)
         }
-        
-        NSLog("🔍 Simulation: balance=%@ ETH, balanceWei=%@", balance.amount, String(balanceInWei))
 
         let txValue = BigUInt(tx.value) ?? BigUInt(0)
-        NSLog("🔍 Simulation: txValue=%@ wei", String(txValue))
 
         if txValue > balanceInWei {
             return SimulationResult(
@@ -135,5 +136,33 @@ public class LocalSimulator: TransactionSimulatorProtocol {
         // { "network_id": "1", "from": ..., "to": ..., "input": ..., "value": ..., "save": true }
         
         throw NSError(domain: "LocalSimulator", code: -1, userInfo: [NSLocalizedDescriptionKey: "External Simulation API not implemented"])
+    }
+    
+    // MARK: - Balance Caching
+    
+    /// Get balance with caching to reduce redundant network calls
+    private func getCachedBalance(address: String, chain: Chain) async throws -> Balance {
+        let cacheKey = "\(address):\(chain.rawValue)"
+        
+        // Check cache
+        if let cached = balanceCache[cacheKey],
+           Date().timeIntervalSince(cached.timestamp) < balanceCacheTTL {
+            return cached.balance
+        }
+        
+        // Fetch fresh balance
+        let balance = try await provider.fetchBalance(address: address, chain: chain)
+        
+        // Update cache
+        balanceCache[cacheKey] = (balance: balance, timestamp: Date())
+        
+        // Clean old cache entries (keep cache size reasonable)
+        if balanceCache.count > 100 {
+            balanceCache = balanceCache.filter { _, value in
+                Date().timeIntervalSince(value.timestamp) < balanceCacheTTL
+            }
+        }
+        
+        return balance
     }
 }
